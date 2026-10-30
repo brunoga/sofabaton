@@ -35,9 +35,10 @@ linters:
   exclusions:
     rules:
       # errcheck and gosec are noisy in test helpers — allow unchecked calls,
-      # math/rand and file paths from variables in _test.go files.
+      # math/rand and file paths from variables in _test.go files — and test
+      # sockets live as long as the test, not a context.
       - path: _test\.go
-        linters: [errcheck, gosec]
+        linters: [errcheck, gosec, noctx]
       # The test corpus helper is test code outside a _test.go file: it
       # reads files under testdata/ whose names the tests choose.
       - path: internal/testcorpus/
