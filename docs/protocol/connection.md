@@ -4,9 +4,9 @@ Reference: upstream `docs/protocol/connection-flow.md`, `hub-versions.md`.
 
 ## Outline (`transport.Dialer`, `transport.Discoverer`)
 
-1. Discovery `[ref]`: mDNS (X2 observed advertising `_sofabaton_hub._udp.local.`;
+1. Discovery `[X2✓]`: mDNS (X2 observed advertising `_sofabaton_hub._udp.local.`;
    TXT carries `HVER`: 1=X1, 2=X1S, 3=X2) or UDP broadcast `NOTIFY_ME`.
-2. Client sends `CALL_ME` (UDP, opcode `0x0CC3`, 12-byte payload: 6 reserved
+2. `[X2✓]` Client sends `CALL_ME` (UDP, opcode `0x0CC3`, 12-byte payload: 6 reserved
    bytes, a local IPv4, a big-endian listen port, e.g. 8200) `[ref]`.
    The hub appears to use the UDP source address, not the IP field `[ref]`.
 3. **The hub connects back** over TCP to the client's listen port `[ref]`.
@@ -47,9 +47,12 @@ the same payload:
 | 13–14 | flags, vary by model and revision; not to be relied on |
 | 15.. | hub name (GB2312 above ASCII, up to 30 bytes) |
 
+Our X2 `[X2✓]`: discovery reply and banner as above; banner opcode
+`0x1502`, marker `00`, flags `00 00`, firmware 8, id = MAC. CALL_ME and the
+connect-back to a port in 8200+ work.
+
 ## TODO
 
-- [ ] Confirm banner and discovery reply on our X2
 - [ ] Keepalive behaviour and idle timeouts
 - [ ] Port list (UDP/TCP) and firewall notes: hub UDP 8102 (CALL_ME,
       probes), discovery replies broadcast to UDP 8100, connect-back to the
