@@ -48,9 +48,9 @@ SAMPLE_TEXT = [
 
 def load_upstream(root: Path):
     sys.path.insert(0, str(root / "custom_components" / "sofabaton_x1s"))
-    from lib import commands, devices, wire_schema  # noqa: PLC0415
+    from lib import commands, device_create, devices, wire_schema  # noqa: PLC0415
 
-    return commands, devices, wire_schema
+    return commands, device_create, devices, wire_schema
 
 
 def upstream_commit(root: Path) -> str:
@@ -221,6 +221,34 @@ def command_bursts(commands, corpus: Path) -> list[dict]:
     return cases
 
 
+def bindings(device_create) -> list[dict]:
+    """Button-binding writes (family 0x3E) for generated bindings."""
+    rng = random.Random(SEED + 1)
+    cases = []
+    for _ in range(100):
+        args = {
+            "device_id": rng.choice((0x01, 0x0D, 0x65, 0x66, 0xC8)),
+            "button_id": rng.choice((0x01, 0x02, 0xAE, 0xB0, 0xB6, 0xC6, 0xC7, 0x97)),
+            "short_press_device_id": rng.randrange(256),
+            "short_press_button_code": rng.randrange(1 << 48),
+            "short_press_button_id": rng.randrange(256),
+        }
+        if rng.random() < 0.5:
+            args.update(
+                long_press_device_id=rng.randrange(256),
+                long_press_button_code=rng.randrange(1 << 48),
+                long_press_button_id=rng.randrange(256),
+            )
+        step = device_create.build_button_binding_step(**args)
+        cases.append({
+            "args": args,
+            "family": step.family,
+            "payload": bytes(step.payload).hex(),
+            "ack_opcode": step.ack_opcode,
+        })
+    return cases
+
+
 def write(out_dir: Path, name: str, commit: str, cases) -> None:
     path = out_dir / f"{name}.json"
     doc = {
@@ -245,13 +273,14 @@ def main() -> None:
     if commit != PINNED_COMMIT and not args.allow_other_commit:
         sys.exit(f"upstream is at {commit}, vectors are pinned to {PINNED_COMMIT}")
 
-    commands, devices, wire_schema = load_upstream(args.upstream)
+    commands, device_create, devices, wire_schema = load_upstream(args.upstream)
     args.out.mkdir(parents=True, exist_ok=True)
     write(args.out, "labels", commit, labels(wire_schema))
     write(args.out, "paging", commit, paging(wire_schema))
     write(args.out, "entities", commit, entities(devices))
     write(args.out, "corpus_records", commit, corpus_records(devices, args.corpus))
     write(args.out, "commands", commit, command_bursts(commands, args.corpus))
+    write(args.out, "bindings", commit, bindings(device_create))
 
 
 if __name__ == "__main__":
