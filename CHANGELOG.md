@@ -17,9 +17,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Package `record`: the device/activity record (`Entity`) with its device
   tail and X2 emitter routing, and catalog rows. Decoded records re-encode
   byte-identically; edits rewrite only the changed fields.
+- `wire.Assembler` joins the pages of a paged reply; `record.Command` and
+  `record.ParseCommandList` decode command lists.
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
-  records), `tools/oracle` and `make oracle`, which regenerate them.
+  records, upstream's decoding of the corpus's command bursts),
+  `tools/oracle` and `make oracle`, which regenerate them.
 - `testdata/captures/upstream.json`: 171 frames extracted from the upstream
   project's tests (125 complete), and `tools/extractcaptures`, which
   extracts them.

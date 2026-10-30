@@ -74,10 +74,47 @@ pinned by `record.TestOracleEntity*`:
 - **Whitespace.** Upstream trims decoded labels; we keep the exact text so it
   round-trips, and leave trimming to the UI.
 
+## Paged replies
+
+Multi-page replies share one structure `[ref]`, checked against every
+complete command-list frame in the upstream corpus (47 frames, 14 bursts):
+
+```
+page payload = marker(01) | page (BE16) | chunk
+body         = chunk 1 | chunk 2 | …        (wire.Assembler)
+body[0]      = marker 01
+body[1:3]    = page count (BE16)
+body[3..]    = family-specific content
+```
+
+Upstream names "header", "body", "final" and "single-command" pages and a
+dozen full opcodes (`0xD95D`, `0xD55D`, `0x495D`, `0x4D5D`, `0xF75D`, …);
+they are all this structure at different page sizes. A targeted
+single-command reply is a 1-page body with a count of 1.
+
+## Command list (`REQ_COMMANDS` reply, family `0x5D`) `[ref]`
+
+Body content: `count | records…`, fixed-width records, `count × stride`
+bytes exactly. In every capture each page holds whole records (6 on X1,
+3 on X1S/X2), but decoding works on the joined body regardless.
+
+| Record offset | Field |
+|---|---|
+| 0 | device id |
+| 1 | command id |
+| 2 | command type (a class byte: `0D` IR, `1C` HTTP, `20` MQTT, `0A` Roku, `1A` Hue, …) |
+| 3–8 | 6-byte code (opaque) |
+| 9.. | label slot: 30 B ASCII (X1) / 60 B UTF-16BE (X1S/X2) |
+| last | sort byte: equals the command id on X1S/X2 captures, `FF` on X1 ones |
+
+Stride 40 (X1) / 70 (X1S/X2). UTF-16 labels can contain `FF` bytes, so
+records are never split on `FF`. `record.ParseCommandList` matches
+upstream's decoding of all 8 complete corpus bursts and re-encodes each
+record to its bytes (`TestOracleCommandBursts`).
+
 ## TODO (each section: layout, paging, encoding, captures)
 
-- [ ] Catalog rows (devices `0x..0B`, activities `0x..3B`)
-- [ ] Command records (`REQ_COMMANDS`, family `0x5D`) and command writes (`0x0E`)
+- [ ] Command writes (`0x0E`)
 - [ ] Keymap / favorites rows (family `0x3D`) and binding writes (`0x3E`)
 - [ ] Activity membership (family `0x6D`)
 - [ ] Macros (family `0x13` read, `0x12` write)

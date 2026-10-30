@@ -48,9 +48,9 @@ SAMPLE_TEXT = [
 
 def load_upstream(root: Path):
     sys.path.insert(0, str(root / "custom_components" / "sofabaton_x1s"))
-    from lib import devices, wire_schema  # noqa: PLC0415
+    from lib import commands, devices, wire_schema  # noqa: PLC0415
 
-    return devices, wire_schema
+    return commands, devices, wire_schema
 
 
 def upstream_commit(root: Path) -> str:
@@ -163,6 +163,64 @@ def corpus_records(devices, corpus: Path) -> list[dict]:
     return cases
 
 
+def command_bursts(commands, corpus: Path) -> list[dict]:
+    """Upstream's assembly and decoding of the corpus's command-list bursts.
+
+    Complete family-0x5D frames are grouped by the test they come from, in
+    source order, and split into bursts at each page 1."""
+    caps = json.loads(corpus.read_text())["captures"]
+    groups: dict[str, list[bytes]] = {}
+    for c in caps:
+        raw = bytes.fromhex(c["hex"])
+        if not c["complete"] or len(raw) < 8 or raw[3] != 0x5D:
+            continue
+        path, line = c["sources"][0].rsplit(":", 1)
+        groups.setdefault(f"{path}::{c.get('context', '').split('/')[0]}", []).append(
+            (int(line), raw)
+        )
+
+    cases = []
+    for key, frames in sorted(groups.items()):
+        frames.sort(key=lambda f: f[0])
+        bursts: list[list[bytes]] = []
+        for _, raw in frames:
+            page = int.from_bytes(raw[5:7], "big")
+            if page == 1 or not bursts:
+                bursts.append([])
+            bursts[-1].append(raw)
+        for burst in bursts:
+            first = burst[0][4:-1]
+            if int.from_bytes(first[1:3], "big") != 1:
+                continue
+            count = first[6]
+            pages = int.from_bytes(first[4:6], "big")
+            if len(burst) != pages:
+                continue
+            rest = len(first) - 7
+            variant = "X1" if rest % 40 == 0 and rest % 70 != 0 else "X1S"
+            assembler = commands.DeviceCommandAssembler()
+            done = []
+            for raw in burst:
+                done.extend(assembler.feed(int.from_bytes(raw[2:4], "big"), raw, hub_version=variant))
+            if len(done) != 1:
+                continue
+            dev_id, body = done[0]
+            records = list(commands.iter_command_records_from_assembled(
+                body, count=count, dev_id=dev_id, hub_version=variant,
+            ))
+            cases.append({
+                "source": key,
+                "variant": variant,
+                "frames": [raw.hex() for raw in burst],
+                "device": dev_id,
+                "records": [{
+                    "device": r.dev_id, "id": r.command_id, "control": bytes(r.control).hex(),
+                    "label": r.label, "sort": r.sort_id,
+                } for r in records],
+            })
+    return cases
+
+
 def write(out_dir: Path, name: str, commit: str, cases) -> None:
     path = out_dir / f"{name}.json"
     doc = {
@@ -187,12 +245,13 @@ def main() -> None:
     if commit != PINNED_COMMIT and not args.allow_other_commit:
         sys.exit(f"upstream is at {commit}, vectors are pinned to {PINNED_COMMIT}")
 
-    devices, wire_schema = load_upstream(args.upstream)
+    commands, devices, wire_schema = load_upstream(args.upstream)
     args.out.mkdir(parents=True, exist_ok=True)
     write(args.out, "labels", commit, labels(wire_schema))
     write(args.out, "paging", commit, paging(wire_schema))
     write(args.out, "entities", commit, entities(devices))
     write(args.out, "corpus_records", commit, corpus_records(devices, args.corpus))
+    write(args.out, "commands", commit, command_bursts(commands, args.corpus))
 
 
 if __name__ == "__main__":
