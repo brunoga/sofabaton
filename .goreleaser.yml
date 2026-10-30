@@ -1,0 +1,49 @@
+version: 2
+
+builds:
+  - id: sbx
+    main: ./cmd/sbx
+    binary: sbx
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "7"
+    # arm/v7 only makes sense on Linux (a Raspberry Pi next to the hub);
+    # skip it for Windows and macOS.
+    ignore:
+      - goos: windows
+        goarch: arm
+      - goos: darwin
+        goarch: arm
+
+archives:
+  - name_template: "sbx_{{.Version}}_{{.Os}}_{{.Arch}}{{if .Arm}}v{{.Arm}}{{end}}"
+    files:
+      - README.md
+      - CHANGELOG.md
+      - LICENSE
+      - NOTICE
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  # Allow overwriting an existing release when a tag is re-pushed
+  # (e.g. after fixing the tag to point at the right commit).
+  replace_existing_artifacts: true
+
+changelog:
+  use: github-native

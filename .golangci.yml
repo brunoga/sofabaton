@@ -1,0 +1,36 @@
+version: "2"
+
+linters:
+  # Default linters (errcheck, govet, staticcheck, etc.) remain enabled.
+  enable:
+    - misspell   # catch common spelling mistakes in comments and strings
+    - noctx      # detect network calls without context
+    - gosec      # security checks
+    - revive     # opinionated but practical style checks
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: true   # don't require every exported symbol to have a doc comment
+    errcheck:
+      # Writes to stdout/stderr in the commands: a failure there has nowhere
+      # to be reported.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+    gosec:
+      excludes:
+        # Integer narrowing is the substance of a binary wire protocol: ids,
+        # lengths and checksums are converted to their byte widths on purpose.
+        - G115
+    staticcheck:
+      checks:
+        - all
+        - -QF1003   # "could use tagged switch": a style preference the code does not share
+  exclusions:
+    rules:
+      # errcheck and gosec are noisy in test helpers — allow unchecked calls,
+      # math/rand and file paths from variables in _test.go files.
+      - path: _test\.go
+        linters: [errcheck, gosec]

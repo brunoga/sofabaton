@@ -1,0 +1,25 @@
+# compiled binaries
+/sbx
+/cmd/sbx/sbx
+*.test
+*.prof
+coverage.out
+coverage.html
+
+# fuzz corpora found locally (commit interesting ones under testdata/fuzz)
+/testdata/fuzz/**/cache/
+
+# live-hub captures not yet reviewed for committing
+/captures/
+
+# editor and tool metadata
+.claude/
+CLAUDE.md
+.vscode/
+.idea/
+
+# GoReleaser output
+/dist/
+
+# Python oracle virtualenv
+/tools/oracle/.venv/
