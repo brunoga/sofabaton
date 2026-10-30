@@ -12,6 +12,27 @@ Reference: upstream `docs/protocol/connection-flow.md`, `hub-versions.md`.
 3. **The hub connects back** over TCP to the client's listen port `[ref]`.
 4. Banner/identity exchange, then catalog requests `[ref]`.
 
+## mDNS advertisement `[X2✓]`
+
+Our X2 (2026-10-30, `avahi-browse`):
+
+```
+instance X1-HUB-962c08 · type _sofabaton_hub._udp.local · host X1-HUB-962c08.local
+192.168.1.244 port 8102 · TXT HVER=3 NO=20221120 AVER=8 NAME=X2 HUB MAC=80f1b2962c08
+```
+
+The instance is `X1-HUB-` and the last three MAC bytes even on the X2; `NO` is
+the production batch. The hub answers one-shot (legacy unicast) queries,
+which `internal/mdns.Browse` uses. Implementation notes for anything that
+advertises in the hub's place:
+
+- Two sockets of one process on UDP 5353 share its traffic (each gets
+  part, not all), so browse from an ephemeral port and leave 5353 to the
+  responder.
+- Go's `net.ListenMulticastUDP` turns multicast loopback off: answers then
+  reach the LAN but not avahi or other browsers on the same host. Turn it
+  back on.
+
 ## Single client
 
 The hub serves one client at a time `[ref]`. To keep the Android app usable,
