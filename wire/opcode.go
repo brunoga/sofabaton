@@ -91,6 +91,7 @@ const (
 	FamRFLearn            Family = 0x70
 	FamHubMQTTSetup       Family = 0x73
 	FamHubMQTTStatus      Family = 0x74
+	FamNotifyMe           Family = 0xC1 // UDP discovery probe, broadcast
 	FamCallMe             Family = 0xC3 // UDP, both directions
 )
 
@@ -124,6 +125,7 @@ const (
 	FamActivityMapPage  Family = 0x6D
 	FamHubMQTTStatusAck Family = 0x74
 	FamNotifyReply      Family = 0xC2 // UDP discovery reply
+	FamConnectReady     Family = 0xC4 // UDP beacon once a session is up
 )
 
 type familyKey struct {
@@ -173,6 +175,7 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamRFLearn}:            "RFLearn",
 	{ToHub, FamHubMQTTSetup}:       "HubMQTTSetup",
 	{ToHub, FamHubMQTTStatus}:      "HubMQTTStatus",
+	{ToHub, FamNotifyMe}:           "NotifyMe",
 	{ToHub, FamCallMe}:             "CallMe",
 
 	{FromHub, FamSaveAck}:          "SaveAck",
@@ -203,6 +206,7 @@ var familyNames = map[familyKey]string{
 	{FromHub, FamActivityMapPage}:  "ActivityMapPage",
 	{FromHub, FamHubMQTTStatusAck}: "HubMQTTStatus",
 	{FromHub, FamNotifyReply}:      "NotifyReply",
+	{FromHub, FamConnectReady}:     "ConnectReady",
 	{FromHub, FamCallMe}:           "CallMe",
 }
 

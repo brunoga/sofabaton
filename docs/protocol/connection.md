@@ -19,9 +19,36 @@ we run a proxy that advertises itself as the hub (mirrored mDNS name/TXT),
 relays app↔hub frames, and refuses our own writes while the app is attached.
 This proxy is also our capture tool (see `../research/README.md`).
 
+## Discovery and session frames are ordinary frames
+
+Upstream documents the UDP packets as special formats ("a 5-byte magic
+probe", "device id `C2` + MAC"), but every one is a normal frame `[ref]`,
+checked on the corpus (`record.TestHubInfoCorpus`):
+
+| Frame | Family | Payload |
+|---|---|---|
+| NOTIFY_ME probe, broadcast to UDP 8102 | `C1` | none (`A5 5A 00 C1 C0`) |
+| NOTIFY_ME reply, broadcast to UDP 8100 | `C2` | hub info (below) |
+| CALL_ME, to UDP 8102 | `C3` | 6 zero bytes, client IPv4, TCP port (BE16) |
+| CONNECT_READY beacon, to UDP 8100 | `C4` | hub id (6), `00` |
+
+## Hub info (banner `0x02`, discovery reply `C2`) `[ref]`
+
+The TCP banner (reply to `REQ_BANNER 0x0001`) and the discovery reply carry
+the same payload:
+
+| Offset | Field |
+|---|---|
+| 0–5 | hub id: the MAC on X2; MAC[0:5] + `4B` (X1) / `45` (X1S) |
+| 6 | marker: `64` in discovery replies, `00` or `64` in banners |
+| 7 | model: `01` X1, `02` X1S, `03` X2 |
+| 8–11 | production batch, BCD date (`20 22 11 20` = 2022-11-20) |
+| 12 | hub firmware (= mDNS `AVER`): X1 17, X1S 5, X2 8 observed |
+| 13–14 | flags, vary by model and revision; not to be relied on |
+| 15.. | hub name (GB2312 above ASCII, up to 30 bytes) |
+
 ## TODO
 
-- [ ] Banner layout (model code, batch date, firmware) — confirm on X2
-- [ ] NOTIFY_ME reply layout
+- [ ] Confirm banner and discovery reply on our X2
 - [ ] Keepalive behaviour and idle timeouts
 - [ ] Port list (UDP/TCP) and firewall notes
