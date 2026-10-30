@@ -126,7 +126,7 @@ Design rules:
 |---|---|---|---|
 | P0 | Repo scaffold, go.mod, CI (vet, golangci-lint, race, fuzz smoke, cross-build), docs skeleton, vector extraction + oracle tooling | `go test ./...` green; vectors committed | done except oracle vectors (running upstream Python needs approval) |
 | P1 | `wire`: frames, deframer, opcodes table, labels, paging | all captured frames deframe + checksum; fuzz clean | done: 125/125 complete captures round-trip; 3 fuzz targets |
-| P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | — |
+| P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | in progress: entity body + device tail + catalog rows done |
 | P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | — |
 | P4 | Read API in `hub`: catalog, commands, buttons, macros, blob dump, send key; **full backup dump** to JSON | complete dump of our X2, round-trip of every record | — |
 | P5 | `proxy` + `capture` + `sbx capture`: Android app attaches through us | app works through proxy; JSONL captures of app flows | — |

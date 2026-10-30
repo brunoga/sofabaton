@@ -70,3 +70,28 @@ func Root() string {
 	_, file, _, _ := runtime.Caller(0)
 	return filepath.Join(filepath.Dir(file), "..", "..")
 }
+
+// BySource returns the upstream frame first seen at src ("path:line" at the
+// pinned upstream commit).
+func BySource(tb testing.TB, src string) Capture {
+	tb.Helper()
+	for _, c := range Upstream(tb) {
+		for _, s := range c.Sources {
+			if s == src {
+				return c
+			}
+		}
+	}
+	tb.Fatalf("no upstream capture at %s", src)
+	return Capture{}
+}
+
+// Payload is the capture's frame payload: the bytes between the opcode and
+// the checksum. It does not check the frame.
+func (c Capture) Payload() []byte {
+	b := c.Bytes()
+	if len(b) < 5 {
+		return nil
+	}
+	return b[4 : len(b)-1]
+}
