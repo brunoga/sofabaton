@@ -35,6 +35,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   bursts, a typed rejection error, an unsolicited-frame handler and a tap
   for logging and captures.
 - Package `hubsim`: a simulated hub for tests.
+- Package `hub`: `Client` connects, identifies the hub from its banner and
+  reads devices, activities, activity members, command lists, keymaps,
+  macros and inputs pages.
+- `hubsim.FromModel` serves a hub configuration given as records.
+- `sbx discover`, `sbx info` and `sbx dump` (read-only, raw bytes kept).
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
   records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
