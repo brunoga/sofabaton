@@ -126,8 +126,8 @@ Design rules:
 |---|---|---|---|
 | P0 | Repo scaffold, go.mod, CI (vet, golangci-lint, race, fuzz smoke, cross-build), docs skeleton, vector extraction + oracle tooling | `go test ./...` green; vectors committed | done |
 | P1 | `wire`: frames, deframer, opcodes table, labels, paging | all captured frames deframe + checksum; fuzz clean | done: 125/125 complete captures round-trip; 3 fuzz targets |
-| P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | in progress: entity body + device tail + catalog rows done |
-| P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | — |
+| P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | done except IR blobs (with P6/P7): entities, catalog and membership rows, commands, keymaps and bindings, macros, inputs, hub info |
+| P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | code and hubsim tests done; first connect to the real X2 pending |
 | P4 | Read API in `hub`: catalog, commands, buttons, macros, blob dump, send key; **full backup dump** to JSON | complete dump of our X2, round-trip of every record | — |
 | P5 | `proxy` + `capture` + `sbx capture`: Android app attaches through us | app works through proxy; JSONL captures of app flows | — |
 | P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | — |

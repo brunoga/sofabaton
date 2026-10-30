@@ -30,6 +30,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Package `transport`: `Dialer` (CALL_ME and the hub's TCP connect-back),
   `Discoverer` (NOTIFY_ME broadcast discovery) and `Conn`, frames over a
   connection.
+- Package `session`: serialized request/reply exchanges over a frame
+  connection, with collectors for status acks, family acks and record
+  bursts, a typed rejection error, an unsolicited-frame handler and a tap
+  for logging and captures.
+- Package `hubsim`: a simulated hub for tests.
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
   records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
