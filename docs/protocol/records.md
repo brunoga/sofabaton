@@ -74,18 +74,25 @@ pinned by `record.TestOracleEntity*`:
 - **Whitespace.** Upstream trims decoded labels; we keep the exact text so it
   round-trips, and leave trimming to the UI.
 
-## Paged replies
+## Paged replies: bursts of records
 
-Multi-page replies share one structure `[ref]`, checked against every
-complete command-list frame in the upstream corpus (47 frames, 14 bursts):
+Every reply we have decoded is one structure `[ref]`, checked against the
+corpus's command lists (47 frames), keymaps, macros and catalog rows:
 
 ```
-page payload = marker(01) | page (BE16) | chunk
-body         = chunk 1 | chunk 2 | …        (wire.Assembler)
-body[0]      = marker 01
-body[1:3]    = page count (BE16)
-body[3..]    = family-specific content
+page payload = record index | page (BE16) | chunk
+record body  = chunk 1 | chunk 2 | …        (wire.Assembler)
+body[0]      = number of records in the burst
+body[1:3]    = pages of this record (BE16)
+body[3..]    = the record
 ```
+
+A reply is a burst of records 1..N, each a paged body (`wire.Burst`).
+Catalog rows and macros are bursts of many single- or multi-page records;
+command lists and keymaps are bursts of one record (marker and `body[0]`
+both `01`) holding a count and fixed-width entries. The record bodies have
+the layout of the corresponding write bodies, where `body[0]` is the page
+marker `01` instead of the record count.
 
 Upstream names "header", "body", "final" and "single-command" pages and a
 dozen full opcodes (`0xD95D`, `0xD55D`, `0x495D`, `0x4D5D`, `0xF75D`, …);
@@ -143,11 +150,47 @@ matches upstream's builder on 100 generated bindings.
 Hard keys `0x97`–`0xA9` (C, B, A, Exit, DVR, Play, Guide, numpad) exist on
 the X2 remote only. Power on/off are `0xC6`/`0xC7`.
 
+## Macros (`REQ_MACROS` reply, family `0x13`; writes `0x12`) `[ref]`
+
+One record per macro of the entity, each possibly several pages (the X1S
+corpus has a 20-step `POWER_ON` over two pages). Record body = write body:
+
+| Body offset | Field |
+|---|---|
+| 0 | record count (read) / `01` (write) |
+| 1–2 | pages of this record |
+| 3 | entity (activity, or device) |
+| 4 | macro id: the key it is bound to; `C6` power on, `C7` power off |
+| 5 | step count |
+| 6.. | steps, 10 bytes: device, command (`FF` = pause), code (6), duration, delay |
+| then | label slot, 30 B ASCII (X1) / 60 B UTF-16BE (X1S/X2) |
+| last | `sum8` of the body before it |
+
+Upstream calls the read-side fields "fragment index", "total fragments",
+"activity" and "macro id" at `payload[0]`, `[3]`, `[6]`, `[7]`: the same
+bytes seen through the wrapper.
+
+- **The label slot holds hub metadata** after the label (X1 `37 37 00 00 35
+  35`, X1S `d4 d4` at slot bytes 54–55), and the hub rejects saves that
+  change it (status `0x0C`). `record.Macro` keeps the slot verbatim while
+  the label is unchanged.
+- The hub's power labels can have other bytes before `POWER_ON`/`POWER_OFF`;
+  they are found anywhere in the slot.
+- Writes longer than a page (19+ steps on X1S/X2, 22+ on X1) are paged;
+  every page but the last is acked by a status ack, the last by family
+  `0x12`. A save that removes a device's last power reference makes the hub
+  remove the device from the activity, and that ack's first byte is not the
+  macro id.
+- The X1S rewrites the duration of power-reference steps (command `C5`–`C7`)
+  from the device's power setup: not round-trippable there.
+
+`record.Macro` matches upstream's decoding of the 4 corpus bursts and its
+writer on 24 generated macros (0–40 steps).
+
 ## TODO (each section: layout, paging, encoding, captures)
 
 - [ ] Command writes (`0x0E`)
 - [ ] Activity membership (family `0x6D`)
-- [ ] Macros (family `0x13` read, `0x12` write)
 - [ ] Inputs page (family `0x46`/`0x47`)
 - [ ] IR blob dump/save/replay pages (`0x0D`/`0x0E`/`0x0F`)
 - [ ] Button code table

@@ -48,9 +48,9 @@ SAMPLE_TEXT = [
 
 def load_upstream(root: Path):
     sys.path.insert(0, str(root / "custom_components" / "sofabaton_x1s"))
-    from lib import commands, device_create, devices, wire_schema  # noqa: PLC0415
+    from lib import commands, device_create, devices, macros, wire_schema  # noqa: PLC0415
 
-    return commands, device_create, devices, wire_schema
+    return commands, device_create, devices, macros, wire_schema
 
 
 def upstream_commit(root: Path) -> str:
@@ -249,6 +249,70 @@ def bindings(device_create) -> list[dict]:
     return cases
 
 
+def macro_writes(device_create) -> list[dict]:
+    """Macro writes (family 0x12) for generated macros, including ones that
+    need more than one page."""
+    rng = random.Random(SEED + 2)
+    cases = []
+    for variant in ("X1", "X1S", "X2"):
+        for steps in (0, 1, 3, 18, 19, 21, 22, 40):
+            rows = b"".join(bytes(rng.randrange(256) for _ in range(10)) for _ in range(steps))
+            label = rng.choice(SAMPLE_TEXT)
+            key = rng.choice((0x01, 0x05, 0xC6, 0xC7))
+            entity = rng.choice((0x65, 0x66, 0x0D))
+            pages = device_create.build_macro_steps(
+                hub_version=variant, device_id=entity, key_id=key,
+                label=label, step_records=rows,
+            )
+            cases.append({
+                "variant": variant, "entity": entity, "key": key, "label": label,
+                "steps": rows.hex(),
+                "pages": [bytes(p.payload).hex() for p in pages],
+                "acks": [p.ack_opcode for p in pages],
+            })
+    return cases
+
+
+def macro_bursts(macros, corpus: Path) -> list[dict]:
+    """Upstream's assembly and decoding of the corpus's macro bursts."""
+    caps = json.loads(corpus.read_text())["captures"]
+    groups: dict[str, list] = {}
+    for c in caps:
+        raw = bytes.fromhex(c["hex"])
+        if not c["complete"] or len(raw) < 8 or raw[3] != 0x13:
+            continue
+        path, line = c["sources"][0].rsplit(":", 1)
+        groups.setdefault(f"{path}::{c.get('context', '').split('/')[0]}", []).append((int(line), raw))
+    cases = []
+    for key, frames in sorted(groups.items()):
+        frames.sort(key=lambda f: f[0])
+        first = frames[0][1][4:-1]
+        body = first[3:]
+        n = body[5]
+        variant = "X1" if len(body) == 37 + 10 * n else "X1S"
+        assembler = macros.MacroAssembler()
+        done = []
+        for _, raw in frames:
+            done.extend(assembler.feed(int.from_bytes(raw[2:4], "big"), raw[4:-1], raw))
+        if len(done) != 1:
+            continue
+        activity, payload, boundaries = done[0]
+        records = macros.parse_macro_records_from_burst(
+            payload, activity_id=activity, record_boundaries=boundaries, hub_version=variant,
+        )
+        cases.append({
+            "source": key,
+            "variant": variant,
+            "frames": [raw.hex() for _, raw in frames],
+            "records": [{
+                "activity": r.activity_id, "key": r.key_id, "label": r.label,
+                "slot": bytes(r.raw_label_slot).hex(),
+                "steps": [[e.device_id, e.key_id, e.fid, e.duration, e.delay] for e in r.key_sequence],
+            } for r in records],
+        })
+    return cases
+
+
 def write(out_dir: Path, name: str, commit: str, cases) -> None:
     path = out_dir / f"{name}.json"
     doc = {
@@ -273,7 +337,7 @@ def main() -> None:
     if commit != PINNED_COMMIT and not args.allow_other_commit:
         sys.exit(f"upstream is at {commit}, vectors are pinned to {PINNED_COMMIT}")
 
-    commands, device_create, devices, wire_schema = load_upstream(args.upstream)
+    commands, device_create, devices, macros, wire_schema = load_upstream(args.upstream)
     args.out.mkdir(parents=True, exist_ok=True)
     write(args.out, "labels", commit, labels(wire_schema))
     write(args.out, "paging", commit, paging(wire_schema))
@@ -281,6 +345,8 @@ def main() -> None:
     write(args.out, "corpus_records", commit, corpus_records(devices, args.corpus))
     write(args.out, "commands", commit, command_bursts(commands, args.corpus))
     write(args.out, "bindings", commit, bindings(device_create))
+    write(args.out, "macro_writes", commit, macro_writes(device_create))
+    write(args.out, "macros", commit, macro_bursts(macros, args.corpus))
 
 
 if __name__ == "__main__":
