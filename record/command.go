@@ -45,7 +45,7 @@ func ParseCommand(v wire.Variant, rec []byte) (*Command, error) {
 		return nil, fmt.Errorf("record: %v command record is %d bytes, want %d", v, len(rec), s.CommandStride)
 	}
 	head := [cmdOffLabel]byte(rec)
-	label := rec[cmdOffLabel : cmdOffLabel+s.CommandLabelLen] //nolint:gosec // G602: len(rec) is checked above
+	label := rec[cmdOffLabel : cmdOffLabel+s.CommandLabelLen]
 	sort := rec[len(rec)-1]
 	c := &Command{
 		Device:  head[0],

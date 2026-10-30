@@ -23,9 +23,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   binding writes (0x3E); `record.Button`, the remote's keys.
 - `wire.Burst` collects replies of several paged records; `record.Macro`
   decodes macro records and builds their (paged) writes.
+- `record.Inputs`: a device's inputs page (family 0x47 replies, 0x46
+  writes).
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
-  records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts),
+  records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
   `tools/oracle` and `make oracle`, which regenerate them.
 - `testdata/captures/upstream.json`: 171 frames extracted from the upstream
   project's tests (125 complete), and `tools/extractcaptures`, which

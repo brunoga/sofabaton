@@ -71,8 +71,10 @@ type Schema struct {
 	CommandLabelLen int
 	// MacroLabelLen is a macro record's label slot.
 	MacroLabelLen int
-	// InputEntryStride is one entry of the inputs page.
+	// InputEntryStride is one entry of the inputs page; InputLabelLen its
+	// label slot.
 	InputEntryStride int
+	InputLabelLen    int
 }
 
 var (
@@ -84,6 +86,7 @@ var (
 		CommandLabelLen:  30,
 		MacroLabelLen:    30,
 		InputEntryStride: 27,
+		InputLabelLen:    20,
 	}
 	wideSchema = Schema{
 		Labels:           UTF16BE,
@@ -93,6 +96,7 @@ var (
 		CommandLabelLen:  60,
 		MacroLabelLen:    60,
 		InputEntryStride: 48,
+		InputLabelLen:    40,
 	}
 )
 

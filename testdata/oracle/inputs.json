@@ -1,0 +1,1250 @@
+{
+ "upstream": "github.com/m3tac0de/home-assistant-sofabaton-x1s",
+ "commit": "5fd5887d11272a553da99383f327c53cb8b4190e",
+ "generator": "tools/oracle/oracle.py",
+ "cases": [
+  {
+   "variant": "X1",
+   "pages": [
+    "010001010001180100f1dda18a4ee22d94dd29a64d8e83e12af21cb5be35f27c0ec2673786b3a219c55dab3ea26689cb2354750f17d7b21ed726ed7f831edade4a823cd3240c06e15fa668ad80b5016cc8c5c203f54fbd5f4a8aa6c15a90029076dda99d3e2d6a04061e010746434f3fac4e7c28c4be6e"
+   ],
+   "parsed": {
+    "device": 24,
+    "mode": 1,
+    "flag_a": 241,
+    "flag_b": 221,
+    "state": 190,
+    "entries": [],
+    "control_keys": [
+     "a18a4ee22d94dd29a6",
+     "4d8e83e12af21cb5be",
+     "35f27c0ec2673786b3",
+     "a219c55dab3ea26689"
+    ],
+    "favorites": [
+     "cb2354750f17d7",
+     "b21ed726ed7f83",
+     "1edade4a823cd3",
+     "240c06e15fa668",
+     "ad80b5016cc8c5",
+     "c203f54fbd5f4a",
+     "8aa6c15a900290",
+     "76dda99d3e2d6a",
+     "04061e01074643",
+     "4f3fac4e7c28c4"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "010001010001220101a6a8c02708bee37491546c2064752073616c6f6e0000000000000000001b7a599a176e67f7db60279fb4b4c0ac7789e2a53413df053e172ac1f74febf9e66be62ae63f355341ec0f18ba41d3f62ec741871aef6d45b7fd5e47c3845f7ae7e6b1d99f7aab9db9bdf5c39bf4e6d3c5dd94a2bbc84d0d63f86a90baeaffe99da5a2a1b87116fe7725881c"
+   ],
+   "parsed": {
+    "device": 34,
+    "mode": 1,
+    "flag_a": 166,
+    "flag_b": 168,
+    "state": 136,
+    "entries": [
+     {
+      "command": 192,
+      "fid": 42918515799185,
+      "ordinal": 0,
+      "label": "Tl du salon"
+     }
+    ],
+    "control_keys": [
+     "1b7a599a176e67f7db",
+     "60279fb4b4c0ac7789",
+     "e2a53413df053e172a",
+     "c1f74febf9e66be62a"
+    ],
+    "favorites": [
+     "e63f355341ec0f",
+     "18ba41d3f62ec7",
+     "41871aef6d45b7",
+     "fd5e47c3845f7a",
+     "e7e6b1d99f7aab",
+     "9db9bdf5c39bf4",
+     "e6d3c5dd94a2bb",
+     "c84d0d63f86a90",
+     "baeaffe99da5a2",
+     "a1b87116fe7725"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "010001010001230102d948d5515ed3b4804a426f73650000000000000000000000000000000088ae84b9aaeae54c6976696e6720726f6f6d20545600000000000050a9767bf85b047376509d0ab5eba143c7fdb466727237781fc2695762c90ec8140c18181a84a1567a266bca53fdf830d530cb2c4bd903386f37aa2ff786c8807db21e7cce907b5987049ea38f26d925e91761bf374274d564cf691572a97441116c655717dad2d69f4ea36b"
+   ],
+   "parsed": {
+    "device": 35,
+    "mode": 1,
+    "flag_a": 217,
+    "flag_b": 72,
+    "state": 163,
+    "entries": [
+     {
+      "command": 213,
+      "fid": 89467720597578,
+      "ordinal": 0,
+      "label": "Bose"
+     },
+     {
+      "command": 136,
+      "fid": 191885073902309,
+      "ordinal": 0,
+      "label": "Living room TV"
+     }
+    ],
+    "control_keys": [
+     "50a9767bf85b047376",
+     "509d0ab5eba143c7fd",
+     "b466727237781fc269",
+     "5762c90ec8140c1818"
+    ],
+    "favorites": [
+     "1a84a1567a266b",
+     "ca53fdf830d530",
+     "cb2c4bd903386f",
+     "37aa2ff786c880",
+     "7db21e7cce907b",
+     "5987049ea38f26",
+     "d925e91761bf37",
+     "4274d564cf6915",
+     "72a97441116c65",
+     "5717dad2d69f4e"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "010001010001520104dd22e5e8989cefb3d5546c2064752073616c6f6e000000000000000000fd642c9882a052506c617920506c617973746174696f6e20350000cfc0be3397f6846161616161616161616161616161616161616161b168885208605761616161616161616161616161616161616161618a45d1bf89bd2e39b653f7fc0b48be61c1b36d9e690f8a04812ebfd0c7f967d08d1aa8e06a0e60e3cf29a651621ee9312d038a35b0c5ae1a1203da7ff7eb4b262def919c252027d6aaaa6ea1cfbf72f89bbec084e6b2af2db4780ee7ed82410787cd3885ad520c16f87762d3"
+   ],
+   "parsed": {
+    "device": 82,
+    "mode": 1,
+    "flag_a": 221,
+    "flag_b": 34,
+    "state": 98,
+    "entries": [
+     {
+      "command": 229,
+      "fid": 255742165627861,
+      "ordinal": 0,
+      "label": "Tl du salon"
+     },
+     {
+      "command": 253,
+      "fid": 110142700036178,
+      "ordinal": 0,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 207,
+      "fid": 211923141916292,
+      "ordinal": 0,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 177,
+      "fid": 114934701121623,
+      "ordinal": 0,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "8a45d1bf89bd2e39b6",
+     "53f7fc0b48be61c1b3",
+     "6d9e690f8a04812ebf",
+     "d0c7f967d08d1aa8e0"
+    ],
+    "favorites": [
+     "6a0e60e3cf29a6",
+     "51621ee9312d03",
+     "8a35b0c5ae1a12",
+     "03da7ff7eb4b26",
+     "2def919c252027",
+     "d6aaaa6ea1cfbf",
+     "72f89bbec084e6",
+     "b2af2db4780ee7",
+     "ed82410787cd38",
+     "85ad520c16f877"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "0100010100023d01057590e980d32f78a3c5000000000000000000000000000000000000000088a0ffba66b5a5426f7365000000000000000000000000000000002d7b81ef07004054560000000000000000000000000000000000008db876681fd8ff546c2064752073616c6f6e000000000000000000179a3725593dfc506c617920506c617973746174696f6e203500003570c47b18b96ac4773c2249b20209a4c0e2d55e02ce85b42313e4f9705617beee65b84477600f540a5ed7f821db24e3fc7f7b802ceeeeadf0c69448afda51d3754651c3306b58538d36e2aa278fd5b19529c31f11f6e5e7d7e9330dcdd397a3b0b8d187a039b870",
+    "010002c61c2ef3"
+   ],
+   "parsed": {
+    "device": 61,
+    "mode": 1,
+    "flag_a": 117,
+    "flag_b": 144,
+    "state": 46,
+    "entries": [
+     {
+      "command": 233,
+      "fid": 141644522890181,
+      "ordinal": 0,
+      "label": ""
+     },
+     {
+      "command": 136,
+      "fid": 177020204397989,
+      "ordinal": 0,
+      "label": "Bose"
+     },
+     {
+      "command": 45,
+      "fid": 135797991211072,
+      "ordinal": 0,
+      "label": "TV"
+     },
+     {
+      "command": 141,
+      "fid": 202818692569343,
+      "ordinal": 0,
+      "label": "Tl du salon"
+     },
+     {
+      "command": 23,
+      "fid": 169561640484348,
+      "ordinal": 0,
+      "label": "Play Playstation 5"
+     }
+    ],
+    "control_keys": [
+     "3570c47b18b96ac477",
+     "3c2249b20209a4c0e2",
+     "d55e02ce85b42313e4",
+     "f9705617beee65b844"
+    ],
+    "favorites": [
+     "77600f540a5ed7",
+     "f821db24e3fc7f",
+     "7b802ceeeeadf0",
+     "c69448afda51d3",
+     "754651c3306b58",
+     "538d36e2aa278f",
+     "d5b19529c31f11",
+     "f6e5e7d7e9330d",
+     "cdd397a3b0b8d1",
+     "87a039b870c61c"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "0100010100020301062bd4090458d416998354562000000000000000000000000000000000006fda1e5ddff3384c6976696e6720726f6f6d2054560000000000003b16cbd25549d06161616161616161616161616161616161616161d41ef2d64abb33546c2064752073616c6f6e000000000000000000cc3122e0aba5e000000000000000000000000000000000000000005eac1c3b9918510000000000000000000000000000000000000000d92131883d4dd146387d5c41bcac092e17669ac3191c5f3887e9dc1a2d05ca889bfe18e7acaaac491b8b04382e4a2eeb8bcb319308050db95da9b6fd4ac4d40400cb14d3027a89e9f6e9cb8953",
+    "010002beebfc001f91011026b3f1e23b7d9c55454177bf92ae42ae14970314af4cca"
+   ],
+   "parsed": {
+    "device": 3,
+    "mode": 1,
+    "flag_a": 43,
+    "flag_b": 212,
+    "state": 76,
+    "entries": [
+     {
+      "command": 9,
+      "fid": 4779561884035,
+      "ordinal": 0,
+      "label": "TV"
+     },
+     {
+      "command": 111,
+      "fid": 239823958831928,
+      "ordinal": 0,
+      "label": "Living room TV"
+     },
+     {
+      "command": 59,
+      "fid": 25064662976976,
+      "ordinal": 0,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 212,
+      "fid": 34028326140723,
+      "ordinal": 0,
+      "label": "Tl du salon"
+     },
+     {
+      "command": 204,
+      "fid": 54025867994592,
+      "ordinal": 0,
+      "label": ""
+     },
+     {
+      "command": 94,
+      "fid": 189237258950737,
+      "ordinal": 0,
+      "label": ""
+     }
+    ],
+    "control_keys": [
+     "d92131883d4dd14638",
+     "7d5c41bcac092e1766",
+     "9ac3191c5f3887e9dc",
+     "1a2d05ca889bfe18e7"
+    ],
+    "favorites": [
+     "acaaac491b8b04",
+     "382e4a2eeb8bcb",
+     "319308050db95d",
+     "a9b6fd4ac4d404",
+     "00cb14d3027a89",
+     "e9f6e9cb8953be",
+     "ebfc001f910110",
+     "26b3f1e23b7d9c",
+     "55454177bf92ae",
+     "42ae14970314af"
+    ]
+   }
+  },
+  {
+   "variant": "X1",
+   "pages": [
+    "01000101000236020c461138f8785d8ddded4665726e736568657220576f686e7a696d6d657230b6d3c45262514665726e736568657220576f686e7a696d6d6572feb1fb4a9e67ee4665726e736568657220576f686e7a696d6d65725b8cc26879b1936161616161616161616161616161616161616161bf66de7a617c7554560000000000000000000000000000000000007f7407e7c119b36161616161616161616161616161616161616161689020ac9393a3506c617920506c617973746174696f6e2035000012a912d15db7f80000000000000000000000000000000000000000d5216da896253e426f7365000000000000000000000000",
+    "01000200000000b5239c32955395506c617920506c617973746174696f6e20350000b8811e1ba356275456000000000000000000000000000000000000c190be314765e34665726e736568657220576f686e7a696d6d657208755bd219d98ad50da548ce8edd9654bf55c3a73a9d67baa2088c58913acb8293ab6782d6a8677b81f7b8735d7e79091fb705e6a0d8a3063b33581053502800445c430f02a85e7edaeba1802de319d4ac781ac2f543c497ab6dd9f8497ccdf9c7bd2edcd97a97e7befd756f"
+   ],
+   "parsed": {
+    "device": 54,
+    "mode": 2,
+    "flag_a": 70,
+    "flag_b": 17,
+    "state": 117,
+    "entries": [
+     {
+      "command": 56,
+      "fid": 273195849342445,
+      "ordinal": 0,
+      "label": "Fernseher Wohnzimmer"
+     },
+     {
+      "command": 48,
+      "fid": 201020648088145,
+      "ordinal": 0,
+      "label": "Fernseher Wohnzimmer"
+     },
+     {
+      "command": 254,
+      "fid": 195692846802926,
+      "ordinal": 0,
+      "label": "Fernseher Wohnzimmer"
+     },
+     {
+      "command": 91,
+      "fid": 154766604349843,
+      "ordinal": 0,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 191,
+      "fid": 113105721982069,
+      "ordinal": 0,
+      "label": "TV"
+     },
+     {
+      "command": 127,
+      "fid": 127577301785011,
+      "ordinal": 0,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 104,
+      "fid": 158470008705955,
+      "ordinal": 0,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 18,
+      "fid": 185898287085560,
+      "ordinal": 0,
+      "label": ""
+     },
+     {
+      "command": 213,
+      "fid": 36754863564094,
+      "ordinal": 0,
+      "label": "Bose"
+     },
+     {
+      "command": 181,
+      "fid": 39153770517397,
+      "ordinal": 0,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 184,
+      "fid": 141966312691239,
+      "ordinal": 0,
+      "label": "TV"
+     },
+     {
+      "command": 193,
+      "fid": 159146544948707,
+      "ordinal": 0,
+      "label": "Fernseher Wohnzimmer"
+     }
+    ],
+    "control_keys": [
+     "08755bd219d98ad50d",
+     "a548ce8edd9654bf55",
+     "c3a73a9d67baa2088c",
+     "58913acb8293ab6782"
+    ],
+    "favorites": [
+     "d6a8677b81f7b8",
+     "735d7e79091fb7",
+     "05e6a0d8a3063b",
+     "33581053502800",
+     "445c430f02a85e",
+     "7edaeba1802de3",
+     "19d4ac781ac2f5",
+     "43c497ab6dd9f8",
+     "497ccdf9c7bd2e",
+     "dcd97a97e7befd"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "0100010100011f0200ec919ea7cbdbef0f7ba72d09bf283960518c11c841b9116372beaa8c96d79c4898c8a2a44b22d178c7e371b723db714cfd4c60813baed1e223b4af642596df8988b9490a212dd3d35e776533b7fbb34b8c09239fdc2c498f1d263b509900fbcb7b0dfdb67279e738dbbea5756c65"
+   ],
+   "parsed": {
+    "device": 31,
+    "mode": 2,
+    "flag_a": 236,
+    "flag_b": 145,
+    "state": 108,
+    "entries": [],
+    "control_keys": [
+     "9ea7cbdbef0f7ba72d",
+     "09bf283960518c11c8",
+     "41b9116372beaa8c96",
+     "d79c4898c8a2a44b22"
+    ],
+    "favorites": [
+     "d178c7e371b723",
+     "db714cfd4c6081",
+     "3baed1e223b4af",
+     "642596df8988b9",
+     "490a212dd3d35e",
+     "776533b7fbb34b",
+     "8c09239fdc2c49",
+     "8f1d263b509900",
+     "fbcb7b0dfdb672",
+     "79e738dbbea575"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "0100010100015f0101818db15d08e7f05dff01005400560020d83ddcfa0000000000000000000000000000000000000000000000000000000000002f3d3aa8a75ff3bd1a308e7aaa00266cd3b7c9daab4ce38040aff0c8ccdd86b6cff54dc52673aeaa3cfb04b049837e9c9cc49c207b75796abb1761a3264298a027bba7e246358f65b560e2106dbf631948a6f9df376d551b0d24356bcdd080ef08ee7dabd27619226316b31f"
+   ],
+   "parsed": {
+    "device": 95,
+    "mode": 1,
+    "flag_a": 129,
+    "flag_b": 141,
+    "state": 179,
+    "entries": [
+     {
+      "command": 177,
+      "fid": 102292832411135,
+      "ordinal": 1,
+      "label": "TV 📺"
+     }
+    ],
+    "control_keys": [
+     "2f3d3aa8a75ff3bd1a",
+     "308e7aaa00266cd3b7",
+     "c9daab4ce38040aff0",
+     "c8ccdd86b6cff54dc5"
+    ],
+    "favorites": [
+     "2673aeaa3cfb04",
+     "b049837e9c9cc4",
+     "9c207b75796abb",
+     "1761a3264298a0",
+     "27bba7e246358f",
+     "65b560e2106dbf",
+     "631948a6f9df37",
+     "6d551b0d24356b",
+     "cdd080ef08ee7d",
+     "abd27619226316"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "0100010100014e02022f3137681c6d95e9fe01006100610061006100610061006100610061006100610061006100610061006100610061006100618fab994f0b320d02004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000c0ba3e51bef67a2bf051a6523c7696b9dcc2c975827fd315eabc9b96aa08b1d9d0efd940961c21c13424d6c8685867be43eb82189d002e3305b439e5d634ab72810982d39c02c5df105a24f581b878f0038d98b0bd1a6701f3b0af6b4fcfd5caed6f8bfb49d64fbf41c4ad81"
+   ],
+   "parsed": {
+    "device": 78,
+    "mode": 2,
+    "flag_a": 47,
+    "flag_b": 49,
+    "state": 173,
+    "entries": [
+     {
+      "command": 55,
+      "fid": 114471306914302,
+      "ordinal": 1,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 143,
+      "fid": 188674944479757,
+      "ordinal": 2,
+      "label": "Living room TV"
+     }
+    ],
+    "control_keys": [
+     "c0ba3e51bef67a2bf0",
+     "51a6523c7696b9dcc2",
+     "c975827fd315eabc9b",
+     "96aa08b1d9d0efd940"
+    ],
+    "favorites": [
+     "961c21c13424d6",
+     "c8685867be43eb",
+     "82189d002e3305",
+     "b439e5d634ab72",
+     "810982d39c02c5",
+     "df105a24f581b8",
+     "78f0038d98b0bd",
+     "1a6701f3b0af6b",
+     "4fcfd5caed6f8b",
+     "fb49d64fbf41c4"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "0100010100023b0104fa1070694362096ca301d83ddcfa00000000000000000000000000000000000000000000000000000000000000000000000093228fecbb919802004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000b6e16410443643030042006f007300650000000000000000000000000000000000000000000000000000000000000000df02325636d9ba04d83ddcfa0000000000000000000000000000000000000000000000000000000000000000000000004a520ce73d6df325f7e5e11626891cccd881dc10b892e2c7eb9fbb7453b363223fd3c7a952f3f12c87d8b62d6162c7",
+    "010002227e63592e1de595f8bd4278b33106000523e5eadcad96eb8d49ea55d9559cbc96c2ec30425b2b59220b39f817721a48eba0dc7ae2f22b00f21da8623e"
+   ],
+   "parsed": {
+    "device": 59,
+    "mode": 1,
+    "flag_a": 250,
+    "flag_b": 16,
+    "state": 98,
+    "entries": [
+     {
+      "command": 112,
+      "fid": 115738128510115,
+      "ordinal": 1,
+      "label": "📺"
+     },
+     {
+      "command": 147,
+      "fid": 38001547383192,
+      "ordinal": 2,
+      "label": "Living room TV"
+     },
+     {
+      "command": 182,
+      "fid": 247819885884995,
+      "ordinal": 3,
+      "label": "Bose"
+     },
+     {
+      "command": 223,
+      "fid": 2415218055610,
+      "ordinal": 4,
+      "label": "📺"
+     }
+    ],
+    "control_keys": [
+     "4a520ce73d6df325f7",
+     "e5e11626891cccd881",
+     "dc10b892e2c7eb9fbb",
+     "7453b363223fd3c7a9"
+    ],
+    "favorites": [
+     "52f3f12c87d8b6",
+     "2d6162c7227e63",
+     "592e1de595f8bd",
+     "4278b331060005",
+     "23e5eadcad96eb",
+     "8d49ea55d9559c",
+     "bc96c2ec30425b",
+     "2b59220b39f817",
+     "721a48eba0dc7a",
+     "e2f22b00f21da8"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "010001010002210105b09c1cd0714dacfdeb01004c006900760069006e006700200072006f006f006d0020005400560000000000000000000000008511d9e729a8b50200540056000000000000000000000000000000000000000000000000000000000000000000000000f432c5dbf3c741030050006c0061007900200050006c0061007900730074006100740069006f006e0020003500000000ae79098d6a5aa404005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000ea9cc6f4c0bd0205004c006900760069006e006700200072006f006f006d0020005400560000000000000000000000",
+    "01000200a49560087fdccc61112b88434c42808d77be73817c755cea60355f6189372aebd3f633efe58efdd80a54c7ef7a43bd7b6bd60f655fb4dc274995a50f9a6f3b59775c66ef4eca98fc5efd32f6b24250d9340e9b363fa0c323b0a9fb93d94670da08f8466dad784008ca4f3009"
+   ],
+   "parsed": {
+    "device": 33,
+    "mode": 1,
+    "flag_a": 176,
+    "flag_b": 156,
+    "state": 48,
+    "entries": [
+     {
+      "command": 28,
+      "fid": 229185053064683,
+      "ordinal": 1,
+      "label": "Living room TV"
+     },
+     {
+      "command": 133,
+      "fid": 19627583842485,
+      "ordinal": 2,
+      "label": "TV"
+     },
+     {
+      "command": 244,
+      "fid": 55825380132673,
+      "ordinal": 3,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 174,
+      "fid": 133081934224036,
+      "ordinal": 4,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 234,
+      "fid": 172378323729666,
+      "ordinal": 5,
+      "label": "Living room TV"
+     }
+    ],
+    "control_keys": [
+     "a49560087fdccc6111",
+     "2b88434c42808d77be",
+     "73817c755cea60355f",
+     "6189372aebd3f633ef"
+    ],
+    "favorites": [
+     "e58efdd80a54c7",
+     "ef7a43bd7b6bd6",
+     "0f655fb4dc2749",
+     "95a50f9a6f3b59",
+     "775c66ef4eca98",
+     "fc5efd32f6b242",
+     "50d9340e9b363f",
+     "a0c323b0a9fb93",
+     "d94670da08f846",
+     "6dad784008ca4f"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "01000101000226020673cd2d52486041a99f01005400560000000000000000000000000000000000000000000000000000000000000000000000002940b7fa14654e0200610061006100610061006100610061006100610061006100610061006100610061006100610061804b29bb1e04bb03753589c6673a000000000000000000000000000000000000000000000000000000000000000000008de735207022580400610061006100610061006100610061006100610061006100610061006100610061006100610061b128cfc98cfcf505005400e9006c00e9002000640075002000730061006c006f006e00000000000000000000000000",
+    "01000200250ee5033212930600610061006100610061006100610061006100610061006100610061006100610061006100610061cfe264ff955f0a687f59840ee4d572630c34896d52c8ea72acf3b3cb06e919453021a17ae2d7048d5b6acd163ab35aa859575b6aa877dc9b9804d67a571364416837a684b56f1cd66a4d3b6e30f0aefefaacd4b85c3f7ac2abfdb76cbec6857acf4e0564acfd9b384b91869f"
+   ],
+   "parsed": {
+    "device": 38,
+    "mode": 2,
+    "flag_a": 115,
+    "flag_b": 205,
+    "state": 134,
+    "entries": [
+     {
+      "command": 45,
+      "fid": 90470806038943,
+      "ordinal": 1,
+      "label": "TV"
+     },
+     {
+      "command": 41,
+      "fid": 71158918833486,
+      "ordinal": 2,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 128,
+      "fid": 82642605049019,
+      "ordinal": 3,
+      "label": "电视机"
+     },
+     {
+      "command": 141,
+      "fid": 254215363502680,
+      "ordinal": 4,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 177,
+      "fid": 44872904801525,
+      "ordinal": 5,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 37,
+      "fid": 16376763912851,
+      "ordinal": 6,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "cfe264ff955f0a687f",
+     "59840ee4d572630c34",
+     "896d52c8ea72acf3b3",
+     "cb06e919453021a17a"
+    ],
+    "favorites": [
+     "e2d7048d5b6acd",
+     "163ab35aa85957",
+     "5b6aa877dc9b98",
+     "04d67a57136441",
+     "6837a684b56f1c",
+     "d66a4d3b6e30f0",
+     "aefefaacd4b85c",
+     "3f7ac2abfdb76c",
+     "bec6857acf4e05",
+     "64acfd9b384b91"
+    ]
+   }
+  },
+  {
+   "variant": "X1S",
+   "pages": [
+    "01000101000317010c86a52751a12b332e7e010050006c0061007900200050006c0061007900730074006100740069006f006e0020003500000000c667f81cc53e0c0200610061006100610061006100610061006100610061006100610061006100610061006100610061d050ceabd9032703006100610061006100610061006100610061006100610061006100610061006100610061006100619282b3464e8cb6040042006f0073006500000000000000000000000000000000000000000000000000000000000000001793e0703ec3fa05d83ddcfa0000000000000000000000000000000000000000000000000000000000000000000000",
+    "010002000a47ecd41868780600540056000000000000000000000000000000000000000000000000000000000000000000000000965f726a4a539a07005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000279be5e76d5229080061006100610061006100610061006100610061006100610061006100610061006100610061006148fa80ea5092a00900610061006100610061006100610061006100610061006100610061006100610061006100610061ff8aaf58676dd00a005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000aa8c3f0b875c",
+    "010003740b00610061006100610061006100610061006100610061006100610061006100610061006100610061658982a5c5ee5a0c006100610061006100610061006100610061006100610061006100610061006100610061006100613bcab72e18dae04ee3d8cdc396047268132679ca3e73aaa8910b5f100cc1a7c98e38933c015a55ccb97d3ee6ab4a2648b165c983cf7819e178958acccb327e2a8f18d4cd359fd1a4d94848150e9c6013a1fa2390eaf2bb621d1796fca6e9e3ca285b6518193a9c7c84ba576b"
+   ],
+   "parsed": {
+    "device": 23,
+    "mode": 1,
+    "flag_a": 134,
+    "flag_b": 165,
+    "state": 87,
+    "entries": [
+     {
+      "command": 39,
+      "fid": 89752656359038,
+      "ordinal": 1,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 198,
+      "fid": 114315332238860,
+      "ordinal": 2,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 208,
+      "fid": 88848576611111,
+      "ordinal": 3,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 146,
+      "fid": 143706490309814,
+      "ordinal": 4,
+      "label": "Bose"
+     },
+     {
+      "command": 23,
+      "fid": 162592165118970,
+      "ordinal": 5,
+      "label": "📺"
+     },
+     {
+      "command": 10,
+      "fid": 79082496223352,
+      "ordinal": 6,
+      "label": "TV"
+     },
+     {
+      "command": 150,
+      "fid": 104945014166426,
+      "ordinal": 7,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 39,
+      "fid": 171411732517417,
+      "ordinal": 8,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 72,
+      "fid": 275431593906848,
+      "ordinal": 9,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 255,
+      "fid": 152485707083216,
+      "ordinal": 10,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 170,
+      "fid": 154202404248692,
+      "ordinal": 11,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 101,
+      "fid": 151194219966042,
+      "ordinal": 12,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "3bcab72e18dae04ee3",
+     "d8cdc3960472681326",
+     "79ca3e73aaa8910b5f",
+     "100cc1a7c98e38933c"
+    ],
+    "favorites": [
+     "015a55ccb97d3e",
+     "e6ab4a2648b165",
+     "c983cf7819e178",
+     "958acccb327e2a",
+     "8f18d4cd359fd1",
+     "a4d94848150e9c",
+     "6013a1fa2390ea",
+     "f2bb621d1796fc",
+     "a6e9e3ca285b65",
+     "18193a9c7c84ba"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "0100010100014602001f091bc2582e646ae503f33072969317cb7dc24d89bb4f66c4caf713378aacb15c20c7ee759314c085d4af4265fad10c6e9306c2ed79eb2f6c7aefd228cb6f65526742d11404983d7df282bac03fe155bef93cf322767b203cc73c4409aee44a3f8d6eb0028cb059e690277f9b02"
+   ],
+   "parsed": {
+    "device": 70,
+    "mode": 2,
+    "flag_a": 31,
+    "flag_b": 9,
+    "state": 155,
+    "entries": [],
+    "control_keys": [
+     "1bc2582e646ae503f3",
+     "3072969317cb7dc24d",
+     "89bb4f66c4caf71337",
+     "8aacb15c20c7ee7593"
+    ],
+    "favorites": [
+     "14c085d4af4265",
+     "fad10c6e9306c2",
+     "ed79eb2f6c7aef",
+     "d228cb6f655267",
+     "42d11404983d7d",
+     "f282bac03fe155",
+     "bef93cf322767b",
+     "203cc73c4409ae",
+     "e44a3f8d6eb002",
+     "8cb059e690277f"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "0100010100010b020192113308e2984f0c97010050006c0061007900200050006c0061007900730074006100740069006f006e0020003500000000f6c104a73ad0dac12bd297f9c8a50a9b5e744201340d3be88748c5b9b864987cd2f6a26d12923c4872f5d5d04489928f66d6ced61de38f890c6555cfd1ee22a8c8ac79429e3524dbe9f2264b152fa7bc44083b64ef28ad78a9d121aa537d9d9b0adc61e5c2d30a1e18f3585d"
+   ],
+   "parsed": {
+    "device": 11,
+    "mode": 2,
+    "flag_a": 146,
+    "flag_b": 17,
+    "state": 88,
+    "entries": [
+     {
+      "command": 51,
+      "fid": 9769310948503,
+      "ordinal": 1,
+      "label": "Play Playstation 5"
+     }
+    ],
+    "control_keys": [
+     "f6c104a73ad0dac12b",
+     "d297f9c8a50a9b5e74",
+     "4201340d3be88748c5",
+     "b9b864987cd2f6a26d"
+    ],
+    "favorites": [
+     "12923c4872f5d5",
+     "d04489928f66d6",
+     "ced61de38f890c",
+     "6555cfd1ee22a8",
+     "c8ac79429e3524",
+     "dbe9f2264b152f",
+     "a7bc44083b64ef",
+     "28ad78a9d121aa",
+     "537d9d9b0adc61",
+     "e5c2d30a1e18f3"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "010001010001450102b0b894ed8936778e8001d83ddcfa000000000000000000000000000000000000000000000000000000000000000000000000b2ed7f9505ddce02d83ddcfa000000000000000000000000000000000000000000000000000000000000000000000000ae6919e2a186ee2681c189b753d49f97d9f36069fdbe6667f7f6db24d3604ec040d29403b9dec2943746dcd4651ab3eeb5a70bdca90bcda14889d3e90964f52198dc156e534b259f7ac92117c7c9651389bd14b3ff893f4edbb8e00dda8f3367cdab02ebbccdacac1bee4899"
+   ],
+   "parsed": {
+    "device": 69,
+    "mode": 1,
+    "flag_a": 176,
+    "flag_b": 184,
+    "state": 72,
+    "entries": [
+     {
+      "command": 148,
+      "fid": 261173580107392,
+      "ordinal": 1,
+      "label": "📺"
+     },
+     {
+      "command": 178,
+      "fid": 261132216819150,
+      "ordinal": 2,
+      "label": "📺"
+     }
+    ],
+    "control_keys": [
+     "ae6919e2a186ee2681",
+     "c189b753d49f97d9f3",
+     "6069fdbe6667f7f6db",
+     "24d3604ec040d29403"
+    ],
+    "favorites": [
+     "b9dec2943746dc",
+     "d4651ab3eeb5a7",
+     "0bdca90bcda148",
+     "89d3e90964f521",
+     "98dc156e534b25",
+     "9f7ac92117c7c9",
+     "651389bd14b3ff",
+     "893f4edbb8e00d",
+     "da8f3367cdab02",
+     "ebbccdacac1bee"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "0100010100026202040f528ebb9db866d1fd010054005600000000000000000000000000000000000000000000000000000000000000000000000022b157ab53c90302004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000a385bc2e96863903004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000132926b3fc9e8604004c006900760069006e006700200072006f006f006d0020005400560000000000000000000000006d6938db9fc544face7cfc88db91b2bf43a83c93ffa98deee4fdfb440ee3e9fb9606893e16a79e35325d38183bd717",
+    "010002ee064d09aa5dc11ad8d2800f2bf3378e78b23fec651f21adc0c365be853fdde54eebf895ae975b83e79601789ce9c08ffb37a1a18b6bfcce395583b5dd"
+   ],
+   "parsed": {
+    "device": 98,
+    "mode": 2,
+    "flag_a": 15,
+    "flag_b": 82,
+    "state": 181,
+    "entries": [
+     {
+      "command": 142,
+      "fid": 206286078005757,
+      "ordinal": 1,
+      "label": "TV"
+     },
+     {
+      "command": 34,
+      "fid": 194990094665987,
+      "ordinal": 2,
+      "label": "Living room TV"
+     },
+     {
+      "command": 163,
+      "fid": 147043281962553,
+      "ordinal": 3,
+      "label": "Living room TV"
+     },
+     {
+      "command": 19,
+      "fid": 45246205173382,
+      "ordinal": 4,
+      "label": "Living room TV"
+     }
+    ],
+    "control_keys": [
+     "6d6938db9fc544face",
+     "7cfc88db91b2bf43a8",
+     "3c93ffa98deee4fdfb",
+     "440ee3e9fb9606893e"
+    ],
+    "favorites": [
+     "16a79e35325d38",
+     "183bd717ee064d",
+     "09aa5dc11ad8d2",
+     "800f2bf3378e78",
+     "b23fec651f21ad",
+     "c0c365be853fdd",
+     "e54eebf895ae97",
+     "5b83e79601789c",
+     "e9c08ffb37a1a1",
+     "8b6bfcce395583"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "0100010100020f020580699b092d5b965924010042006f007300650000000000000000000000000000000000000000000000000000000000000000838e0c62ac5f2c020050006c0061007900200050006c0061007900730074006100740069006f006e00200035000000006cc95f1836e00003004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000b0293a7841b51f04005400560000000000000000000000000000000000000000000000000000000000000000000000007ac8c55c7a263e05006100610061006100610061006100610061006100610061006100610061006100610061006100",
+    "0100026144a37eb83237fac0fa5b1a6db710dd1e6fca5afc68b71c6f09dfaed74f4843877907de73d70790963cfe0b4665edf21f3ca63f1aea8e8f1a9b3990230680e2f4ab86bfadce3f4c1775fd7171ab6d80f9b6531c32a01dd387f32110effd4d158efe298899cb87f07a6454e208"
+   ],
+   "parsed": {
+    "device": 15,
+    "mode": 2,
+    "flag_a": 128,
+    "flag_b": 105,
+    "state": 226,
+    "entries": [
+     {
+      "command": 155,
+      "fid": 10090414758180,
+      "ordinal": 1,
+      "label": "Bose"
+     },
+     {
+      "command": 131,
+      "fid": 156183846215468,
+      "ordinal": 2,
+      "label": "Play Playstation 5"
+     },
+     {
+      "command": 108,
+      "fid": 221410265325568,
+      "ordinal": 3,
+      "label": "Living room TV"
+     },
+     {
+      "command": 176,
+      "fid": 45331102414111,
+      "ordinal": 4,
+      "label": "TV"
+     },
+     {
+      "command": 122,
+      "fid": 220749985621566,
+      "ordinal": 5,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "44a37eb83237fac0fa",
+     "5b1a6db710dd1e6fca",
+     "5afc68b71c6f09dfae",
+     "d74f4843877907de73"
+    ],
+    "favorites": [
+     "d70790963cfe0b",
+     "4665edf21f3ca6",
+     "3f1aea8e8f1a9b",
+     "3990230680e2f4",
+     "ab86bfadce3f4c",
+     "1775fd7171ab6d",
+     "80f9b6531c32a0",
+     "1dd387f32110ef",
+     "fd4d158efe2988",
+     "99cb87f07a6454"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "0100010100023e01064aa7481c7ae9f681c501753589c6673a00000000000000000000000000000000000000000000000000000000000000000000b182a9fb82b71502006100610061006100610061006100610061006100610061006100610061006100610061006100617038c961ba6761030042006f0073006500000000000000000000000000000000000000000000000000000000000000005a3d5ca3152eb404004600650072006e0073006500680065007200200057006f0068006e007a0069006d006d006500721f7dd6d8e8e30e05006100610061006100610061006100610061006100610061006100610061006100610061006100",
+    "01000261b8d42d96cce24b0600610061006100610061006100610061006100610061006100610061006100610061006100610061363581b42a295cc0a6d141ec10b5a5de77c514b168ea72f7a0124e9d83695762bde5e84633fb995330c878c92f35af8ea3ffca13bd491e0a1459ffb8a3ada113625f04b419c3134a36755244971721d1d2c7904478eb818aef1848dcedebf2250631a404fdb88c8f55014bfd"
+   ],
+   "parsed": {
+    "device": 62,
+    "mode": 1,
+    "flag_a": 74,
+    "flag_b": 167,
+    "state": 75,
+    "entries": [
+     {
+      "command": 72,
+      "fid": 31314236834245,
+      "ordinal": 1,
+      "label": "电视机"
+     },
+     {
+      "command": 177,
+      "fid": 143666580731669,
+      "ordinal": 2,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 112,
+      "fid": 62437579188065,
+      "ordinal": 3,
+      "label": "Bose"
+     },
+     {
+      "command": 90,
+      "fid": 67468082359988,
+      "ordinal": 4,
+      "label": "Fernseher Wohnzimmer"
+     },
+     {
+      "command": 31,
+      "fid": 138361715614478,
+      "ordinal": 5,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 184,
+      "fid": 233292268626507,
+      "ordinal": 6,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "363581b42a295cc0a6",
+     "d141ec10b5a5de77c5",
+     "14b168ea72f7a0124e",
+     "9d83695762bde5e846"
+    ],
+    "favorites": [
+     "33fb995330c878",
+     "c92f35af8ea3ff",
+     "ca13bd491e0a14",
+     "59ffb8a3ada113",
+     "625f04b419c313",
+     "4a367552449717",
+     "21d1d2c7904478",
+     "eb818aef1848dc",
+     "edebf2250631a4",
+     "04fdb88c8f5501"
+    ]
+   }
+  },
+  {
+   "variant": "X2",
+   "pages": [
+    "01000101000336010c2a1698caaaea808c3f0100540056000000000000000000000000000000000000000000000000000000000000000000000000d8c7ecb6dda0fa02d83ddcfa00000000000000000000000000000000000000000000000000000000000000000000000037cbc1604521d103005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000ecd5dfb7a0ad7f04753589c6673a00000000000000000000000000000000000000000000000000000000000000000000dae3a1ce52c7d005005400560020d83ddcfa0000000000000000000000000000000000000000000000000000000000",
+    "01000200f3834b958c00e70600540056000000000000000000000000000000000000000000000000000000000000000000000000c8dd2ffcf9ac380700540056000000000000000000000000000000000000000000000000000000000000000000000000cb1095dbc50c2d08005400560020d83ddcfa000000000000000000000000000000000000000000000000000000000000ebb4d2b9063d0609005400560020d83ddcfa00000000000000000000000000000000000000000000000000000000000029a67d8ddfce240a006100610061006100610061006100610061006100610061006100610061006100610061006100619da1a7193c4c",
+    "0100034b0b005400e9006c00e9002000640075002000730061006c006f006e000000000000000000000000000085aaa9bb22819f0c006100610061006100610061006100610061006100610061006100610061006100610061006100611d3fd90b7400c53874b15c95953a9ed8d9acb5d0b7ee8c6ac7192af7e5bce9c9b931760b10fb09369ebc0def0e0244c6ec45417820c8d7223a787886d944f8f13a2b0d22c3efec7019186fe87289b85b09bb4022d8b3d406c11940aea927def999dad600bae5750a7ab42fdd"
+   ],
+   "parsed": {
+    "device": 54,
+    "mode": 1,
+    "flag_a": 42,
+    "flag_b": 22,
+    "state": 47,
+    "entries": [
+     {
+      "command": 152,
+      "fid": 222835427544127,
+      "ordinal": 1,
+      "label": "TV"
+     },
+     {
+      "command": 216,
+      "fid": 219819494187258,
+      "ordinal": 2,
+      "label": "📺"
+     },
+     {
+      "command": 55,
+      "fid": 224031404270033,
+      "ordinal": 3,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 236,
+      "fid": 235156835183999,
+      "ordinal": 4,
+      "label": "电视机"
+     },
+     {
+      "command": 218,
+      "fid": 250284090771408,
+      "ordinal": 5,
+      "label": "TV 📺"
+     },
+     {
+      "command": 243,
+      "fid": 144360654766311,
+      "ordinal": 6,
+      "label": "TV"
+     },
+     {
+      "command": 200,
+      "fid": 243198177422392,
+      "ordinal": 7,
+      "label": "TV"
+     },
+     {
+      "command": 203,
+      "fid": 18235823295533,
+      "ordinal": 8,
+      "label": "TV 📺"
+     },
+     {
+      "command": 235,
+      "fid": 198817140325638,
+      "ordinal": 9,
+      "label": "TV 📺"
+     },
+     {
+      "command": 41,
+      "fid": 183058181377572,
+      "ordinal": 10,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "command": 157,
+      "fid": 177739054992459,
+      "ordinal": 11,
+      "label": "Télé du salon"
+     },
+     {
+      "command": 133,
+      "fid": 187645965795743,
+      "ordinal": 12,
+      "label": "aaaaaaaaaaaaaaaaaaaa"
+     }
+    ],
+    "control_keys": [
+     "1d3fd90b7400c53874",
+     "b15c95953a9ed8d9ac",
+     "b5d0b7ee8c6ac7192a",
+     "f7e5bce9c9b931760b"
+    ],
+    "favorites": [
+     "10fb09369ebc0d",
+     "ef0e0244c6ec45",
+     "417820c8d7223a",
+     "787886d944f8f1",
+     "3a2b0d22c3efec",
+     "7019186fe87289",
+     "b85b09bb4022d8",
+     "b3d406c11940ae",
+     "a927def999dad6",
+     "00bae5750a7ab4"
+    ]
+   }
+  }
+ ]
+}
