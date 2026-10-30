@@ -9,3 +9,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Repository scaffold: module, `sbx` command stub, CI, release
   configuration, the port plan and the first protocol docs.
+- `make ci` runs every CI job locally.
+- Package `wire`: frames and their checksum, a resynchronizing stream
+  decoder and an encoder, opcode families named per direction, fixed-width
+  ASCII and UTF-16BE label slots, the paged-write wrapper, and the per-model
+  record dimensions (X1, X1S, X2).
+- `testdata/captures/upstream.json`: 171 frames extracted from the upstream
+  project's tests (125 complete), and `tools/extractcaptures`, which
+  extracts them.
