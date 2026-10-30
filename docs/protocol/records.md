@@ -187,10 +187,32 @@ bytes seen through the wrapper.
 `record.Macro` matches upstream's decoding of the 4 corpus bursts and its
 writer on 24 generated macros (0–40 steps).
 
+## Inputs page (writes `0x46`; replies `0x47` to `0x0148 [device]`) `[ref]`
+
+A device's input list, four input control keys and ten favorite rows, one
+paged record. The hub's reply has the write's layout; upstream calls the
+request `REQ_ACTIVITY_INPUTS` though it takes a device id. A device with
+no inputs page answers with a non-zero status ack.
+
+| Body offset | Field |
+|---|---|
+| 0–2 | `01`, pages (BE16) |
+| 3 | device |
+| 4 | mode: `00` no inputs, `01` direct inputs, `02` no input switching |
+| 5 | entry count |
+| 6, 7 | start / restart position (0 observed) |
+| 8.. | entries: X1 27 B (command, code (6), 20 B ASCII label); X1S/X2 48 B (command, code (6), ordinal, 40 B UTF-16BE label) |
+| last 108 | 4 control-key rows × 9 B (list, up, down, confirm), 10 favorite rows × 7 B, a state byte, `sum8` |
+
+The control-key and favorite rows are opaque so far. Upstream finds the
+trailer from the end, allowing slack bytes after the entries; `record.Inputs`
+does too and keeps them. No inputs page appears in the capture corpus: the
+layout rests on upstream's builder and parser (21 generated pages, 0–12
+entries, all matching) until our X2 captures arrive.
+
 ## TODO (each section: layout, paging, encoding, captures)
 
 - [ ] Command writes (`0x0E`)
 - [ ] Activity membership (family `0x6D`)
-- [ ] Inputs page (family `0x46`/`0x47`)
 - [ ] IR blob dump/save/replay pages (`0x0D`/`0x0E`/`0x0F`)
 - [ ] Button code table

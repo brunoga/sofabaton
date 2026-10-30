@@ -24,6 +24,10 @@ linters:
         # Integer narrowing is the substance of a binary wire protocol: ids,
         # lengths and checksums are converted to their byte widths on purpose.
         - G115
+        # G602 cannot follow length checks: it flags fixed offsets into
+        # records whose length was checked a line before. Every decoder of
+        # hub bytes is fuzzed instead, which finds real out-of-range reads.
+        - G602
     staticcheck:
       checks:
         - all

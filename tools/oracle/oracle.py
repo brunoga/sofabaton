@@ -48,9 +48,9 @@ SAMPLE_TEXT = [
 
 def load_upstream(root: Path):
     sys.path.insert(0, str(root / "custom_components" / "sofabaton_x1s"))
-    from lib import commands, device_create, devices, macros, wire_schema  # noqa: PLC0415
+    from lib import commands, device_create, devices, inputs, macros, wire_schema  # noqa: PLC0415
 
-    return commands, device_create, devices, macros, wire_schema
+    return commands, device_create, devices, inputs, macros, wire_schema
 
 
 def upstream_commit(root: Path) -> str:
@@ -313,6 +313,46 @@ def macro_bursts(macros, corpus: Path) -> list[dict]:
     return cases
 
 
+def inputs_pages(inputs, wire_schema) -> list[dict]:
+    """Inputs pages (family 0x46 writes, 0x47 replies) for generated
+    records, and upstream's decoding of them."""
+    rng = random.Random(SEED + 3)
+    b = lambda: rng.randrange(256)  # noqa: E731
+    cases = []
+    for variant in ("X1", "X1S", "X2"):
+        for count in (0, 1, 2, 4, 5, 6, 12):
+            entries = [inputs.InputEntry(
+                key_id=rng.randrange(1, 256), fid=rng.randrange(1 << 48),
+                ordinal=0 if variant == "X1" else i + 1,
+                label=rng.choice(SAMPLE_TEXT[1:]),
+            ) for i in range(count)]
+            keys = inputs.ControlKeyBlock(*(bytes(b() for _ in range(9)) for _ in range(4)))
+            favs = [inputs.FavoriteSlot(payload=bytes(b() for _ in range(7))) for _ in range(10)]
+            args = dict(
+                hub_version=variant, device_id=rng.randrange(1, 100), entries=entries,
+                source_id_byte=rng.choice((0, 1, 2)) if count == 0 else rng.choice((1, 2)),
+                flag_a=b(), flag_b=b(), control_keys=keys, favorites=favs, state_byte=b(),
+            )
+            payload = inputs.build_inputs_write(**args)
+            pages = wire_schema.page_family_body(payload[3:])
+            rec = inputs.parse_inputs_burst(pages, hub_version=variant)
+            cases.append({
+                "variant": variant,
+                "pages": [p.hex() for p in pages],
+                "parsed": {
+                    "device": rec.device_id, "mode": rec.source_id_byte,
+                    "flag_a": rec.flag_a, "flag_b": rec.flag_b, "state": rec.state_byte,
+                    "entries": [{"command": e.key_id, "fid": e.fid, "ordinal": e.ordinal,
+                                 "label": e.label} for e in rec.entries],
+                    "control_keys": [bytes(k).hex() for k in (
+                        rec.control_keys.input_list, rec.control_keys.input_up,
+                        rec.control_keys.input_down, rec.control_keys.input_confirm)],
+                    "favorites": [bytes(f.payload).hex() for f in rec.favorites],
+                },
+            })
+    return cases
+
+
 def write(out_dir: Path, name: str, commit: str, cases) -> None:
     path = out_dir / f"{name}.json"
     doc = {
@@ -337,7 +377,7 @@ def main() -> None:
     if commit != PINNED_COMMIT and not args.allow_other_commit:
         sys.exit(f"upstream is at {commit}, vectors are pinned to {PINNED_COMMIT}")
 
-    commands, device_create, devices, macros, wire_schema = load_upstream(args.upstream)
+    commands, device_create, devices, inputs, macros, wire_schema = load_upstream(args.upstream)
     args.out.mkdir(parents=True, exist_ok=True)
     write(args.out, "labels", commit, labels(wire_schema))
     write(args.out, "paging", commit, paging(wire_schema))
@@ -347,6 +387,7 @@ def main() -> None:
     write(args.out, "bindings", commit, bindings(device_create))
     write(args.out, "macro_writes", commit, macro_writes(device_create))
     write(args.out, "macros", commit, macro_bursts(macros, args.corpus))
+    write(args.out, "inputs", commit, inputs_pages(inputs, wire_schema))
 
 
 if __name__ == "__main__":
