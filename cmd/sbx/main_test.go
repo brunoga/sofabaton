@@ -41,7 +41,7 @@ func simulated(t *testing.T) {
 func TestInfo(t *testing.T) {
 	simulated(t)
 	var out, errs bytes.Buffer
-	if err := run(context.Background(), []string{"info", "-hub", "192.0.2.1"}, &out, &errs); err != nil {
+	if err := run(context.Background(), strings.NewReader(""), []string{"info", "-hub", "192.0.2.1"}, &out, &errs); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), "X2 HUB") || !strings.Contains(out.String(), "model     X2") {
@@ -52,7 +52,7 @@ func TestInfo(t *testing.T) {
 func TestDump(t *testing.T) {
 	simulated(t)
 	var out, errs bytes.Buffer
-	if err := run(context.Background(), []string{"dump", "-hub", "192.0.2.1", "-v"}, &out, &errs); err != nil {
+	if err := run(context.Background(), strings.NewReader(""), []string{"dump", "-hub", "192.0.2.1", "-v"}, &out, &errs); err != nil {
 		t.Fatal(err)
 	}
 	var d dumpFile
@@ -81,17 +81,17 @@ func TestDump(t *testing.T) {
 
 func TestUsage(t *testing.T) {
 	var out, errs bytes.Buffer
-	if err := run(context.Background(), nil, &out, &errs); err == nil {
+	if err := run(context.Background(), strings.NewReader(""), nil, &out, &errs); err == nil {
 		t.Fatal("no command accepted")
 	}
-	if err := run(context.Background(), []string{"bogus"}, &out, &errs); err == nil {
+	if err := run(context.Background(), strings.NewReader(""), []string{"bogus"}, &out, &errs); err == nil {
 		t.Fatal("unknown command accepted")
 	}
-	if err := run(context.Background(), []string{"info"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "-hub") {
+	if err := run(context.Background(), strings.NewReader(""), []string{"info"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "-hub") {
 		t.Fatalf("info without -hub: %v", err)
 	}
 	out.Reset()
-	if err := run(context.Background(), []string{"version"}, &out, &errs); err != nil || strings.TrimSpace(out.String()) != "dev" {
+	if err := run(context.Background(), strings.NewReader(""), []string{"version"}, &out, &errs); err != nil || strings.TrimSpace(out.String()) != "dev" {
 		t.Fatalf("version: %q %v", out.String(), err)
 	}
 }

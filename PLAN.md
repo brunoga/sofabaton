@@ -129,7 +129,7 @@ Design rules:
 | P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | done except IR blobs (with P6/P7): entities, catalog and membership rows, commands, keymaps and bindings, macros, inputs, hub info |
 | P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | done: discovery, connect and banner verified on our X2 |
 | P4 | Read API in `hub`: catalog, commands, buttons, macros, blob dump, send key; **full backup dump** to JSON | complete dump of our X2, round-trip of every record | reads done; full read-only dump of our X2, all 43 records round-trip; blob dump and send key to come |
-| P5 | `proxy` + `capture` + `sbx capture`: Android app attaches through us | app works through proxy; JSONL captures of app flows | — |
+| P5 | `proxy` + `capture` + `sbx proxy`: Android app attaches through us | app works through proxy; JSONL captures of app flows | proxy done and advertising on our LAN; first app session pending |
 | P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | — |
 | P7 | `codec/ir` generators + open IR DB import (raw and X2 `P:`) | generated codes operate real equipment | — |
 | P8 | Research tracks R1–R5 → close L1, L2, L5 | BT and RF device create work on X2 | — |

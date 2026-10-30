@@ -33,6 +33,30 @@ const (
 	FromHub                      // hub to app or client (H→A)
 )
 
+// MarshalText encodes the direction as "to-hub" or "from-hub".
+func (d Direction) MarshalText() ([]byte, error) {
+	switch d {
+	case ToHub:
+		return []byte("to-hub"), nil
+	case FromHub:
+		return []byte("from-hub"), nil
+	}
+	return nil, fmt.Errorf("wire: %v has no text form", d)
+}
+
+// UnmarshalText decodes "to-hub" or "from-hub".
+func (d *Direction) UnmarshalText(b []byte) error {
+	switch string(b) {
+	case "to-hub":
+		*d = ToHub
+	case "from-hub":
+		*d = FromHub
+	default:
+		return fmt.Errorf("wire: unknown direction %q", b)
+	}
+	return nil
+}
+
 func (d Direction) String() string {
 	switch d {
 	case ToHub:
