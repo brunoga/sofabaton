@@ -40,6 +40,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   macros and inputs pages.
 - `hubsim.FromModel` serves a hub configuration given as records.
 - `sbx discover`, `sbx info` and `sbx dump` (read-only, raw bytes kept).
+- `internal/mdns`: a minimal mDNS browser (one-shot queries) and
+  responder for one IPv4 service; first dependency, `golang.org/x/net`.
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
   records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
