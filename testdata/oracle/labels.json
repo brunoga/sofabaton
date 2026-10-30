@@ -1,0 +1,1687 @@
+{
+ "upstream": "github.com/m3tac0de/home-assistant-sofabaton-x1s",
+ "commit": "5fd5887d11272a553da99383f327c53cb8b4190e",
+ "generator": "tools/oracle/oracle.py",
+ "cases": [
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 4,
+   "slot": "00000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 20,
+   "slot": "0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 30,
+   "slot": "000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 40,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 60,
+   "slot": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "",
+   "len": 61,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 1,
+   "slot": "54"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 2,
+   "slot": "5456"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 3,
+   "slot": "545600"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 4,
+   "slot": "54560000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 20,
+   "slot": "5456000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 30,
+   "slot": "545600000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 40,
+   "slot": "54560000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 60,
+   "slot": "545600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV",
+   "len": 61,
+   "slot": "54560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 1,
+   "slot": "42"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 2,
+   "slot": "426f"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 3,
+   "slot": "426f73"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 4,
+   "slot": "426f7365"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 20,
+   "slot": "426f736500000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 30,
+   "slot": "426f73650000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 40,
+   "slot": "426f7365000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 60,
+   "slot": "426f73650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Bose",
+   "len": 61,
+   "slot": "426f7365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 1,
+   "slot": "4c"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 2,
+   "slot": "4c69"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 3,
+   "slot": "4c6976"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 4,
+   "slot": "4c697669"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 20,
+   "slot": "4c6976696e6720726f6f6d205456000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 30,
+   "slot": "4c6976696e6720726f6f6d20545600000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 40,
+   "slot": "4c6976696e6720726f6f6d2054560000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 60,
+   "slot": "4c6976696e6720726f6f6d20545600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Living room TV",
+   "len": 61,
+   "slot": "4c6976696e6720726f6f6d2054560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 1,
+   "slot": "54"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 2,
+   "slot": "546c"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 3,
+   "slot": "546c20"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 4,
+   "slot": "546c2064"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 20,
+   "slot": "546c2064752073616c6f6e000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 30,
+   "slot": "546c2064752073616c6f6e00000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 40,
+   "slot": "546c2064752073616c6f6e0000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 60,
+   "slot": "546c2064752073616c6f6e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Télé du salon",
+   "len": 61,
+   "slot": "546c2064752073616c6f6e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 1,
+   "slot": "46"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 2,
+   "slot": "4665"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 3,
+   "slot": "466572"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 4,
+   "slot": "4665726e"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 20,
+   "slot": "4665726e736568657220576f686e7a696d6d6572"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 30,
+   "slot": "4665726e736568657220576f686e7a696d6d657220626572736963687400"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 40,
+   "slot": "4665726e736568657220576f686e7a696d6d65722062657273696368740000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 60,
+   "slot": "4665726e736568657220576f686e7a696d6d657220626572736963687400000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 61,
+   "slot": "4665726e736568657220576f686e7a696d6d65722062657273696368740000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 4,
+   "slot": "00000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 20,
+   "slot": "0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 30,
+   "slot": "000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 40,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 60,
+   "slot": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "电视机",
+   "len": 61,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 4,
+   "slot": "00000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 20,
+   "slot": "0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 30,
+   "slot": "000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 40,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 60,
+   "slot": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "📺",
+   "len": 61,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 1,
+   "slot": "54"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 2,
+   "slot": "5456"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 3,
+   "slot": "545620"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 4,
+   "slot": "54562000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 20,
+   "slot": "5456200000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 30,
+   "slot": "545620000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 40,
+   "slot": "54562000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 60,
+   "slot": "545620000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "TV 📺",
+   "len": 61,
+   "slot": "54562000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 1,
+   "slot": "61"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 2,
+   "slot": "6161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 3,
+   "slot": "616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 4,
+   "slot": "61616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 20,
+   "slot": "6161616161616161616161616161616161616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 30,
+   "slot": "616161616161616161616161616161616161616161616161616161616100"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 40,
+   "slot": "61616161616161616161616161616161616161616161616161616161610000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 60,
+   "slot": "616161616161616161616161616161616161616161616161616161616100000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 61,
+   "slot": "61616161616161616161616161616161616161616161616161616161610000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 1,
+   "slot": "61"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 2,
+   "slot": "6161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 3,
+   "slot": "616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 4,
+   "slot": "61616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 20,
+   "slot": "6161616161616161616161616161616161616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 30,
+   "slot": "616161616161616161616161616161616161616161616161616161616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 40,
+   "slot": "61616161616161616161616161616161616161616161616161616161616100000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 60,
+   "slot": "616161616161616161616161616161616161616161616161616161616161000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 61,
+   "slot": "61616161616161616161616161616161616161616161616161616161616100000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 1,
+   "slot": "61"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 2,
+   "slot": "6161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 3,
+   "slot": "616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 4,
+   "slot": "61616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 20,
+   "slot": "6161616161616161616161616161616161616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 30,
+   "slot": "616161616161616161616161616161616161616161616161616161616161"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 40,
+   "slot": "61616161616161616161616161616161616161616161616161616161616161000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 60,
+   "slot": "616161616161616161616161616161616161616161616161616161616161610000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 61,
+   "slot": "61616161616161616161616161616161616161616161616161616161616161000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 4,
+   "slot": "00000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 20,
+   "slot": "0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 30,
+   "slot": "000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 40,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 60,
+   "slot": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 61,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 1,
+   "slot": "50"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 2,
+   "slot": "506c"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 3,
+   "slot": "506c61"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 4,
+   "slot": "506c6179"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 20,
+   "slot": "506c617920506c617973746174696f6e20350000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 30,
+   "slot": "506c617920506c617973746174696f6e2035000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 40,
+   "slot": "506c617920506c617973746174696f6e203500000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 60,
+   "slot": "506c617920506c617973746174696f6e2035000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "ascii",
+   "text": "Play Playstation 5",
+   "len": 61,
+   "slot": "506c617920506c617973746174696f6e203500000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 4,
+   "slot": "00000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 20,
+   "slot": "0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 30,
+   "slot": "000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 40,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 60,
+   "slot": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "",
+   "len": 61,
+   "slot": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 2,
+   "slot": "0054"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 3,
+   "slot": "005400"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 4,
+   "slot": "00540056"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 20,
+   "slot": "0054005600000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 30,
+   "slot": "005400560000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 40,
+   "slot": "00540056000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 60,
+   "slot": "005400560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV",
+   "len": 61,
+   "slot": "00540056000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 2,
+   "slot": "0042"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 3,
+   "slot": "004200"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 4,
+   "slot": "0042006f"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 20,
+   "slot": "0042006f00730065000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 30,
+   "slot": "0042006f0073006500000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 40,
+   "slot": "0042006f007300650000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 60,
+   "slot": "0042006f0073006500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Bose",
+   "len": 61,
+   "slot": "0042006f007300650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 2,
+   "slot": "004c"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 3,
+   "slot": "004c00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 4,
+   "slot": "004c0069"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 20,
+   "slot": "004c006900760069006e006700200072006f006f"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 30,
+   "slot": "004c006900760069006e006700200072006f006f006d0020005400560000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 40,
+   "slot": "004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 60,
+   "slot": "004c006900760069006e006700200072006f006f006d0020005400560000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Living room TV",
+   "len": 61,
+   "slot": "004c006900760069006e006700200072006f006f006d002000540056000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 2,
+   "slot": "0054"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 3,
+   "slot": "005400"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 4,
+   "slot": "005400e9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 20,
+   "slot": "005400e9006c00e9002000640075002000730061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 30,
+   "slot": "005400e9006c00e9002000640075002000730061006c006f006e00000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 40,
+   "slot": "005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 60,
+   "slot": "005400e9006c00e9002000640075002000730061006c006f006e00000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Télé du salon",
+   "len": 61,
+   "slot": "005400e9006c00e9002000640075002000730061006c006f006e0000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 2,
+   "slot": "0046"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 3,
+   "slot": "004600"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 4,
+   "slot": "00460065"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 20,
+   "slot": "004600650072006e007300650068006500720020"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 30,
+   "slot": "004600650072006e0073006500680065007200200057006f0068006e007a"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 40,
+   "slot": "004600650072006e0073006500680065007200200057006f0068006e007a0069006d006d00650072"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 60,
+   "slot": "004600650072006e0073006500680065007200200057006f0068006e007a0069006d006d00650072002000dc00620065007200730069006300680074"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Fernseher Wohnzimmer Übersicht",
+   "len": 61,
+   "slot": "004600650072006e0073006500680065007200200057006f0068006e007a0069006d006d00650072002000dc0062006500720073006900630068007400"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 2,
+   "slot": "7535"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 3,
+   "slot": "753500"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 4,
+   "slot": "753589c6"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 20,
+   "slot": "753589c6673a0000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 30,
+   "slot": "753589c6673a000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 40,
+   "slot": "753589c6673a00000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 60,
+   "slot": "753589c6673a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "电视机",
+   "len": 61,
+   "slot": "753589c6673a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 2,
+   "slot": "0000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 3,
+   "slot": "000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 4,
+   "slot": "d83ddcfa"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 20,
+   "slot": "d83ddcfa00000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 30,
+   "slot": "d83ddcfa0000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 40,
+   "slot": "d83ddcfa000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 60,
+   "slot": "d83ddcfa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "📺",
+   "len": 61,
+   "slot": "d83ddcfa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 2,
+   "slot": "0054"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 3,
+   "slot": "005400"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 4,
+   "slot": "00540056"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 20,
+   "slot": "005400560020d83ddcfa00000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 30,
+   "slot": "005400560020d83ddcfa0000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 40,
+   "slot": "005400560020d83ddcfa000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 60,
+   "slot": "005400560020d83ddcfa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "TV 📺",
+   "len": 61,
+   "slot": "005400560020d83ddcfa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 2,
+   "slot": "0061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 3,
+   "slot": "006100"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 4,
+   "slot": "00610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 20,
+   "slot": "0061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 30,
+   "slot": "006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 40,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 60,
+   "slot": "006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa📺",
+   "len": 61,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 2,
+   "slot": "0061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 3,
+   "slot": "006100"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 4,
+   "slot": "00610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 20,
+   "slot": "0061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 30,
+   "slot": "006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 40,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 60,
+   "slot": "006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 61,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 2,
+   "slot": "0061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 3,
+   "slot": "006100"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 4,
+   "slot": "00610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 20,
+   "slot": "0061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 30,
+   "slot": "006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 40,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 60,
+   "slot": "006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "len": 61,
+   "slot": "00610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100610061006100"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 2,
+   "slot": "03a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 3,
+   "slot": "03a900"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 4,
+   "slot": "03a903a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 20,
+   "slot": "03a903a903a903a903a903a903a903a903a903a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 30,
+   "slot": "03a903a903a903a903a903a903a903a903a903a903a903a903a903a903a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 40,
+   "slot": "03a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 60,
+   "slot": "03a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a9"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ",
+   "len": 61,
+   "slot": "03a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a903a900"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 0,
+   "slot": ""
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 1,
+   "slot": "00"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 2,
+   "slot": "0050"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 3,
+   "slot": "005000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 4,
+   "slot": "0050006c"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 20,
+   "slot": "0050006c0061007900200050006c006100790073"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 30,
+   "slot": "0050006c0061007900200050006c0061007900730074006100740069006f"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 40,
+   "slot": "0050006c0061007900200050006c0061007900730074006100740069006f006e0020003500000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 60,
+   "slot": "0050006c0061007900200050006c0061007900730074006100740069006f006e00200035000000000000000000000000000000000000000000000000"
+  },
+  {
+   "encoding": "utf-16-be",
+   "text": "Play Playstation 5",
+   "len": 61,
+   "slot": "0050006c0061007900200050006c0061007900730074006100740069006f006e0020003500000000000000000000000000000000000000000000000000"
+  }
+ ]
+}

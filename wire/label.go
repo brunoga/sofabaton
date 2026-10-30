@@ -63,19 +63,32 @@ func (e TextEncoding) Slot(s string, n int) []byte {
 }
 
 // DecodeSlot reads a slot's text, which ends at the first NUL (a zero code
-// unit in UTF-16).
+// unit in UTF-16). Unpaired UTF-16 surrogates are dropped. Whitespace is
+// kept: trimming is the caller's choice, and the exact text round-trips.
 func (e TextEncoding) DecodeSlot(b []byte) string {
 	switch e {
 	case UTF16BE:
-		units := make([]uint16, 0, len(b)/2)
+		var r []rune
 		for i := 0; i+1 < len(b); i += 2 {
-			u := uint16(b[i])<<8 | uint16(b[i+1])
+			u := rune(b[i])<<8 | rune(b[i+1])
 			if u == 0 {
 				break
 			}
-			units = append(units, u)
+			if !utf16.IsSurrogate(u) {
+				r = append(r, u)
+				continue
+			}
+			// A pair decodes to one rune; a surrogate without its other
+			// half (a label cut mid-pair by some writer) is dropped.
+			if u < 0xDC00 && i+3 < len(b) {
+				lo := rune(b[i+2])<<8 | rune(b[i+3])
+				if c := utf16.DecodeRune(u, lo); c != utf8.RuneError {
+					r = append(r, c)
+					i += 2
+				}
+			}
 		}
-		return string(utf16.Decode(units))
+		return string(r)
 	default:
 		end := len(b)
 		for i, c := range b {

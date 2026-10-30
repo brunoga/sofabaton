@@ -26,3 +26,8 @@ record-level tests, never for frame-level ones.
 Many of these frames come from X1 and X1S hubs. Frames from our own X2 go in
 separate files, one per captured flow, with a note on what was done in the
 app while it was recorded (see `docs/research/README.md`).
+
+## ../oracle
+
+Not captures: outputs of the upstream implementation's builders and parsers
+for generated inputs (`tools/oracle`), checked by `*Oracle*` tests.

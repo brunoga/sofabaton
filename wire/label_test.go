@@ -41,6 +41,24 @@ func TestSlot(t *testing.T) {
 	}
 }
 
+func TestDecodeSlotUnpairedSurrogates(t *testing.T) {
+	tests := []struct {
+		in   []byte
+		want string
+	}{
+		{[]byte{0, 'a', 0xD8, 0x3D}, "a"},              // high half at the end of the slot
+		{[]byte{0, 'a', 0xD8, 0x3D, 0, 0}, "a"},        // high half before the terminator
+		{[]byte{0xDC, 0xFA, 0, 'b'}, "b"},              // low half alone
+		{[]byte{0xD8, 0x3D, 0, 'c', 0, 0}, "c"},        // high half followed by a non-surrogate
+		{[]byte{0xD8, 0x3D, 0xDC, 0xFA}, "\U0001F4FA"}, // a whole pair
+	}
+	for _, tt := range tests {
+		if got := UTF16BE.DecodeSlot(tt.in); got != tt.want {
+			t.Errorf("DecodeSlot(% x) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 func TestDecodeSlotASCII(t *testing.T) {
 	tests := []struct {
 		in   []byte

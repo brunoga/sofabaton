@@ -124,7 +124,7 @@ Design rules:
 
 | Phase | Content | Exit criteria | Status |
 |---|---|---|---|
-| P0 | Repo scaffold, go.mod, CI (vet, golangci-lint, race, fuzz smoke, cross-build), docs skeleton, vector extraction + oracle tooling | `go test ./...` green; vectors committed | done except oracle vectors (running upstream Python needs approval) |
+| P0 | Repo scaffold, go.mod, CI (vet, golangci-lint, race, fuzz smoke, cross-build), docs skeleton, vector extraction + oracle tooling | `go test ./...` green; vectors committed | done |
 | P1 | `wire`: frames, deframer, opcodes table, labels, paging | all captured frames deframe + checksum; fuzz clean | done: 125/125 complete captures round-trip; 3 fuzz targets |
 | P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | in progress: entity body + device tail + catalog rows done |
 | P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | — |

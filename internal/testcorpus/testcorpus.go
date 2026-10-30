@@ -95,3 +95,22 @@ func (c Capture) Payload() []byte {
 	}
 	return b[4 : len(b)-1]
 }
+
+// Oracle decodes the cases of testdata/oracle/<name>.json, vectors
+// generated with the upstream implementation (tools/oracle), into cases.
+func Oracle(tb testing.TB, name string, cases any) {
+	tb.Helper()
+	data, err := os.ReadFile(filepath.Join(Root(), "testdata", "oracle", name+".json"))
+	if err != nil {
+		tb.Fatal(err)
+	}
+	var doc struct {
+		Cases json.RawMessage `json:"cases"`
+	}
+	if err := json.Unmarshal(data, &doc); err != nil {
+		tb.Fatal(err)
+	}
+	if err := json.Unmarshal(doc.Cases, cases); err != nil {
+		tb.Fatal(err)
+	}
+}

@@ -59,6 +59,21 @@ fields and rebuilds it, zeroing tail bytes 24+ and any slot bytes after a
 label's terminator; `record.Entity` keeps the decoded bytes and rewrites
 only fields that changed.
 
+## Labels in record slots
+
+Name and brand slots are zero-padded; text ends at the first NUL (X1) or
+zero code unit (X1S/X2). Differences from upstream, both deliberate and
+pinned by `record.TestOracleEntity*`:
+
+- **Cut surrogate pairs.** Upstream's device-record writer cuts the UTF-16
+  bytes at the slot width and can leave a lone high surrogate (e.g. 29
+  letters + 📺 in a 60-byte slot ends in `D8 3D`). Its own label writer for
+  commands and macros avoids that. We never write half a pair, and on
+  decoding drop unpaired surrogates (as upstream does), so such labels read
+  as their intact prefix.
+- **Whitespace.** Upstream trims decoded labels; we keep the exact text so it
+  round-trips, and leave trimming to the UI.
+
 ## TODO (each section: layout, paging, encoding, captures)
 
 - [ ] Catalog rows (devices `0x..0B`, activities `0x..3B`)

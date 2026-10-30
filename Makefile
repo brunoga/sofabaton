@@ -4,7 +4,7 @@ VERSION := $(shell git describe --tags --dirty --always 2>/dev/null || echo "dev
 LDFLAGS := -ldflags "-X main.version=$(VERSION)"
 FUZZTIME ?= 30s
 
-.PHONY: build test test-live fuzz lint vet cover clean ci ci-test ci-fuzz ci-build ci-tidy ci-lint
+.PHONY: build test test-live fuzz lint vet cover clean oracle ci ci-test ci-fuzz ci-build ci-tidy ci-lint
 
 # The platforms CI cross-compiles for, as GOOS/GOARCH[/GOARM].
 PLATFORMS := linux/amd64 linux/arm64 linux/arm/7 windows/amd64 windows/arm64 darwin/amd64 darwin/arm64
@@ -28,6 +28,15 @@ fuzz:
 			go test -run '^$$' -fuzz "^$$f$$" -fuzztime $(FUZZTIME) $$pkg || exit 1; \
 		done; \
 	done
+
+# Regenerates testdata/oracle from the upstream Python implementation
+# (tools/oracle/README.md). Needs UPSTREAM=<checkout at the pinned commit>.
+ORACLE_VENV := tools/oracle/.venv
+oracle:
+	@test -n "$(UPSTREAM)" || (echo "set UPSTREAM=<upstream checkout>" && exit 1)
+	@test -x $(ORACLE_VENV)/bin/python || (python3 -m venv $(ORACLE_VENV) && $(ORACLE_VENV)/bin/pip -q install "zeroconf>=0.131" "ifaddr>=0.2")
+	$(ORACLE_VENV)/bin/python -I tools/oracle/oracle.py --upstream "$(UPSTREAM)" \
+		--out testdata/oracle --corpus testdata/captures/upstream.json
 
 vet:
 	go vet $(PKG)
