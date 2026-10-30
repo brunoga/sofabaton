@@ -8,8 +8,10 @@ from scratch (IR, Bluetooth, RF, Wi-Fi), add commands, assign buttons, build
 macros and activities, and sync them to the remote — the foundation for a
 better management app than the official one.
 
-> **Status: early.** The repository is being set up; nothing talks to a hub
-> yet. See [PLAN.md](PLAN.md) for the roadmap.
+> **Status: early.** The library reads a hub's configuration (devices,
+> activities, commands, keymaps, macros, inputs); writing and the app proxy
+> are next. Most of it is verified against captures from upstream's X1 and
+> X1S hubs, not yet against a live X2. See [PLAN.md](PLAN.md).
 
 > This is an unofficial project and is not affiliated with or endorsed by
 > Sofabaton. The protocol is reverse-engineered and may change with hub
@@ -27,6 +29,21 @@ better management app than the official one.
 | `testdata/` | Captured frames and generated test vectors |
 
 Packages appear as the phases in [PLAN.md](PLAN.md) land.
+
+## Using sbx
+
+Close the Sofabaton app on every phone first: a hub serves one client at a
+time and does not answer discovery while the app is connected.
+
+```sh
+sbx discover                          # hubs on the local network
+sbx info -hub 192.168.1.50            # identity: model, firmware, name
+sbx dump -hub 192.168.1.50 -o hub.json   # full configuration, read-only
+sbx dump -hub 192.168.1.50 -v         # … logging every frame to stderr
+```
+
+`dump` only reads. It keeps every reply's raw bytes next to the decoded
+view, so it is a lossless backup.
 
 ## Building
 
