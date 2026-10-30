@@ -25,6 +25,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   decodes macro records and builds their (paged) writes.
 - `record.Inputs`: a device's inputs page (family 0x47 replies, 0x46
   writes).
+- `record.HubInfo`: the hub identity of the banner and of the discovery
+  reply; the discovery families (NOTIFY_ME, CONNECT_READY) in `wire`.
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
   records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
