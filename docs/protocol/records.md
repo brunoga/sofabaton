@@ -36,6 +36,10 @@ for byte, both decoded and built from scratch.
 | 29.. | name slot, brand slot, tail slot (30 B X1, 60 B X1S/X2) |
 | last | `sum(body[:-1]) & 0xFF` |
 
+Activity membership rows (family `0x6D`, the reply to `REQ_ACTIVITY_MAP`)
+are catalog rows too: one per member device, carrying that device's full
+record (`record.TestMembershipRows`). `[ref]`
+
 ### Device tail slot `[ref]`
 
 | Tail offset | Field |
@@ -213,6 +217,5 @@ entries, all matching) until our X2 captures arrive.
 ## TODO (each section: layout, paging, encoding, captures)
 
 - [ ] Command writes (`0x0E`)
-- [ ] Activity membership (family `0x6D`)
 - [ ] IR blob dump/save/replay pages (`0x0D`/`0x0E`/`0x0F`)
 - [ ] Button code table

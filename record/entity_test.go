@@ -294,3 +294,31 @@ func FuzzDeviceTail(f *testing.F) {
 		}
 	})
 }
+
+// Activity membership rows (family 0x6D) are catalog rows of the member
+// devices' records.
+func TestMembershipRows(t *testing.T) {
+	for _, tt := range []struct {
+		src   string
+		v     wire.Variant
+		index int
+		id    byte
+		name  string
+	}{
+		{"tests/test_opcode_handlers.py:1511", wire.X1, 1, 0x01, "Denon"},
+		{"tests/test_opcode_handlers.py:1512", wire.X1, 2, 0x02, "Sony"},
+		{"tests/test_opcode_handlers.py:1546", wire.X1S, 1, 0x03, "Denon AVC-X3800H"},
+	} {
+		c := testcorpus.BySource(t, tt.src)
+		if wire.Family(c.Bytes()[3]) != wire.FamActivityMapPage {
+			t.Fatalf("%s is not a membership row", tt.src)
+		}
+		row, err := ParseCatalogRow(tt.v, c.Payload())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if row.Index != tt.index || row.Entity.ID != tt.id || row.Entity.Name != tt.name || row.Entity.Class != ClassIR {
+			t.Errorf("%s: row %d id %#x %q %v", tt.src, row.Index, row.Entity.ID, row.Entity.Name, row.Entity.Class)
+		}
+	}
+}

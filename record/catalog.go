@@ -7,7 +7,8 @@ import (
 )
 
 // CatalogRow is one row of a device (family 0x0B) or activity (family 0x3B)
-// catalog burst: one frame per entity.
+// catalog burst, or of an activity's membership (family 0x6D, the member
+// devices' records): one frame per entity.
 type CatalogRow struct {
 	// Index is the row's 1-based position in the burst, Total the burst's
 	// row count; the burst is complete once rows 1..Total have arrived.
