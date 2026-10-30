@@ -16,6 +16,18 @@ Thanks for your interest in contributing.
 go build ./cmd/sbx
 ```
 
+## Running CI locally
+
+```sh
+make ci
+```
+
+runs every CI job the same way CI does: `go mod tidy -diff`, golangci-lint,
+the cross-compiles for every release platform (each with `go vet`), the race
+tests and a short run of every fuzz target. Each job is also its own target
+(`ci-tidy`, `ci-lint`, `ci-build`, `ci-test`, `ci-fuzz`). Run it before
+pushing.
+
 ## Running tests
 
 ```sh
@@ -80,3 +92,5 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/):
 - Error strings are lowercase and do not end with punctuation.
 - Context is threaded through all blocking calls.
 - Bytes from the hub are untrusted: decoders return errors, never panic.
+- A failing input a fuzzer finds is committed under the package's
+  `testdata/fuzz/` with the fix, so it stays a regression test.

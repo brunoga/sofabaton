@@ -83,10 +83,7 @@ jobs:
 
       - name: Verify go.mod is tidy
         if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
-        # Add go.sum to the diff once the module has its first dependency.
-        run: |
-          go mod tidy
-          git diff --exit-code go.mod
+        run: go mod tidy -diff
 
   lint:
     name: Lint
