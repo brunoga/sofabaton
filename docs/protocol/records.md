@@ -9,7 +9,8 @@ Write wrapper: `01 | page(2, BE)=1 | body`. Catalog rows (families `0x0B`,
 burst's row count instead of the `01` page marker. `[ref]`, checked against
 the upstream captures (`record.TestCatalogRow*`).
 
-**Stored checksums are stale.** The body's last byte is
+**Stored checksums are stale** `[X2✓]` (device records stale, activity
+records and macros `00`, inputs pages valid on our X2). The body's last byte is
 `sum(body[:-1]) & 0xFF` in writes (the app's X1 Bose create and update
 verify), but catalog rows mostly fail it, real captures included: the hub
 changes stored bytes (body[0], tail flag, …) without updating it. Decoders
@@ -50,8 +51,8 @@ record (`record.TestMembershipRows`). `[ref]`
 | 14–15 | `FC` flag (hub-maintained, changes after writes) |
 | 16–17 | `FC` marker (0 in a create, 1 in the update that commits it; 1 on generic HTTP devices) |
 | 18–21 | optional `FC` + 3 bytes; X2: IR emitter routing (last byte: bit0 hub, bit1 port 1, bit2 port 2, bits 3–7 remotes 1–5) |
-| 22 | color, X2 palette 1–12 (60-byte tail only) |
-| 23 | Bluetooth link mode, 0 classic / 2 BLE (60-byte tail only) |
+| 22 | color, X2 palette 1–12 (60-byte tail only); devices and activities `[X2✓]` |
+| 23 | Bluetooth link mode (60-byte tail only): `01` on our X2's Bluetooth device, `FF` on IR devices `[X2✓]`; upstream's `0` classic / `2` BLE is unverified |
 | 24.. | unknown, preserved |
 
 **Activity tails differ** (`fc 00 fc 01 …` on X1, `fc 00 00 …` on X1S);
