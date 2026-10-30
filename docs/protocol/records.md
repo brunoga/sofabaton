@@ -112,10 +112,40 @@ records are never split on `FF`. `record.ParseCommandList` matches
 upstream's decoding of all 8 complete corpus bursts and re-encodes each
 record to its bytes (`TestOracleCommandBursts`).
 
+## Keymap (`REQ_BUTTONS` reply, family `0x3D`) and binding writes (`0x3E`) `[ref]`
+
+The reply is a paged body (above) with content `count | rows…`, 18-byte rows
+that do span pages (upstream's "rows split across pages"; 247-byte chunks
+are not a multiple of 18). Each row is a stored binding, with the same
+bytes as the body of a binding write:
+
+| Row offset | Field |
+|---|---|
+| 0 | entity (activity, or device for device keymaps) |
+| 1 | button: a favorite slot (low ids) or a hard key (`0x97`–`0xC7`) |
+| 2 | short press: device |
+| 3–8 | short press: command code (6 bytes, as in the command record) |
+| 9 | short press: command id |
+| 10 | long press: device (0 = none) |
+| 11–16 | long press: command code |
+| 17 | long press: command id |
+
+Upstream calls bytes 9/17 a "button id" in its write builder and the
+command id in its read docs; the rows in the corpus match the command
+ids (favorite 1 → device 3 command 3). Upstream warns that hard-key rows do
+not always name the real target (macro-bound keys, role pages); to verify
+against our X2.
+
+Binding write payload: `01 00 01 | 01 00 01 | row (18) | sum8(body)`, 25
+bytes, acked by family `0x3E` echoing the button. `record.Binding`
+matches upstream's builder on 100 generated bindings.
+
+Hard keys `0x97`–`0xA9` (C, B, A, Exit, DVR, Play, Guide, numpad) exist on
+the X2 remote only. Power on/off are `0xC6`/`0xC7`.
+
 ## TODO (each section: layout, paging, encoding, captures)
 
 - [ ] Command writes (`0x0E`)
-- [ ] Keymap / favorites rows (family `0x3D`) and binding writes (`0x3E`)
 - [ ] Activity membership (family `0x6D`)
 - [ ] Macros (family `0x13` read, `0x12` write)
 - [ ] Inputs page (family `0x46`/`0x47`)

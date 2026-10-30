@@ -1,0 +1,1360 @@
+{
+ "upstream": "github.com/m3tac0de/home-assistant-sofabaton-x1s",
+ "commit": "5fd5887d11272a553da99383f327c53cb8b4190e",
+ "generator": "tools/oracle/oracle.py",
+ "cases": [
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 176,
+    "short_press_device_id": 192,
+    "short_press_button_code": 117506185779347,
+    "short_press_button_id": 126,
+    "long_press_device_id": 81,
+    "long_press_button_code": 18372095485749,
+    "long_press_button_id": 138
+   },
+   "family": 62,
+   "payload": "01000101000165b0c06adf0a7658937e5110b59639a7358a54",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 2,
+    "short_press_device_id": 117,
+    "short_press_button_code": 267437147814718,
+    "short_press_button_id": 93
+   },
+   "family": 62,
+   "payload": "0100010100010d0275f33b9031fb3e5d00000000000000000b",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 198,
+    "short_press_device_id": 122,
+    "short_press_button_code": 23614185685427,
+    "short_press_button_id": 216,
+    "long_press_device_id": 212,
+    "long_press_button_code": 186648699772006,
+    "long_press_button_id": 232
+   },
+   "family": 62,
+   "payload": "01000101000166c67a157a1b2641b3d8d4a9c189729c66e867",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 199,
+    "short_press_device_id": 191,
+    "short_press_button_code": 222202918972728,
+    "short_press_button_id": 188,
+    "long_press_device_id": 128,
+    "long_press_button_code": 24533650547573,
+    "long_press_button_id": 222
+   },
+   "family": 62,
+   "payload": "01000101000165c7bfca17a60dad38bc8016502f86a375deb3",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 182,
+    "short_press_device_id": 193,
+    "short_press_button_code": 65175238731632,
+    "short_press_button_id": 122
+   },
+   "family": 62,
+   "payload": "01000101000101b6c13b46caf3e7707a000000000000000089",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 174,
+    "short_press_device_id": 61,
+    "short_press_button_code": 94408037771121,
+    "short_press_button_id": 125
+   },
+   "family": 62,
+   "payload": "0100010100010dae3d55dd158e27717d0000000000000000e4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 176,
+    "short_press_device_id": 189,
+    "short_press_button_code": 125595809409612,
+    "short_press_button_id": 44,
+    "long_press_device_id": 96,
+    "long_press_button_code": 122857382405166,
+    "long_press_button_id": 234
+   },
+   "family": 62,
+   "payload": "01000101000101b0bd723a8d9aea4c2c606fbcf6a2e42eeac4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 174,
+    "short_press_device_id": 27,
+    "short_press_button_code": 236643552112565,
+    "short_press_button_id": 77,
+    "long_press_device_id": 17,
+    "long_press_button_code": 31924141031596,
+    "long_press_button_id": 50
+   },
+   "family": 62,
+   "payload": "01000101000166ae1bd739dedcafb54d111d08eb1600ac32c1",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 2,
+    "short_press_device_id": 145,
+    "short_press_button_code": 111526790222716,
+    "short_press_button_id": 190,
+    "long_press_device_id": 183,
+    "long_press_button_code": 163125838502964,
+    "long_press_button_id": 102
+   },
+   "family": 62,
+   "payload": "010001010001010291656edab6d37cbeb7945cb1a85c3466fc",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 176,
+    "short_press_device_id": 175,
+    "short_press_button_code": 184119269950963,
+    "short_press_button_id": 89,
+    "long_press_device_id": 235,
+    "long_press_button_code": 30402030354129,
+    "long_press_button_id": 26
+   },
+   "family": 62,
+   "payload": "01000101000165b0afa7749bae85f359eb1ba686383ed11a8e",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 182,
+    "short_press_device_id": 252,
+    "short_press_button_code": 154470926977710,
+    "short_press_button_id": 33,
+    "long_press_device_id": 119,
+    "long_press_button_code": 45704022407160,
+    "long_press_button_id": 133
+   },
+   "family": 62,
+   "payload": "01000101000101b6fc8c7d90bb0aae217729914c0537f88518",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 182,
+    "short_press_device_id": 234,
+    "short_press_button_code": 37955542284270,
+    "short_press_button_id": 129
+   },
+   "family": 62,
+   "payload": "01000101000166b6ea2285369d77ee81000000000000000068",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 204,
+    "short_press_button_code": 280677503862045,
+    "short_press_button_id": 136,
+    "long_press_device_id": 151,
+    "long_press_button_code": 193837164558898,
+    "long_press_button_id": 204
+   },
+   "family": 62,
+   "payload": "010001010001c8b0ccff4652ea051d8897b04b3b567a32cc0c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 1,
+    "short_press_device_id": 112,
+    "short_press_button_code": 186445584228614,
+    "short_press_button_id": 122,
+    "long_press_device_id": 182,
+    "long_press_button_code": 6488652345718,
+    "long_press_button_id": 188
+   },
+   "family": 62,
+   "payload": "010001010001010170a9923ed161067ab605e6c1d17176bc75",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 198,
+    "short_press_device_id": 122,
+    "short_press_button_code": 23382416116383,
+    "short_press_button_id": 126
+   },
+   "family": 62,
+   "payload": "010001010001c8c67a1544249b4a9f7e000000000000000089",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 1,
+    "short_press_device_id": 215,
+    "short_press_button_code": 5383984916679,
+    "short_press_button_id": 132,
+    "long_press_device_id": 124,
+    "long_press_button_code": 124002288853479,
+    "long_press_button_id": 105
+   },
+   "family": 62,
+   "payload": "0100010100010d01d704e58e8228c7847c70c78860e1e7691f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 182,
+    "short_press_device_id": 178,
+    "short_press_button_code": 162769970539161,
+    "short_press_button_id": 248,
+    "long_press_device_id": 119,
+    "long_press_button_code": 258214635247243,
+    "long_press_button_id": 132
+   },
+   "family": 62,
+   "payload": "010001010001c8b6b29409d6462a99f877ead8479c168b84e7",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 199,
+    "short_press_device_id": 215,
+    "short_press_button_code": 163040443537470,
+    "short_press_button_id": 70
+   },
+   "family": 62,
+   "payload": "0100010100010dc7d79448cfb8983e4600000000000000002c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 151,
+    "short_press_device_id": 99,
+    "short_press_button_code": 191505026542982,
+    "short_press_button_id": 150,
+    "long_press_device_id": 136,
+    "long_press_button_code": 61963102375199,
+    "long_press_button_id": 225
+   },
+   "family": 62,
+   "payload": "010001010001659763ae2c3d146d869688385ae8b4cd1fe198",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 182,
+    "short_press_device_id": 121,
+    "short_press_button_code": 4868065270528,
+    "short_press_button_id": 10
+   },
+   "family": 62,
+   "payload": "010001010001c8b679046d6f4d1b000a00000000000000004b",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 174,
+    "short_press_device_id": 176,
+    "short_press_button_code": 25905108455595,
+    "short_press_button_id": 74,
+    "long_press_device_id": 151,
+    "long_press_button_code": 179133064492746,
+    "long_press_button_id": 180
+   },
+   "family": 62,
+   "payload": "0100010100010daeb0178f80c990ab4a97a2ebaaad36cab410",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 198,
+    "short_press_device_id": 188,
+    "short_press_button_code": 242911199938419,
+    "short_press_button_id": 5
+   },
+   "family": 62,
+   "payload": "01000101000165c6bcdced2bc8c773050000000000000000e4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 151,
+    "short_press_device_id": 4,
+    "short_press_button_code": 12668530837532,
+    "short_press_button_id": 126
+   },
+   "family": 62,
+   "payload": "0100010100016597040b859f47c81c7e0000000000000000da",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 1,
+    "short_press_device_id": 135,
+    "short_press_button_code": 120945843864000,
+    "short_press_button_id": 141
+   },
+   "family": 62,
+   "payload": "0100010100016601876dffe60f81c08d00000000000000001f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 198,
+    "short_press_device_id": 5,
+    "short_press_button_code": 166314285696462,
+    "short_press_button_id": 93,
+    "long_press_device_id": 254,
+    "long_press_button_code": 73217279263828,
+    "long_press_button_id": 164
+   },
+   "family": 62,
+   "payload": "010001010001c8c60597430feb85ce5dfe429739ec0454a411",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 2,
+    "short_press_device_id": 76,
+    "short_press_button_code": 201772305468683,
+    "short_press_button_id": 139,
+    "long_press_device_id": 130,
+    "long_press_button_code": 250984960155725,
+    "long_press_button_id": 240
+   },
+   "family": 62,
+   "payload": "010001010001c8024cb782c697cd0b8b82e444fd64e04df039",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 151,
+    "short_press_device_id": 1,
+    "short_press_button_code": 128141558232223,
+    "short_press_button_id": 205,
+    "long_press_device_id": 219,
+    "long_press_button_code": 98966159206926,
+    "long_press_button_id": 176
+   },
+   "family": 62,
+   "payload": "010001010001019701748b480f349fcddb5a025ac3aa0eb04d",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 174,
+    "short_press_device_id": 50,
+    "short_press_button_code": 35067144844346,
+    "short_press_button_id": 191,
+    "long_press_device_id": 26,
+    "long_press_button_code": 188045653066711,
+    "long_press_button_id": 35
+   },
+   "family": 62,
+   "payload": "0100010100010dae321fe4b4b6343abf1aab06ca5a43d723b5",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 199,
+    "short_press_device_id": 133,
+    "short_press_button_code": 212124689482811,
+    "short_press_button_id": 84
+   },
+   "family": 62,
+   "payload": "01000101000166c785c0ed20c3c43b54000000000000000097",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 199,
+    "short_press_device_id": 3,
+    "short_press_button_code": 277513864908797,
+    "short_press_button_id": 136,
+    "long_press_device_id": 178,
+    "long_press_button_code": 136591802570889,
+    "long_press_button_id": 11
+   },
+   "family": 62,
+   "payload": "01000101000166c703fc65bb568ffd88b27c3ac1df18890b6c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 1,
+    "short_press_device_id": 11,
+    "short_press_button_code": 101510094022093,
+    "short_press_button_id": 77,
+    "long_press_device_id": 51,
+    "long_press_button_code": 83815143235006,
+    "long_press_button_id": 226
+   },
+   "family": 62,
+   "payload": "0100010100010d010b5c52a91865cd4d334c3abbd6ddbee2d0",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 182,
+    "short_press_device_id": 25,
+    "short_press_button_code": 33447838139260,
+    "short_press_button_id": 89,
+    "long_press_device_id": 10,
+    "long_press_button_code": 206680925132890,
+    "long_press_button_id": 130
+   },
+   "family": 62,
+   "payload": "01000101000166b6191e6bae82c37c590abbf9a71fd85a82c0",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 199,
+    "short_press_device_id": 1,
+    "short_press_button_code": 43291540204591,
+    "short_press_button_id": 106,
+    "long_press_device_id": 168,
+    "long_press_button_code": 86197675209298,
+    "long_press_button_id": 251
+   },
+   "family": 62,
+   "payload": "01000101000166c701275f98e02c2f6aa84e6575cfb252fb91",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 1,
+    "short_press_device_id": 171,
+    "short_press_button_code": 27377073809035,
+    "short_press_button_id": 247,
+    "long_press_device_id": 129,
+    "long_press_button_code": 65711699888659,
+    "long_press_button_id": 67
+   },
+   "family": 62,
+   "payload": "0100010100010101ab18e638c2668bf7813bc3b2878a134327",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 2,
+    "short_press_device_id": 145,
+    "short_press_button_code": 121006985453852,
+    "short_press_button_id": 26
+   },
+   "family": 62,
+   "payload": "0100010100010d02916e0e2262211c1a0000000000000000f9",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 1,
+    "short_press_device_id": 233,
+    "short_press_button_code": 121150951469977,
+    "short_press_button_id": 86
+   },
+   "family": 62,
+   "payload": "0100010100016601e96e2fa76d339956000000000000000025",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 174,
+    "short_press_device_id": 16,
+    "short_press_button_code": 38474446615579,
+    "short_press_button_id": 174,
+    "long_press_device_id": 229,
+    "long_press_button_code": 213827060439836,
+    "long_press_button_id": 206
+   },
+   "family": 62,
+   "payload": "0100010100010dae1022fe07b9341baee5c2797dfb1b1cce47",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 199,
+    "short_press_device_id": 142,
+    "short_press_button_code": 24333201347771,
+    "short_press_button_id": 4,
+    "long_press_device_id": 135,
+    "long_press_button_code": 220962456266640,
+    "long_press_button_id": 237
+   },
+   "family": 62,
+   "payload": "01000101000165c78e162183d294bb0487c8f6d4b6e790edce",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 182,
+    "short_press_device_id": 76,
+    "short_press_button_code": 266203909049821,
+    "short_press_button_id": 113
+   },
+   "family": 62,
+   "payload": "01000101000166b64cf21c6d6fcddd7100000000000000006f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 2,
+    "short_press_device_id": 197,
+    "short_press_button_code": 128911479519789,
+    "short_press_button_id": 137
+   },
+   "family": 62,
+   "payload": "0100010100016502c5753e8af1ba2d890000000000000000cc",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 163,
+    "short_press_button_code": 56891632759014,
+    "short_press_button_id": 61
+   },
+   "family": 62,
+   "payload": "010001010001c8b0a333be1d8fb0e63d00000000000000008d",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 1,
+    "short_press_device_id": 151,
+    "short_press_button_code": 62130011838679,
+    "short_press_button_id": 65
+   },
+   "family": 62,
+   "payload": "010001010001c801973881c54918d741000000000000000059",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 151,
+    "short_press_device_id": 247,
+    "short_press_button_code": 49054144264600,
+    "short_press_button_id": 4,
+    "long_press_device_id": 28,
+    "long_press_button_code": 265522134963141,
+    "long_press_button_id": 140
+   },
+   "family": 62,
+   "payload": "0100010100016697f72c9d4ed7f998041cf17db088d3c58c5f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 198,
+    "short_press_device_id": 35,
+    "short_press_button_code": 152010287665429,
+    "short_press_button_id": 148,
+    "long_press_device_id": 104,
+    "long_press_button_code": 125195399845431,
+    "long_press_button_id": 104
+   },
+   "family": 62,
+   "payload": "01000101000165c6238a40a732d115946871dd5355d6376840",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 182,
+    "short_press_device_id": 37,
+    "short_press_button_code": 271616975912144,
+    "short_press_button_id": 161
+   },
+   "family": 62,
+   "payload": "0100010100010db625f708c15d3cd0a10000000000000000b4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 174,
+    "short_press_device_id": 189,
+    "short_press_button_code": 219559572582428,
+    "short_press_button_id": 223
+   },
+   "family": 62,
+   "payload": "01000101000101aebdc7b03254b01cdf000000000000000016",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 182,
+    "short_press_device_id": 175,
+    "short_press_button_code": 43794696668105,
+    "short_press_button_id": 184,
+    "long_press_device_id": 130,
+    "long_press_button_code": 254813186925455,
+    "long_press_button_id": 151
+   },
+   "family": 62,
+   "payload": "01000101000101b6af27d4bf5683c9b882e7c0517da38f973c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 198,
+    "short_press_device_id": 118,
+    "short_press_button_code": 45649200194260,
+    "short_press_button_id": 159
+   },
+   "family": 62,
+   "payload": "01000101000166c6762984885ca2d49f00000000000000004a",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 198,
+    "short_press_device_id": 124,
+    "short_press_button_code": 182036379420397,
+    "short_press_button_id": 99
+   },
+   "family": 62,
+   "payload": "01000101000166c67ca58fa5bb46ed630000000000000000d4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 151,
+    "short_press_device_id": 96,
+    "short_press_button_code": 192413221272387,
+    "short_press_button_id": 93,
+    "long_press_device_id": 118,
+    "long_press_button_code": 50817041561987,
+    "long_press_button_id": 236
+   },
+   "family": 62,
+   "payload": "010001010001659760aeffb1b43b435d762e37c3b5f983ec06",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 198,
+    "short_press_device_id": 12,
+    "short_press_button_code": 118471343030858,
+    "short_press_button_id": 252,
+    "long_press_device_id": 119,
+    "long_press_button_code": 117814660378084,
+    "long_press_button_id": 136
+   },
+   "family": 62,
+   "payload": "0100010100010dc60c6bbfc251424afc776b26dcfb2de4881e",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 151,
+    "short_press_device_id": 109,
+    "short_press_button_code": 247861867502403,
+    "short_press_button_id": 140,
+    "long_press_device_id": 36,
+    "long_press_button_code": 187033280071348,
+    "long_press_button_id": 174
+   },
+   "family": 62,
+   "payload": "01000101000101976de16dd690db438c24aa1b143846b4ae42",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 174,
+    "short_press_device_id": 165,
+    "short_press_button_code": 204469557709485,
+    "short_press_button_id": 175,
+    "long_press_device_id": 213,
+    "long_press_button_code": 186648457459826,
+    "long_press_button_id": 234
+   },
+   "family": 62,
+   "payload": "01000101000166aea5b9f6c75acaadafd5a9c17b013872ea00",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 1,
+    "short_press_device_id": 56,
+    "short_press_button_code": 61639405034440,
+    "short_press_button_id": 45,
+    "long_press_device_id": 98,
+    "long_press_button_code": 220581457372983,
+    "long_press_button_id": 177
+   },
+   "family": 62,
+   "payload": "0100010100010d0138380f8ad75bc82d62c89e1f692737b19f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 199,
+    "short_press_device_id": 141,
+    "short_press_button_code": 171330301615267,
+    "short_press_button_id": 211,
+    "long_press_device_id": 222,
+    "long_press_button_code": 281052647324438,
+    "long_press_button_id": 211
+   },
+   "family": 62,
+   "payload": "010001010001c8c78d9bd2f1c45ca3d3deff9dab34fb16d34f",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 151,
+    "short_press_device_id": 147,
+    "short_press_button_code": 11229215979424,
+    "short_press_button_id": 53,
+    "long_press_device_id": 110,
+    "long_press_button_code": 100117132161793,
+    "long_press_button_id": 164
+   },
+   "family": 62,
+   "payload": "0100010100016697930a36816df7a0356e5b0e56193301a4aa",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 249,
+    "short_press_button_code": 270104787664518,
+    "short_press_button_id": 105
+   },
+   "family": 62,
+   "payload": "010001010001c8b0f9f5a8abebbe8669000000000000000053",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 176,
+    "short_press_device_id": 122,
+    "short_press_button_code": 108193780206317,
+    "short_press_button_id": 179
+   },
+   "family": 62,
+   "payload": "01000101000166b07a6266d3d60aedb30000000000000000ad",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 182,
+    "short_press_device_id": 180,
+    "short_press_button_code": 122778703470838,
+    "short_press_button_id": 145
+   },
+   "family": 62,
+   "payload": "01000101000101b6b46faaa501a0f691000000000000000053",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 228,
+    "short_press_button_code": 71131225429434,
+    "short_press_button_id": 214,
+    "long_press_device_id": 29,
+    "long_press_button_code": 75467163619675,
+    "long_press_button_id": 127
+   },
+   "family": 62,
+   "payload": "010001010001c8b0e440b1876c95bad61d44a3117ad15b7fa1",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 174,
+    "short_press_device_id": 86,
+    "short_press_button_code": 251901489194842,
+    "short_press_button_id": 225
+   },
+   "family": 62,
+   "payload": "010001010001c8ae56e51a62c8275ae1000000000000000059",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 199,
+    "short_press_device_id": 103,
+    "short_press_button_code": 272379546326675,
+    "short_press_button_id": 5
+   },
+   "family": 62,
+   "payload": "010001010001c8c767f7ba4e1a5693050000000000000000ff",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 198,
+    "short_press_device_id": 167,
+    "short_press_button_code": 177210217594304,
+    "short_press_button_id": 10
+   },
+   "family": 62,
+   "payload": "010001010001c8c6a7a12bf811fdc00a0000000000000000d3",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 182,
+    "short_press_device_id": 245,
+    "short_press_button_code": 86051393725388,
+    "short_press_button_id": 186,
+    "long_press_device_id": 172,
+    "long_press_button_code": 58264527748672,
+    "long_press_button_id": 76
+   },
+   "family": 62,
+   "payload": "010001010001c8b6f54e4366c163ccbaac34fdc47abe404c7b",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 228,
+    "short_press_button_code": 88636398196605,
+    "short_press_button_id": 199,
+    "long_press_device_id": 249,
+    "long_press_button_code": 16111325661254,
+    "long_press_button_id": 244
+   },
+   "family": 62,
+   "payload": "010001010001c8b0e4509d4507577dc7f90ea735d7c846f4ee",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 151,
+    "short_press_device_id": 134,
+    "short_press_button_code": 79303861495724,
+    "short_press_button_id": 230,
+    "long_press_device_id": 105,
+    "long_press_button_code": 156318860975010,
+    "long_press_button_id": 69
+   },
+   "family": 62,
+   "payload": "01000101000165978648205e7e67ace6698e2bd22e1ba245e5",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 198,
+    "short_press_device_id": 59,
+    "short_press_button_code": 73084527290357,
+    "short_press_button_id": 211
+   },
+   "family": 62,
+   "payload": "01000101000166c63b42785149a7f5d300000000000000002c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 182,
+    "short_press_device_id": 129,
+    "short_press_button_code": 110197244514283,
+    "short_press_button_id": 227
+   },
+   "family": 62,
+   "payload": "01000101000166b68164394b9d4febe3000000000000000041",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 151,
+    "short_press_device_id": 204,
+    "short_press_button_code": 20148648246,
+    "short_press_button_id": 139,
+    "long_press_device_id": 120,
+    "long_press_button_code": 246265043895638,
+    "long_press_button_id": 100
+   },
+   "family": 62,
+   "payload": "0100010100016697cc0004b0f3f9368b78dffa0c76455664fe",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 111,
+    "short_press_button_code": 148463837842339,
+    "short_press_button_id": 181,
+    "long_press_device_id": 116,
+    "long_press_button_code": 54649663338904,
+    "long_press_button_id": 140
+   },
+   "family": 62,
+   "payload": "010001010001c8b06f8706ee510ba3b57431b41dc539988cb0",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 176,
+    "short_press_device_id": 224,
+    "short_press_button_code": 132972331055383,
+    "short_press_button_id": 151,
+    "long_press_device_id": 151,
+    "long_press_button_code": 30469688623782,
+    "long_press_button_id": 165
+   },
+   "family": 62,
+   "payload": "01000101000165b0e078f0088eb91797971bb646f782a6a5ce",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 2,
+    "short_press_device_id": 6,
+    "short_press_button_code": 83844423876532,
+    "short_press_button_id": 208
+   },
+   "family": 62,
+   "payload": "0100010100016602064c418d19ffb4d0000000000000000026",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 2,
+    "short_press_device_id": 41,
+    "short_press_button_code": 208413188645888,
+    "short_press_button_id": 64
+   },
+   "family": 62,
+   "payload": "010001010001650229bd8cfa1364004000000000000000008c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 151,
+    "short_press_device_id": 187,
+    "short_press_button_code": 217329415755253,
+    "short_press_button_id": 68
+   },
+   "family": 62,
+   "payload": "010001010001c897bbc5a8f2a015f544000000000000000069",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 182,
+    "short_press_device_id": 251,
+    "short_press_button_code": 84997713562129,
+    "short_press_button_id": 194
+   },
+   "family": 62,
+   "payload": "01000101000165b6fb4d4e12860a11c2000000000000000028",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 174,
+    "short_press_device_id": 241,
+    "short_press_button_code": 216647615884946,
+    "short_press_button_id": 186
+   },
+   "family": 62,
+   "payload": "01000101000165aef1c50a342fae92ba000000000000000032",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 2,
+    "short_press_device_id": 124,
+    "short_press_button_code": 221551693160636,
+    "short_press_button_id": 85
+   },
+   "family": 62,
+   "payload": "010001010001c8027cc98005f860bc550000000000000000ff",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 1,
+    "short_press_device_id": 71,
+    "short_press_button_code": 269133449081576,
+    "short_press_button_id": 212,
+    "long_press_device_id": 161,
+    "long_press_button_code": 26674831923438,
+    "long_press_button_id": 55
+   },
+   "family": 62,
+   "payload": "010001010001010147f4c683a132e8d4a11842b7e198ee3767",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 198,
+    "short_press_device_id": 140,
+    "short_press_button_code": 252753190738395,
+    "short_press_button_id": 121
+   },
+   "family": 62,
+   "payload": "01000101000101c68ce5e0b02659db7900000000000000009d",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 151,
+    "short_press_device_id": 8,
+    "short_press_button_code": 132819193203418,
+    "short_press_button_id": 112
+   },
+   "family": 62,
+   "payload": "01000101000101970878cc60d48ada700000000000000000ee",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 2,
+    "short_press_device_id": 255,
+    "short_press_button_code": 7328566142436,
+    "short_press_button_id": 254,
+    "long_press_device_id": 143,
+    "long_press_button_code": 196973030536441,
+    "long_press_button_id": 32
+   },
+   "family": 62,
+   "payload": "0100010100010102ff06aa5094e5e4fe8fb3255b83f4f920b1",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 182,
+    "short_press_device_id": 16,
+    "short_press_button_code": 133377639872106,
+    "short_press_button_id": 97,
+    "long_press_device_id": 146,
+    "long_press_button_code": 261135836667156,
+    "long_press_button_id": 24
+   },
+   "family": 62,
+   "payload": "0100010100010db610794e66d8766a6192ed806cc85d1418d7",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 151,
+    "short_press_device_id": 77,
+    "short_press_button_code": 21531780332445,
+    "short_press_button_id": 166
+   },
+   "family": 62,
+   "payload": "010001010001c8974d1395421e3b9da6000000000000000034",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 199,
+    "short_press_device_id": 75,
+    "short_press_button_code": 245200801022696,
+    "short_press_button_id": 250
+   },
+   "family": 62,
+   "payload": "01000101000165c74bdf0242a4c2e8fa0000000000000000e4",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 174,
+    "short_press_device_id": 182,
+    "short_press_button_code": 220325641046480,
+    "short_press_button_id": 104,
+    "long_press_device_id": 88,
+    "long_press_button_code": 147998624742932,
+    "long_press_button_id": 24
+   },
+   "family": 62,
+   "payload": "01000101000165aeb6c8628f91c9d06858869a9d747e141849",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 182,
+    "short_press_device_id": 204,
+    "short_press_button_code": 247435813608748,
+    "short_press_button_id": 117,
+    "long_press_device_id": 4,
+    "long_press_button_code": 251978507584749,
+    "long_press_button_id": 131
+   },
+   "family": 62,
+   "payload": "0100010100010db6cce10aa3c65d2c7504e52c516f84ed83ac",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 199,
+    "short_press_device_id": 224,
+    "short_press_button_code": 64467936209299,
+    "short_press_button_id": 146
+   },
+   "family": 62,
+   "payload": "010001010001c8c7e03aa21c6fe993920000000000000000e6",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 102,
+    "button_id": 176,
+    "short_press_device_id": 234,
+    "short_press_button_code": 1105146981059,
+    "short_press_button_id": 97,
+    "long_press_device_id": 128,
+    "long_press_button_code": 159116197721393,
+    "long_press_button_id": 35
+   },
+   "family": 62,
+   "payload": "01000101000166b0ea01014fe4aac3618090b7207175312326",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 151,
+    "short_press_device_id": 61,
+    "short_press_button_code": 211842248551337,
+    "short_press_button_id": 101
+   },
+   "family": 62,
+   "payload": "01000101000101973dc0ab5df92ba9650000000000000000d1",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 151,
+    "short_press_device_id": 134,
+    "short_press_button_code": 279917216041186,
+    "short_press_button_id": 209
+   },
+   "family": 62,
+   "payload": "010001010001659786fe954e3a88e2d10000000000000000da",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 176,
+    "short_press_device_id": 180,
+    "short_press_button_code": 60749262292121,
+    "short_press_button_id": 236
+   },
+   "family": 62,
+   "payload": "010001010001c8b0b437404a330499ec0000000000000000ab",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 151,
+    "short_press_device_id": 70,
+    "short_press_button_code": 13432896138563,
+    "short_press_button_id": 28
+   },
+   "family": 62,
+   "payload": "0100010100010d97460c379700ad431c0000000000000000d2",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 199,
+    "short_press_device_id": 169,
+    "short_press_button_code": 246031972899691,
+    "short_press_button_id": 209
+   },
+   "family": 62,
+   "payload": "010001010001c8c7a9dfc3c8591b6bd1000000000000000054",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 198,
+    "short_press_device_id": 227,
+    "short_press_button_code": 44486090574145,
+    "short_press_button_id": 25
+   },
+   "family": 62,
+   "payload": "01000101000101c6e32875b9a0494119000000000000000045",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 2,
+    "short_press_device_id": 70,
+    "short_press_button_code": 164060108768079,
+    "short_press_button_id": 236,
+    "long_press_device_id": 101,
+    "long_press_button_code": 261561084206727,
+    "long_press_button_id": 88
+   },
+   "family": 62,
+   "payload": "01000101000101024695363881434fec65ede36f82de875830",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 176,
+    "short_press_device_id": 137,
+    "short_press_button_code": 73278289250572,
+    "short_press_button_id": 156
+   },
+   "family": 62,
+   "payload": "01000101000165b08942a56e66890c9c00000000000000008c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 13,
+    "button_id": 2,
+    "short_press_device_id": 161,
+    "short_press_button_code": 34352634930419,
+    "short_press_button_id": 47,
+    "long_press_device_id": 187,
+    "long_press_button_code": 102502544839878,
+    "long_press_button_id": 190
+   },
+   "family": 62,
+   "payload": "0100010100010d02a11f3e589a24f32fbb5d39bbc614c6beb1",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 200,
+    "button_id": 198,
+    "short_press_device_id": 198,
+    "short_press_button_code": 163176216785343,
+    "short_press_button_id": 86
+   },
+   "family": 62,
+   "payload": "010001010001c8c6c694686c6ff1bf56000000000000000033",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 1,
+    "button_id": 1,
+    "short_press_device_id": 29,
+    "short_press_button_code": 259784878655512,
+    "short_press_button_id": 208
+   },
+   "family": 62,
+   "payload": "01000101000101011dec45e1690818d000000000000000008c",
+   "ack_opcode": 318
+  },
+  {
+   "args": {
+    "device_id": 101,
+    "button_id": 1,
+    "short_press_device_id": 77,
+    "short_press_button_code": 258884488244546,
+    "short_press_button_id": 235,
+    "long_press_device_id": 225,
+    "long_press_button_code": 110453761923395,
+    "long_press_button_id": 111
+   },
+   "family": 62,
+   "payload": "01000101000165014deb743df5ad42ebe16475053e59436f28",
+   "ack_opcode": 318
+  }
+ ]
+}
