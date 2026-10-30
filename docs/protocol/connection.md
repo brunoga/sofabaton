@@ -2,7 +2,7 @@
 
 Reference: upstream `docs/protocol/connection-flow.md`, `hub-versions.md`.
 
-## Outline
+## Outline (`transport.Dialer`, `transport.Discoverer`)
 
 1. Discovery `[ref]`: mDNS (X2 observed advertising `_sofabaton_hub._udp.local.`;
    TXT carries `HVER`: 1=X1, 2=X1S, 3=X2) or UDP broadcast `NOTIFY_ME`.
@@ -51,4 +51,9 @@ the same payload:
 
 - [ ] Confirm banner and discovery reply on our X2
 - [ ] Keepalive behaviour and idle timeouts
-- [ ] Port list (UDP/TCP) and firewall notes
+- [ ] Port list (UDP/TCP) and firewall notes: hub UDP 8102 (CALL_ME,
+      probes), discovery replies broadcast to UDP 8100, connect-back to the
+      client's TCP port (upstream uses 8200–8263; whether the hub accepts
+      any port is to be checked)
+- [ ] Does the hub answer CALL_ME over UDP before connecting? (upstream says
+      it echoes a CALL_ME; `transport` does not wait for it)

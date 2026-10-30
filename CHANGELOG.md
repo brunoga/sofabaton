@@ -27,6 +27,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   writes).
 - `record.HubInfo`: the hub identity of the banner and of the discovery
   reply; the discovery families (NOTIFY_ME, CONNECT_READY) in `wire`.
+- Package `transport`: `Dialer` (CALL_ME and the hub's TCP connect-back),
+  `Discoverer` (NOTIFY_ME broadcast discovery) and `Conn`, frames over a
+  connection.
 - `testdata/oracle`: vectors from the upstream implementation (labels,
   paging, 180 generated device records, upstream's decoding of the corpus's
   records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
