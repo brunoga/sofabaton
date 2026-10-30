@@ -45,6 +45,17 @@ sbx dump -hub 192.168.1.50 -v         # … logging every frame to stderr
 `dump` only reads. It keeps every reply's raw bytes next to the decoded
 view, so it is a lossless backup.
 
+To watch what the official app does, put the proxy between them:
+
+```sh
+sbx proxy -hub 192.168.1.50 -capture app.jsonl -v
+```
+
+The proxy takes the hub's connection, advertises itself as the hub (mDNS for
+the Android app, the NOTIFY_ME broadcast for iOS) and relays every frame
+between the app and the hub, appending each to the capture. Lines typed while
+it runs become notes in the capture ("now adding a Bluetooth device").
+
 ## Building
 
 ```sh

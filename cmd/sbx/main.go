@@ -3,6 +3,7 @@
 //	sbx discover            find hubs on the local network
 //	sbx info -hub IP        show a hub's identity
 //	sbx dump -hub IP        dump a hub's configuration as JSON
+//	sbx proxy -hub IP       stand between the app and the hub, recording
 package main
 
 import (
@@ -34,6 +35,8 @@ commands:
   info       show a hub's identity
   dump       dump a hub's configuration as JSON (a lossless backup: raw
              record bytes are kept next to the decoded view)
+  proxy      stand between the Sofabaton app and the hub, relaying and
+             recording every frame (-capture file.jsonl)
   version    print the version
 
 Close the Sofabaton app first: a hub serves one client at a time and does
@@ -43,13 +46,13 @@ not answer discovery while the app is connected.
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	if err := run(ctx, os.Args[1:], os.Stdout, os.Stderr); err != nil {
+	if err := run(ctx, os.Stdin, os.Args[1:], os.Stdout, os.Stderr); err != nil {
 		fmt.Fprintln(os.Stderr, "sbx:", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
 		fmt.Fprint(stderr, usage)
 		return errors.New("no command")
@@ -62,6 +65,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return info(ctx, args, stdout, stderr)
 	case "dump":
 		return dump(ctx, args, stdout, stderr)
+	case "proxy":
+		return proxyCmd(ctx, args, stdin, stdout, stderr)
 	case "version", "-version", "--version":
 		fmt.Fprintln(stdout, version)
 		return nil
