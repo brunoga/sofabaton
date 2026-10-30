@@ -62,6 +62,34 @@ func (e TextEncoding) Slot(s string, n int) []byte {
 	return e.AppendSlot(make([]byte, 0, n), s, n)
 }
 
+// DecodeAll reads every character of a slot, NULs included (as U+0000),
+// for slots whose meaningful text does not start at the first byte.
+func (e TextEncoding) DecodeAll(b []byte) string {
+	if e != UTF16BE {
+		r := make([]rune, len(b))
+		for i, c := range b {
+			r[i] = rune(c)
+		}
+		return string(r)
+	}
+	var r []rune
+	for i := 0; i+1 < len(b); i += 2 {
+		u := rune(b[i])<<8 | rune(b[i+1])
+		if !utf16.IsSurrogate(u) {
+			r = append(r, u)
+			continue
+		}
+		if u < 0xDC00 && i+3 < len(b) {
+			lo := rune(b[i+2])<<8 | rune(b[i+3])
+			if c := utf16.DecodeRune(u, lo); c != utf8.RuneError {
+				r = append(r, c)
+				i += 2
+			}
+		}
+	}
+	return string(r)
+}
+
 // DecodeSlot reads a slot's text, which ends at the first NUL (a zero code
 // unit in UTF-16). Unpaired UTF-16 surrogates are dropped. Whitespace is
 // kept: trimming is the caller's choice, and the exact text round-trips.
