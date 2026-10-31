@@ -66,3 +66,22 @@ on the cloud catalog for "known" devices (limitation L3, research R3).
 - [ ] Save pages (family `0x0E`) incl. trailing checksum
 - [ ] Replay (family `0x0F`) — note: plays ignore X2 emitter routing `[ref]`
 - [ ] Token/field table for `P:` with our own verification status
+
+## Denon `[X2✓]`
+
+Sofabaton's catalog profile for our Denon AVR-X8500H holds 71 commands:
+69 are `P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:<function>
+CHECKSUM:<c>`. C0/C1 are Denon's Kaseikyo manufacturer code 0x3254,
+D/S the chart's device and subdevice (4/1: main zone, remote ID 1), F the
+chart's function, and the checksum is `(D·16 ^ S ^ F·16 ^ F>>4) & 0xFF`,
+which reproduces all 69 (`profile.TestDenonK`,
+`testdata/x2/receiver-descriptors.txt`). The other two (power on and
+off) are `P:Sharp1 R:38000 D:1 F:195 C0:1` and `P:Sharp R:38000 D:1 F:61
+C0:0 D_CHECKSUM:17 F_CHECKSUM:194 C1:1 D0:17`: Denon's older 15-bit
+protocol, whose fields do not match the chart's device and function
+numbers (Main Zone On is 2/121 there) in any way found yet `[unknown]`.
+
+Denon's "IR Command Chart" (summer 2016) gives remote ID 2-4 the same
+functions as ID 1 plus 1024, on subdevice 2; that names the ID 1
+functions the chart lists only as 15-bit codes (cursor 27-30, Enter 31,
+volume 368-370) `[inferred]`.
