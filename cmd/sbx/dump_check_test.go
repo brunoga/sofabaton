@@ -5,21 +5,35 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/brunoga/sofabaton/record"
 	"github.com/brunoga/sofabaton/wire"
 )
 
-// TestDumpRoundTrip checks a dump of a real hub, named by SOFABATON_DUMP:
-// every raw record must decode and re-encode to its own bytes (apart from
-// the first, which a reply and a write set differently, and the record
-// checksum, which the hub does not keep current). It skips without one.
+// TestDumpRoundTrip checks dumps of real hubs, those under testdata/x2
+// and the one named by SOFABATON_DUMP: every raw record must decode and
+// re-encode to its own bytes (apart from the first, which a reply and a
+// write set differently, and the record checksum, which the hub does not
+// keep current).
 func TestDumpRoundTrip(t *testing.T) {
-	path := os.Getenv("SOFABATON_DUMP")
-	if path == "" {
-		t.Skip("SOFABATON_DUMP not set")
+	paths, err := filepath.Glob("../../testdata/x2/dump-*.json")
+	if err != nil {
+		t.Fatal(err)
 	}
+	if p := os.Getenv("SOFABATON_DUMP"); p != "" {
+		paths = append(paths, p)
+	}
+	if len(paths) == 0 {
+		t.Fatal("no dumps")
+	}
+	for _, p := range paths {
+		t.Run(filepath.Base(p), func(t *testing.T) { checkDump(t, p) })
+	}
+}
+
+func checkDump(t *testing.T, path string) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)

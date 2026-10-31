@@ -1,7 +1,9 @@
 # Hub firmware update
 
 Observed once `[X2✓]`: the Android app updating our X2 from firmware 8 to 9
-through `sbx proxy` (2026-10-30, 217 chunks in about 60 s). Field meanings
+through `sbx proxy` (2026-10-30, 217 chunks in about 60 s). The capture is
+`testdata/x2/app-firmware-update.jsonl`, with the image bytes removed, and
+`capture.TestX2FirmwareUpdate` checks the flow below against it. Field meanings
 marked `[guess]` rest on that single capture. We do not implement updates,
 and the image itself is not kept in the repository (it is the vendor's).
 
@@ -9,9 +11,10 @@ and the image itself is not kept in the repository (it is the vendor's).
 
 ```
 app → hub  29 FirmwareStart   once
+hub → app  2B FirmwareAck     n = 0
 app → hub  2A FirmwareChunk   n = 1 … N, one at a time
-hub → app  2B FirmwareAck     after each chunk, echoing n
-hub → app  2C FirmwareDone    after the last ack
+hub → app  2B FirmwareAck     after each chunk but the last, echoing n
+hub → app  2C FirmwareDone    in place of the last chunk's ack
            (the hub reboots, without closing the TCP connection)
 app        back to discovery until the hub answers again
 ```
@@ -46,7 +49,7 @@ looks encrypted or compressed (no structure).
 ## `2B` FirmwareAck (8 bytes) and `2C` FirmwareDone (6 bytes)
 
 ```
-2B: 00 00 01 00 00 00 | 00 D8     n BE16 of the acknowledged chunk
+2B: 00 00 01 00 00 00 | 00 D8     n BE16 of the acknowledged chunk (0: the start)
 2C: 00 00 01 00 00 00
 ```
 
