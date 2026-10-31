@@ -11,6 +11,8 @@ type Model struct {
 	Devices    []*record.Entity
 	Activities []*record.Entity
 	Commands   map[byte][]*record.Command // by device
+	// Data is the commands' signal data, by device and command id.
+	Data map[byte]map[byte][]byte
 	Keymaps    map[byte][]record.Binding  // by entity
 	Macros     map[byte][]*record.Macro   // by entity
 	Inputs     map[byte]*record.Inputs    // by device
@@ -78,16 +80,48 @@ func FromModel(m *Model) *Hub {
 		if err != nil {
 			return []wire.Frame{Status(Rejected)}
 		}
-		_, c, _, err := record.ParseCommandWrite(v, body)
+		_, c, data, err := record.ParseCommandWrite(v, body)
 		if err != nil {
 			return []wire.Frame{Status(Rejected)}
 		}
-		c.Sort = c.ID
 		if m.Commands == nil {
 			m.Commands = map[byte][]*record.Command{}
 		}
-		m.Commands[c.Device] = append(m.Commands[c.Device], c)
+		if m.Data == nil {
+			m.Data = map[byte]map[byte][]byte{}
+		}
+		if m.Data[c.Device] == nil {
+			m.Data[c.Device] = map[byte][]byte{}
+		}
+		m.Data[c.Device][c.ID] = data
+		cmds := m.Commands[c.Device]
+		for i, old := range cmds {
+			if old.ID == c.ID { // in place: the hub keeps the sort
+				c.Sort = old.Sort
+				cmds[i] = c
+				return []wire.Frame{Status(0)}
+			}
+		}
+		c.Sort = 0xFF // added commands get no place on the remote
+		m.Commands[c.Device] = append(cmds, c)
 		return []wire.Frame{Status(0)}
+	})
+	h.Handle(wire.FamReqBlob, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) != 2 {
+			return []wire.Frame{Status(Rejected)}
+		}
+		dev, id := req.Payload[0], req.Payload[1]
+		data := m.Data[dev][id]
+		for _, c := range m.Commands[dev] {
+			if c.ID == id && data != nil {
+				body, err := c.WriteBody(1, data)
+				if err != nil {
+					return []wire.Frame{Status(Rejected)}
+				}
+				return Reply(wire.FamBlobPage, body[3:])
+			}
+		}
+		return []wire.Frame{Status(NotFound)}
 	})
 	h.Handle(wire.FamDeleteKey, func(req wire.Frame) []wire.Frame {
 		if len(req.Payload) != 2 {
@@ -98,6 +132,7 @@ func FromModel(m *Model) *Hub {
 		for i, c := range cmds {
 			if c.ID == id {
 				m.Commands[dev] = append(cmds[:i:i], cmds[i+1:]...)
+				delete(m.Data[dev], id)
 				return []wire.Frame{Status(0)}
 			}
 		}

@@ -151,7 +151,7 @@ func TestAddCommand(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := c.AddCommand(ctx, cmd, data); err != nil {
+	if err := c.WriteCommand(ctx, cmd, data); err != nil {
 		t.Fatal(err)
 	}
 	after, err := c.Commands(ctx, 1)

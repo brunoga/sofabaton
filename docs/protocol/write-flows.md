@@ -88,6 +88,18 @@ command 27, keeps code `000000000000` as written and gives it sort `FF`
 `61` sort-table write, not done yet). Sent from the app, it opened the
 projector's focus screen.
 
+## Renaming a command `[X2✓]`
+
+The same write over an existing id, with the command's current code and
+data and a new label. On our X2 (2026-10-31), "Ok" → "OK" kept id 24, code
+`00000000002A` and the remote's OK binding; then `sbx apply` renamed 17
+more of the Aetherion's commands and added its 8 remaining keys
+([profiles.md](../profiles.md)).
+
+The hub's reply to a command data request (`0C [device, id]`, answered in
+`0D`) carries the same body as a write, but its last byte is not the sum8
+(upstream calls it a replay tail); writers recompute it.
+
 ## Deleting one command `[X2✓]`
 
 `10 [device, command id]`, status ack after a hub-side sweep (upstream

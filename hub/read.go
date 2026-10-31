@@ -26,6 +26,10 @@ func reqMacros(entity byte) wire.Frame {
 	return wire.Frame{Family: wire.FamReqMacros, Payload: []byte{entity, 0xFF}}
 }
 
+func reqCommandData(dev, id byte) wire.Frame {
+	return wire.Frame{Family: wire.FamReqBlob, Payload: []byte{dev, id}}
+}
+
 func reqMembers(activity byte) wire.Frame {
 	return wire.Frame{Family: wire.FamReqActivityMap, Payload: []byte{activity}}
 }
@@ -120,4 +124,20 @@ func (c *Client) single(ctx context.Context, req wire.Frame, fam wire.Family) ([
 		return nil, fmt.Errorf("hub: %v reply has %d records, want 1", fam.Name(wire.FromHub), len(bodies))
 	}
 	return bodies[0], nil
+}
+
+// CommandData reads one command of a device together with its signal data
+// (family 0x0C, answered in family 0x0D with the body of a command write):
+// a record.Descriptor for a descriptive IR code, other bytes for learned,
+// RF or Bluetooth codes.
+func (c *Client) CommandData(ctx context.Context, device, id byte) (*record.Command, []byte, error) {
+	body, err := c.single(ctx, reqCommandData(device, id), wire.FamBlobPage)
+	if err != nil {
+		return nil, nil, err
+	}
+	_, cmd, data, err := record.ParseCommandWrite(c.variant, body)
+	if err != nil {
+		return nil, nil, fmt.Errorf("hub: command %d of device %d: %w", id, device, err)
+	}
+	return cmd, data, nil
 }

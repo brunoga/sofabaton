@@ -139,8 +139,11 @@ func (c *Command) WritePages(seq, count int, data []byte) ([][]byte, error) {
 	return wire.Pages(byte(seq), body), nil
 }
 
-// ParseCommandWrite decodes the body of a command write (see WriteBody)
-// into the burst size, the command and its data.
+// ParseCommandWrite decodes the body of a command write (see WriteBody),
+// or of the hub's reply to a command data request, into the burst size,
+// the command and its data. The last byte is not checked: writes end with
+// a sum8, but the hub's replies end with a different check byte (upstream's
+// "replay tail"), and writers recompute it anyway.
 func ParseCommandWrite(v wire.Variant, body []byte) (count int, c *Command, data []byte, err error) {
 	s, err := v.Schema()
 	if err != nil {
@@ -149,9 +152,6 @@ func ParseCommandWrite(v wire.Variant, body []byte) (count int, c *Command, data
 	rec := s.CommandStride - 1
 	if len(body) < 3+rec+1 {
 		return 0, nil, nil, fmt.Errorf("record: command write of %d bytes", len(body))
-	}
-	if sum := wire.Checksum(body[:len(body)-1]); sum != body[len(body)-1] {
-		return 0, nil, nil, fmt.Errorf("record: command write checksum %#02x, want %#02x", body[len(body)-1], sum)
 	}
 	full := append(append([]byte(nil), body[3:3+rec]...), 0)
 	if c, err = ParseCommand(v, full); err != nil {

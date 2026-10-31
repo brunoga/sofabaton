@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/netip"
+	"os"
 	"strings"
 	"testing"
 
@@ -142,5 +143,53 @@ func TestRemoveIR(t *testing.T) {
 	}
 	if err := run1("remove-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus"); err == nil {
 		t.Fatal("removed it twice")
+	}
+}
+
+func TestExportApply(t *testing.T) {
+	simulated(t)
+	dir := t.TempDir()
+	var out, errs bytes.Buffer
+	sbx := func(stdin string, args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(stdin), args, &out, &errs)
+	}
+	if err := sbx("", "add-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus", "-code", "P:NEC R:38400 D:0 S:206 F:217"); err != nil {
+		t.Fatal(err)
+	}
+	// The simulated TV's "Power" has no data: export needs every command's.
+	if err := sbx("", "export", "-hub", "192.0.2.1", "-device", "1"); err == nil {
+		t.Fatal("exported a command without data")
+	}
+	if err := sbx("", "remove-ir", "-hub", "192.0.2.1", "-device", "1", "-id", "1"); err != nil {
+		t.Fatal(err)
+	}
+	file := dir + "/tv.yaml"
+	if err := sbx("", "export", "-hub", "192.0.2.1", "-device", "1", "-o", file); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(file)
+	if err != nil || !strings.Contains(string(data), "code: 0xD9") || !strings.Contains(string(data), "id: 1") {
+		t.Fatalf("exported %s %v", data, err)
+	}
+	edited := strings.Replace(string(data), "name: Focus", "name: Lens Focus", 1) +
+		"  - name: Menu\n    code: 0x5A\n    comment: from the IR list\n"
+	if err := os.WriteFile(file, []byte(edited), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "apply", "-hub", "192.0.2.1", "-f", file, "-n"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), `rename "Focus" -> "Lens Focus"`) || !strings.Contains(out.String(), `add       1 "Menu"`) {
+		t.Fatalf("plan:\n%s", out.String())
+	}
+	if err := sbx("n\n", "apply", "-hub", "192.0.2.1", "-f", file); err == nil {
+		t.Fatal("applied without a yes")
+	}
+	if err := sbx("y\n", "apply", "-hub", "192.0.2.1", "-f", file); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "apply", "-hub", "192.0.2.1", "-f", file, "-n"); err != nil || !strings.Contains(out.String(), "already matches") {
+		t.Fatalf("after apply: %v\n%s", err, out.String())
 	}
 }
