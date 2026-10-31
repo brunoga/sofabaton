@@ -45,7 +45,11 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Unknown or untested
 
-- X1 and X1S hubs: modeled from upstream's captures, never run by us.
+- X1 and X1S hubs: modeled from upstream's captures, never run by us. The
+  client reads them and refuses to write to them (`hub.ErrUnsupported`).
+  Supporting them needs someone with one: proxy captures of the app and
+  an `sbx dump`. Their IR is raw timings, not the X2's descriptors, so
+  profile codes there also need our own IR encoders (PLAN P7).
 - Whether the hub accepts device sequences beyond power on/off, and how
   the remote shows them.
 - What the device category and icon change on the remote, beyond the

@@ -112,6 +112,20 @@ func (c *Client) Records(ctx context.Context, req wire.Frame, fam wire.Family) (
 	return b.Records()
 }
 
+// ErrUnsupported reports a write to a hub model we have not tested
+// writes on: only the X2's are verified, so the client refuses the X1's and
+// X1S's rather than guess. Reads work on every model.
+var ErrUnsupported = errors.New("hub: not supported on this model")
+
+// Writable reports whether the client writes to this hub: nil on an X2,
+// ErrUnsupported on the others.
+func (c *Client) Writable() error {
+	if c.variant != wire.X2 {
+		return fmt.Errorf("%w: changing an %v is untested (only the X2 is); reading, dumps and the proxy work", ErrUnsupported, c.variant)
+	}
+	return nil
+}
+
 // ErrNotFound reports data the hub does not hold, such as the inputs of a
 // device without an inputs page.
 var ErrNotFound = errors.New("hub: not found")

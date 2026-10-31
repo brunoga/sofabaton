@@ -16,6 +16,9 @@ import (
 // command (see NextCommandID); a used one overwrites it in place, which
 // renames or recodes it and keeps the buttons that refer to it.
 func (c *Client) WriteCommand(ctx context.Context, cmd *record.Command, data []byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	pages, err := cmd.WritePages(1, 1, data)
 	if err != nil {
 		return err
@@ -39,6 +42,9 @@ const DeleteTimeout = 60 * time.Second
 // deletes an activity's key rows, scoped to a device). The hub drops the
 // bindings that referred to it.
 func (c *Client) DeleteCommand(ctx context.Context, device, id byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	if _, ok := ctx.Deadline(); !ok {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, DeleteTimeout)
@@ -68,6 +74,9 @@ func NextCommandID(cmds []*record.Command) (byte, error) {
 // stored (family 0x5F; the app sends one to test a power command). A step
 // names its command by device, id and code, as in record.Macro.
 func (c *Client) Run(ctx context.Context, entity byte, steps []record.Step) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	m, err := record.NewMacro(c.variant, entity, 0, "")
 	if err != nil {
 		return err
@@ -96,6 +105,9 @@ func StepFor(cmd *record.Command) record.Step {
 // 0x3E), replacing the key's binding; the hub acks with the button. The
 // app names the command by its code alone and the hub fills in the id.
 func (c *Client) WriteButton(ctx context.Context, b record.Binding) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	ctx, cancel := c.bound(ctx)
 	defer cancel()
 	echo := byte(b.Button)
@@ -108,6 +120,9 @@ func (c *Client) WriteButton(ctx context.Context, b record.Binding) error {
 // WriteOrder writes the order of a device's commands on the remote's
 // device page (family 0x61), replacing the device's order.
 func (c *Client) WriteOrder(ctx context.Context, device byte, order []record.Place) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	ctx, cancel := c.bound(ctx)
 	defer cancel()
 	pages := record.OrderPages(device, order)
@@ -124,6 +139,9 @@ func (c *Client) WriteOrder(ctx context.Context, device byte, order []record.Pla
 // committed until UpdateDevice writes it with its tail's Marker set; the
 // app writes its commands, keys and power sequences in between.
 func (c *Client) CreateDevice(ctx context.Context, e *record.Entity) (byte, error) {
+	if err := c.Writable(); err != nil {
+		return 0, err
+	}
 	p, err := e.WritePayload()
 	if err != nil {
 		return 0, err
@@ -142,6 +160,9 @@ func (c *Client) CreateDevice(ctx context.Context, e *record.Entity) (byte, erro
 
 // UpdateDevice rewrites a device's record (family 0x08).
 func (c *Client) UpdateDevice(ctx context.Context, e *record.Entity) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	p, err := e.WritePayload()
 	if err != nil {
 		return err
@@ -157,6 +178,9 @@ func (c *Client) UpdateDevice(ctx context.Context, e *record.Entity) error {
 // DeleteDevice deletes a device (family 0x09) and everything that refers
 // to it. The hub took 13.5 s to acknowledge one.
 func (c *Client) DeleteDevice(ctx context.Context, id byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	if _, ok := ctx.Deadline(); !ok {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, DeleteTimeout)
@@ -171,6 +195,9 @@ func (c *Client) DeleteDevice(ctx context.Context, id byte) error {
 // SetIdleBehavior writes a device's idle behavior (family 0x41), such as
 // record.IdleDefault.
 func (c *Client) SetIdleBehavior(ctx context.Context, device, behavior byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	ctx, cancel := c.bound(ctx)
 	defer cancel()
 	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamSetIdleBehavior, Payload: []byte{device, behavior}}, session.Status()); err != nil {
@@ -183,6 +210,9 @@ func (c *Client) SetIdleBehavior(ctx context.Context, device, behavior byte) err
 // as a device's POWER_ON sequence, replacing the one with its id. The hub
 // acks the last page with family 0x12 and the others with a status ack.
 func (c *Client) WriteMacro(ctx context.Context, m *record.Macro) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	pages, err := m.WritePages()
 	if err != nil {
 		return err
@@ -205,6 +235,9 @@ func (c *Client) WriteMacro(ctx context.Context, m *record.Macro) error {
 // acknowledged with a status ack. The app follows it with an UpdateDevice
 // whose tail's InputMode matches, then a Sync.
 func (c *Client) WriteInputs(ctx context.Context, in *record.Inputs) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	pages, err := in.WritePages()
 	if err != nil {
 		return err
@@ -222,6 +255,9 @@ func (c *Client) WriteInputs(ctx context.Context, in *record.Inputs) error {
 // Sync has the hub update the remotes' copy of one device or activity
 // (family 0x65 [entity, 01], the X2's per-entity sync; upstream).
 func (c *Client) Sync(ctx context.Context, entity byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	ctx, cancel := c.bound(ctx)
 	defer cancel()
 	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamAssignCommit, Payload: []byte{entity, 0x01}}, session.Status()); err != nil {

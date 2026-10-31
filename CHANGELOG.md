@@ -8,6 +8,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `sbx --help` starts with a banner: name, version and what sbx is.
+- `hub.ErrUnsupported` and `Client.Writable`: the client refuses to write
+  to an X1 or X1S, whose writes we have not tested; reads work. `sbx`
+  says so before asking to apply.
 - A profile for the Ugoos AM6B Plus running CoreELEC (NEC, from CoreELEC's
   remote configuration).
 

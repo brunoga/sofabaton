@@ -116,6 +116,30 @@ func TestOpenUnknownModel(t *testing.T) {
 	}
 }
 
+func TestWritesX2Only(t *testing.T) {
+	m := model(t)
+	m.Info.Model = 0x02 // an X1S
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = c.Close() }()
+	if _, err := c.Devices(ctx); err != nil {
+		t.Fatalf("reading an X1S: %v", err)
+	}
+	if err := c.Writable(); !errors.Is(err, hub.ErrUnsupported) {
+		t.Fatalf("Writable: %v", err)
+	}
+	if err := c.Sync(ctx, 1); !errors.Is(err, hub.ErrUnsupported) {
+		t.Fatalf("Sync: %v", err)
+	}
+	if _, err := c.CreateDevice(ctx, &record.Entity{}); !errors.Is(err, hub.ErrUnsupported) {
+		t.Fatalf("CreateDevice: %v", err)
+	}
+}
+
 func TestDefaultTimeout(t *testing.T) {
 	h := hubsim.FromModel(model(t))
 	h.Handle(wire.FamReqDevices, func(wire.Frame) []wire.Frame { return nil }) // never answers

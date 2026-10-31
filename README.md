@@ -11,8 +11,9 @@ better management app than the official one.
 
 > **Status: 0.1, a first prerelease.** IR devices can be read, backed up,
 > edited and created from scratch with YAML profiles, and the changes reach
-> the remote. Everything here is verified on our X2 hub; X1 and X1S are
-> modeled from upstream's captures but not tested by us. Bluetooth devices,
+> the remote. Everything here is verified on our X2 hub. X1 and X1S hubs
+> are modeled from upstream's captures but untested: sbx reads them (`info`,
+> `list`, `dump`, the proxy) and refuses to change them. Bluetooth devices,
 > activities and restoring a backup are not there yet: see
 > [ROADMAP.md](ROADMAP.md).
 
