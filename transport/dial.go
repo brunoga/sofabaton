@@ -21,6 +21,11 @@ const (
 	ListenPorts = 64
 )
 
+// KeepAlive is the TCP keep-alive used on hub connections. A hub that
+// reboots (after a firmware update, say) drops its connections without a
+// word; short probes notice in seconds instead of minutes.
+var KeepAlive = net.KeepAliveConfig{Enable: true, Idle: 5 * time.Second, Interval: 5 * time.Second, Count: 3}
+
 // Dialer opens sessions with hubs. The zero value uses the defaults.
 type Dialer struct {
 	// HubPort is the hub's UDP port (default 8102).
@@ -109,7 +114,7 @@ func (d *Dialer) Dial(ctx context.Context, hub netip.Addr) (*Conn, error) {
 }
 
 func (d *Dialer) listen(ctx context.Context, local netip.Addr) (net.Listener, error) {
-	var lc net.ListenConfig
+	lc := net.ListenConfig{KeepAliveConfig: KeepAlive}
 	first, n := d.ListenPort, d.ListenPorts
 	if first == 0 {
 		first = ListenPort

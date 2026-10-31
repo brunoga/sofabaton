@@ -24,7 +24,7 @@ func proxyCmd(ctx context.Context, args []string, stdin io.Reader, stdout, stder
 	out := fs.String("capture", "", "append every frame to this capture file (JSON lines)")
 	verbose := fs.Bool("v", false, "log every frame to stderr")
 	noMDNS := fs.Bool("no-mdns", false, "do not advertise over mDNS (the Android app needs it)")
-	timeout := fs.Duration("timeout", 20*time.Second, "time to wait for the hub to connect back")
+	timeout := fs.Duration("timeout", 20*time.Second, "time to wait for the hub to connect back, on each (re)connection")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -47,9 +47,10 @@ func proxyCmd(ctx context.Context, args []string, stdin io.Reader, stdout, stder
 	}
 	log := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	cfg := proxy.Config{
-		Hub:    addr,
-		NoMDNS: *noMDNS,
-		Log:    log,
+		Hub:         addr,
+		NoMDNS:      *noMDNS,
+		DialTimeout: *timeout,
+		Log:         log,
 		Tap: func(link string, dir wire.Direction, f wire.Frame) {
 			if rec != nil {
 				_ = rec.Frame(link, dir, f)

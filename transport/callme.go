@@ -22,10 +22,13 @@ func CallMe(addr netip.AddrPort) (wire.Frame, error) {
 	return wire.Frame{Family: wire.FamCallMe, Payload: p}, nil
 }
 
-// ParseCallMe returns the address in a CALL_ME payload. The official app
-// writes its IP in little-endian order, and the hub ignores the field in
-// favor of the packet's source address, so callers that have the source
-// address should use it and only take the port from here.
+// ParseCallMe returns the address in a CALL_ME payload. The hub ignores
+// the IP field in favor of the packet's source address (and upstream saw
+// the app write it little-endian, though our Android app writes it
+// big-endian), so callers that have the source address should use it and
+// only take the port from here. The first six bytes are not checked: our
+// Android app puts the hub's id there, we send zeros, and the hub takes
+// either.
 func ParseCallMe(payload []byte) (netip.AddrPort, error) {
 	if len(payload) != callMeLen {
 		return netip.AddrPort{}, fmt.Errorf("transport: CALL_ME payload of %d bytes", len(payload))

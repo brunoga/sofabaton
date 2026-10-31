@@ -89,6 +89,8 @@ const (
 	FamWriteMacro         Family = 0x12
 	FamEraseConfiguration Family = 0x1D
 	FamFindRemote         Family = 0x23
+	FamFirmwareStart      Family = 0x29 // a firmware image's size and digest
+	FamFirmwareChunk      Family = 0x2A // one numbered piece of the image
 	FamReqRemoteList      Family = 0x2E // X2 paired remotes and repeaters
 	FamSetHubName         Family = 0x30
 	FamReqHubName         Family = 0x32
@@ -132,6 +134,8 @@ const (
 	FamMacroAck         Family = 0x12
 	FamMacroPage        Family = 0x13
 	FamBatchResume      Family = 0x15
+	FamFirmwareAck      Family = 0x2B // echoes a chunk's number
+	FamFirmwareDone     Family = 0x2C // the image is in; the hub reboots
 	FamRemoteStatus     Family = 0x2F
 	FamHubNameReply     Family = 0x31
 	FamCreateActAck     Family = 0x37 // payload[0] is the new activity id
@@ -174,6 +178,8 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamEraseConfiguration}: "EraseConfiguration",
 	{ToHub, FamFindRemote}:         "FindRemote",
 	{ToHub, FamReqRemoteList}:      "ReqRemoteList",
+	{ToHub, FamFirmwareStart}:      "FirmwareStart",
+	{ToHub, FamFirmwareChunk}:      "FirmwareChunk",
 	{ToHub, FamSetHubName}:         "SetHubName",
 	{ToHub, FamReqHubName}:         "ReqHubName",
 	{ToHub, FamCreateActivity}:     "CreateActivity",
@@ -214,6 +220,8 @@ var familyNames = map[familyKey]string{
 	{FromHub, FamMacroPage}:        "MacroPage",
 	{FromHub, FamBatchResume}:      "BatchResume",
 	{FromHub, FamRemoteStatus}:     "RemoteStatus",
+	{FromHub, FamFirmwareAck}:      "FirmwareAck",
+	{FromHub, FamFirmwareDone}:     "FirmwareDone",
 	{FromHub, FamHubNameReply}:     "HubNameReply",
 	{FromHub, FamCreateActAck}:     "CreateActivityAck",
 	{FromHub, FamActivityRow}:      "ActivityRow",

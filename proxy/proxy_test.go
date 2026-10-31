@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/netip"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -28,14 +29,16 @@ func udpPort(t *testing.T) int {
 }
 
 // fakeHub answers CALL_ME on a UDP port by connecting back and serving
-// the connection with a simulated hub.
-func fakeHub(t *testing.T, h *hubsim.Hub) int {
+// the connection with a simulated hub, one connection at a time, like a
+// hub. Each connection is sent on conns, if not nil.
+func fakeHub(t *testing.T, h *hubsim.Hub, conns chan<- net.Conn) int {
 	t.Helper()
 	pc, err := net.ListenPacket("udp4", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { pc.Close() })
+	var busy atomic.Bool
 	go func() {
 		buf := make([]byte, 512)
 		for {
@@ -44,7 +47,7 @@ func fakeHub(t *testing.T, h *hubsim.Hub) int {
 				return
 			}
 			f, _, err := wire.Parse(buf[:n])
-			if err != nil || f.Family != wire.FamCallMe {
+			if err != nil || f.Family != wire.FamCallMe || busy.Load() {
 				continue
 			}
 			addr, _ := transport.ParseCallMe(f.Payload)
@@ -52,8 +55,14 @@ func fakeHub(t *testing.T, h *hubsim.Hub) int {
 			if err != nil {
 				continue
 			}
-			go func() { _ = h.Serve(transport.NewConn(c)) }()
-			return
+			busy.Store(true)
+			if conns != nil {
+				conns <- c
+			}
+			go func() {
+				_ = h.Serve(transport.NewConn(c))
+				busy.Store(false)
+			}()
 		}
 	}()
 	return pc.LocalAddr().(*net.UDPAddr).Port
@@ -94,7 +103,7 @@ func TestProxyRelaysTheApp(t *testing.T) {
 	defer cancel()
 	p, err := Start(ctx, Config{
 		Hub:       loopback,
-		Dialer:    transport.Dialer{HubPort: fakeHub(t, h), ListenPort: -1, Retry: 50 * time.Millisecond},
+		Dialer:    transport.Dialer{HubPort: fakeHub(t, h, nil), ListenPort: -1, Retry: 50 * time.Millisecond},
 		AppPort:   appPort,
 		ReplyPort: replyPort,
 		Broadcast: loopback,
@@ -181,6 +190,106 @@ func TestProxyRelaysTheApp(t *testing.T) {
 	}
 	if p.AppAttached() {
 		t.Fatal("app still attached after it closed")
+	}
+	cancel()
+	if err := <-runErr; err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+}
+
+// callApp plays the app's CALL_ME and returns the proxy's connection.
+func callApp(t *testing.T, appPort int) *transport.Conn {
+	t.Helper()
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	app, err := net.Dial("udp4", netip.AddrPortFrom(loopback, uint16(appPort)).String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer app.Close()
+	call, _ := transport.CallMe(ln.Addr().(*net.TCPAddr).AddrPort())
+	raw, _ := call.MarshalBinary()
+	accepted := make(chan net.Conn, 1)
+	go func() {
+		if c, err := ln.Accept(); err == nil {
+			accepted <- c
+		}
+	}()
+	tick := time.NewTicker(50 * time.Millisecond)
+	defer tick.Stop()
+	deadline := time.After(5 * time.Second)
+	for {
+		_, _ = app.Write(raw) // the app repeats CALL_ME until called
+		select {
+		case c := <-accepted:
+			t.Cleanup(func() { c.Close() })
+			return transport.NewConn(c)
+		case <-deadline:
+			t.Fatal("the proxy did not call back")
+		case <-tick.C:
+		}
+	}
+}
+
+func waitFor(t *testing.T, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for !cond() {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for %s", what)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// A hub that reboots (after a firmware update) drops the proxy's
+// connection: the proxy drops the app, reconnects and serves it again.
+func TestProxyReconnects(t *testing.T) {
+	info := &record.HubInfo{ID: [6]byte{0x80, 0xf1, 0xb2, 0x96, 0x2c, 0x08}, Model: 3, Firmware: 8, Name: "X2 HUB"}
+	h := hubsim.FromModel(&hubsim.Model{Info: info})
+	conns := make(chan net.Conn, 2)
+	appPort := udpPort(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	p, err := Start(ctx, Config{
+		Hub:       loopback,
+		Dialer:    transport.Dialer{HubPort: fakeHub(t, h, conns), ListenPort: -1, Retry: 50 * time.Millisecond},
+		AppPort:   appPort,
+		ReplyPort: udpPort(t),
+		Broadcast: loopback,
+		NoMDNS:    true,
+		Backoff:   20 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	runErr := make(chan error, 1)
+	go func() { runErr <- p.Run(ctx) }()
+	first := <-conns
+
+	app := callApp(t, appPort)
+	waitFor(t, "the app", p.AppAttached)
+
+	info.Firmware = 9 // the update
+	first.Close()     // the reboot
+	if _, err := app.ReadFrame(); err == nil {
+		t.Fatal("the app was not dropped with the hub")
+	}
+	<-conns
+	waitFor(t, "the hub to come back", p.HubAttached)
+	if fw := p.Info().Firmware; fw != 9 {
+		t.Fatalf("firmware %d after reconnecting, want the new banner's 9", fw)
+	}
+
+	app = callApp(t, appPort)
+	if err := app.WriteFrame(wire.Frame{Family: wire.FamReqBanner}); err != nil {
+		t.Fatal(err)
+	}
+	if f, err := app.ReadFrame(); err != nil || f.Family != wire.FamBanner {
+		t.Fatalf("relayed %v %v after reconnecting", f, err)
 	}
 	cancel()
 	if err := <-runErr; err != nil {
