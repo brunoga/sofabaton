@@ -42,6 +42,9 @@ sbx dump -hub 192.168.1.50 -o hub.json   # full configuration, read-only
 sbx dump -hub 192.168.1.50 -v         # … logging every frame to stderr
 ```
 
+`-hub` is optional: without it sbx uses `$SBX_HUB` or, if that is unset,
+the hub discovery finds when exactly one answers (`sbx info`, `sbx list`).
+
 `dump` only reads. It keeps every reply's raw bytes next to the decoded
 view, so it is a lossless backup.
 

@@ -12,6 +12,7 @@ import (
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/hubsim"
 	"github.com/brunoga/sofabaton/record"
+	"github.com/brunoga/sofabaton/transport"
 	"github.com/brunoga/sofabaton/wire"
 )
 
@@ -88,12 +89,59 @@ func TestUsage(t *testing.T) {
 	if err := run(context.Background(), strings.NewReader(""), []string{"bogus"}, &out, &errs); err == nil {
 		t.Fatal("unknown command accepted")
 	}
-	if err := run(context.Background(), strings.NewReader(""), []string{"info"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "-hub") {
-		t.Fatalf("info without -hub: %v", err)
-	}
 	out.Reset()
 	if err := run(context.Background(), strings.NewReader(""), []string{"version"}, &out, &errs); err != nil || strings.TrimSpace(out.String()) != "dev" {
 		t.Fatalf("version: %q %v", out.String(), err)
+	}
+}
+
+// discovering makes discovery find hubs at addrs.
+func discovering(t *testing.T, addrs ...string) {
+	t.Helper()
+	t.Setenv(hubEnv, "")
+	prev := discoverHubs
+	discoverHubs = func(context.Context) ([]transport.Announcement, error) {
+		var found []transport.Announcement
+		for i, a := range addrs {
+			info := &record.HubInfo{Variant: wire.X2, Name: "X2 HUB"}
+			info.ID[0] = byte(i)
+			found = append(found, transport.Announcement{Addr: netip.MustParseAddr(a), Info: info})
+		}
+		return found, nil
+	}
+	t.Cleanup(func() { discoverHubs = prev })
+}
+
+func TestHubDiscovery(t *testing.T) {
+	simulated(t)
+	var dialed netip.Addr
+	sim := dialHub
+	dialHub = func(ctx context.Context, a netip.Addr, opts hub.Options) (*hub.Client, error) {
+		dialed = a
+		return sim(ctx, a, opts)
+	}
+	info := func() (string, error) {
+		var out, errs bytes.Buffer
+		err := run(context.Background(), strings.NewReader(""), []string{"info"}, &out, &errs)
+		return errs.String(), err
+	}
+
+	discovering(t, "192.0.2.7")
+	if msg, err := info(); err != nil || dialed != netip.MustParseAddr("192.0.2.7") || !strings.Contains(msg, "using hub 192.0.2.7") {
+		t.Fatalf("one hub: dialed %v, %q, %v", dialed, msg, err)
+	}
+	t.Setenv(hubEnv, "192.0.2.9")
+	if _, err := info(); err != nil || dialed != netip.MustParseAddr("192.0.2.9") {
+		t.Fatalf("$%s: dialed %v, %v", hubEnv, dialed, err)
+	}
+
+	discovering(t)
+	if _, err := info(); err == nil || !strings.Contains(err.Error(), "-hub") {
+		t.Fatalf("no hub: %v", err)
+	}
+	discovering(t, "192.0.2.7", "192.0.2.8")
+	if _, err := info(); err == nil || !strings.Contains(err.Error(), "192.0.2.8") {
+		t.Fatalf("two hubs: %v", err)
 	}
 }
 
