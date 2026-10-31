@@ -56,7 +56,7 @@ Each command has exactly one of:
 
 | Field | Meaning |
 |---|---|
-| `code` | key value in the device's `ir` protocol. NEC (`ir: {protocol: NEC, system: 0x00CE}`): the hub's descriptor is `P:NEC R:38400 D:<system high byte> S:<system low byte> F:<code>` ([ir-codes.md](protocol/ir-codes.md)). DenonK (`ir: {protocol: DenonK, device: 4, subdevice: 1}`): the function number of Denon's IR command charts, rendered as `P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:<code> CHECKSUM:<c>` with the Kaseikyo check byte |
+| `code` | key value in the device's `ir` protocol. NEC (`ir: {protocol: NEC, system: 0x00CE}`): the hub's descriptor is `P:NEC R:38400 D:<system high byte> S:<system low byte> F:<code>` ([ir-codes.md](protocol/ir-codes.md)). DenonK (`ir: {protocol: DenonK, device: 4, subdevice: 1}`): the function number of Denon's IR command charts, rendered as `P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:<code> CHECKSUM:<c>` with the Kaseikyo check byte. Denon (`ir: {protocol: Denon, device: 2}`): the chart's 15-bit codes, which the hub writes as `P:Sharp` ([ir-codes.md](protocol/ir-codes.md#denon-15-bit-as-psharp-x2)). A command can give its own `ir` when a device mixes protocols |
 | `descriptor` | a descriptive IR code as the X2 stores it |
 | `data` | the signal bytes as the hub holds them (hex); can be kept and renamed, not added |
 

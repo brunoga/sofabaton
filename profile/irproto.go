@@ -63,6 +63,30 @@ var protocols = []irProtocol{
 			return ir, uint16(v[2]), true
 		},
 	},
+	{
+		// Denon's 15-bit codes (Sharp's format): a 5-bit address (the
+		// chart's device, 2 or 12 for a receiver) and an 8-bit function.
+		name: "Denon", maxCode: 0xFF, decimal: true,
+		check: func(ir *IR) error {
+			if ir.Device == nil || *ir.Device > 0x1F || ir.Subdevice != nil {
+				return fmt.Errorf("profile: Denon needs a device, 0 to 31, and no subdevice")
+			}
+			return nil
+		},
+		render: func(ir *IR, code uint16) string { return denonSharp(*ir.Device, uint8(code)) },
+		parse: func(desc string) (IR, uint16, bool) {
+			v, ok := match(sharpPattern, desc, 5, 8, 1)
+			if !ok {
+				return IR{}, 0, false
+			}
+			a := uint8(v[2]) | uint8(v[0]&0xF)<<1
+			f := uint16(v[0]>>4) | uint16(v[1]&0x7F)<<1
+			if denonSharp(a, uint8(f)) != desc {
+				return IR{}, 0, false
+			}
+			return IR{Protocol: "Denon", Device: &a}, f, true
+		},
+	},
 }
 
 // denonK renders a DenonK descriptor. Its checksum is the Kaseikyo
@@ -73,7 +97,23 @@ func denonK(d, s uint8, f uint16) string {
 	return fmt.Sprintf("P:DenonK R:37000 C0:84 C1:50 C2:0 D:%d S:%d F:%d CHECKSUM:%d", d, s, f, sum)
 }
 
+// denonSharp renders a Denon 15-bit code as the hub's Sharp descriptor.
+// The hub reads Denon's frame (5 address bits, 8 function bits, 2
+// extension bits, LSB first, then a repeat with the function and
+// extension inverted) one bit later than Denon numbers it: C0 is the
+// address's low bit, D the rest of the address and the function's low
+// bit, F the rest of the function; D_CHECKSUM (and D0) and F_CHECKSUM are
+// the same for the repeat. Worked out from the catalog's Power Off (2/122)
+// and confirmed on our receiver with 2/121, 2/240, 2/241 and 2/242.
+func denonSharp(a, f uint8) string {
+	r := f ^ 0xFF
+	d, fd := a>>1|(f&1)<<4, f>>1
+	dk, fk := a>>1|(r&1)<<4, r>>1|0x80
+	return fmt.Sprintf("P:Sharp R:38000 D:%d F:%d C0:%d D_CHECKSUM:%d F_CHECKSUM:%d C1:1 D0:%d", d, fd, a&1, dk, fk, dk)
+}
+
 var (
+	sharpPattern  = regexp.MustCompile(`^P:Sharp R:38000 D:(\d+) F:(\d+) C0:(\d+) D_CHECKSUM:\d+ F_CHECKSUM:\d+ C1:1 D0:\d+$`)
 	necPattern    = regexp.MustCompile(`^P:NEC R:38400 D:(\d+) S:(\d+) F:(\d+)$`)
 	denonKPattern = regexp.MustCompile(`^P:DenonK R:37000 C0:84 C1:50 C2:0 D:(\d+) S:(\d+) F:(\d+) CHECKSUM:(\d+)$`)
 )

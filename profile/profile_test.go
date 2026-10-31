@@ -323,3 +323,39 @@ func TestDenonK(t *testing.T) {
 		t.Fatalf("%v\n%s", err, out.String())
 	}
 }
+
+// Denon's 15-bit codes, as the hub writes them: the catalog's Power Off is
+// the chart's Main Zone Off, 2/122; 2/241 (volume up) is one we wrote and
+// our receiver obeyed.
+func TestDenon15(t *testing.T) {
+	two := uint8(2)
+	d := &profile.Device{Name: "Receiver", IR: &profile.IR{Protocol: "Denon", Device: &two}}
+	for code, want := range map[uint16]string{
+		122: "P:Sharp R:38000 D:1 F:61 C0:0 D_CHECKSUM:17 F_CHECKSUM:194 C1:1 D0:17",
+		241: "P:Sharp R:38000 D:17 F:120 C0:0 D_CHECKSUM:1 F_CHECKSUM:135 C1:1 D0:1",
+	} {
+		sig, err := profile.Command{Name: "x", Code: &profile.Code{Value: code, Decimal: true}}.Signal(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, _ := record.ParseDescriptor(sig); got != want {
+			t.Errorf("2/%d renders %q, want %q", code, got, want)
+		}
+	}
+	// A device in DenonK with one Denon command exports it with its own ir.
+	four, one := uint8(4), uint8(1)
+	cmds := []profile.Command{
+		{Name: "Volume Up", Code: &profile.Code{Value: 368, Decimal: true}},
+		{Name: "Mute", Code: &profile.Code{Value: 370, Decimal: true}},
+		{Name: "Main Zone Off", Code: &profile.Code{Value: 122, Decimal: true}, IR: &profile.IR{Protocol: "Denon", Device: &two}},
+	}
+	src := &profile.Device{Name: "Receiver", IR: &profile.IR{Protocol: "DenonK", Device: &four, Subdevice: &one}, Commands: cmds}
+	var out bytes.Buffer
+	if err := src.Encode(&out); err != nil {
+		t.Fatal(err)
+	}
+	back, err := profile.Load(&out)
+	if err != nil || back.Commands[2].IR == nil || back.Commands[2].IR.Protocol != "Denon" || back.Commands[2].Code.Value != 122 {
+		t.Fatalf("%v %+v", err, back)
+	}
+}
