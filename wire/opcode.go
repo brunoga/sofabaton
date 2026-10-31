@@ -109,6 +109,7 @@ const (
 	FamActivitySort       Family = 0x51
 	FamReqVersion         Family = 0x58
 	FamReqCommands        Family = 0x5C
+	FamRunMacro           Family = 0x5F // run a macro body now, without storing it
 	FamKeySort            Family = 0x61
 	FamReqOrder           Family = 0x62
 	FamRemoteSync         Family = 0x64
@@ -196,6 +197,7 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamConfirmMember}:      "ConfirmMember",
 	{ToHub, FamActivitySort}:       "ActivitySort",
 	{ToHub, FamReqVersion}:         "ReqVersion",
+	{ToHub, FamRunMacro}:           "RunMacro",
 	{ToHub, FamReqCommands}:        "ReqCommands",
 	{ToHub, FamKeySort}:            "KeySort",
 	{ToHub, FamReqOrder}:           "ReqOrder",

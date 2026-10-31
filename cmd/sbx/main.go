@@ -6,6 +6,7 @@
 //	sbx proxy -hub IP       stand between the app and the hub, recording
 //	sbx add-ir -hub IP ...  add an IR command to a device
 //	sbx remove-ir -hub IP . delete a command of a device
+//	sbx send -hub IP ...    send a device's command now
 //	sbx export -hub IP ...  write a device's profile (YAML)
 //	sbx apply -hub IP ...   make a device match a profile
 package main
@@ -44,6 +45,7 @@ commands:
   add-ir     add an IR command to a device, from a descriptive code
              (-device ID -label NAME -code "P:NEC ..."; -n shows the write)
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
+  send       send a device's command now (-device ID, -command NAME or -id N)
   export     write a device's commands as a profile (YAML: -device ID [-o file])
   apply      make a device match a profile, changing only what differs
              (-f file; -n shows the plan, -prune removes commands the
@@ -80,6 +82,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return addIR(ctx, args, stdout, stderr)
 	case "remove-ir":
 		return removeIR(ctx, args, stdout, stderr)
+	case "send":
+		return send(ctx, args, stdout, stderr)
 	case "export":
 		return export(ctx, args, stdout, stderr)
 	case "apply":
