@@ -38,6 +38,9 @@ profile (Focus, Dashboard, LOW POWER, DP, Composite, Free TV, Favorite and
 two key combinations).
 
 So an NEC device's profile can be built from its published IR list alone.
+We did it for one key: `sbx add-ir` wrote Focus (`F:217`, missing from
+Sofabaton's profile) from the list, and the projector responded
+([write-flows.md](write-flows.md#adding-one-command-to-a-device-x2)).
 
 ### Command codes are label ids `[X2✓]`
 

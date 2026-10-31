@@ -87,6 +87,12 @@ The app puts the hub's id in the first six bytes (we send zeros; the hub
 takes either), writes its IP **big-endian** (upstream saw little-endian
 `[ref]`; the hub uses the source address anyway) and listens on TCP 8001.
 
+### A busy hub `[X2✓]`
+
+While a client (the app) is connected, the hub closes UDP 8102: a CALL_ME
+gets an ICMP port-unreachable, which a connected UDP socket reports as
+"connection refused". `transport` turns that into `ErrBusy`.
+
 ### Reboots and liveness `[X2✓]`
 
 At the end of a firmware update the hub reboots without closing its TCP

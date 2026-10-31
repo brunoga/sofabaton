@@ -128,3 +128,37 @@ func TestDefaultTimeout(t *testing.T) {
 		t.Fatalf("Devices: %v", err)
 	}
 }
+
+func TestAddCommand(t *testing.T) {
+	ctx := context.Background()
+	m := model(t)
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	cmds, err := c.Commands(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := hub.NextCommandID(cmds)
+	if err != nil || id != 8 {
+		t.Fatalf("next id %d %v", id, err)
+	}
+	cmd, _ := record.NewCommand(wire.X2)
+	cmd.Device, cmd.ID, cmd.Type, cmd.Label = 1, id, record.ClassIR, "Focus"
+	data, err := record.Descriptor("P:NEC R:38400 D:0 S:206 F:217")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.AddCommand(ctx, cmd, data); err != nil {
+		t.Fatal(err)
+	}
+	after, err := c.Commands(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after) != 8 || after[7].ID != 8 || after[7].Label != "Focus" {
+		t.Fatalf("after the write: %d commands, last %+v", len(after), after[len(after)-1])
+	}
+}

@@ -21,6 +21,10 @@ type Model struct {
 // data with.
 const NotFound = 0x07
 
+// Rejected is the status the simulated hub rejects malformed writes with
+// (the status upstream saw for a bad save).
+const Rejected = 0x0C
+
 // FromModel returns a hub that answers the readers' requests from m.
 func FromModel(m *Model) *Hub {
 	h := New()
@@ -54,6 +58,50 @@ func FromModel(m *Model) *Hub {
 			content, _ = c.AppendRecord(content)
 		}
 		return Reply(wire.FamCommandPage, content)
+	})
+	// Command writes (family 0x0E) add to the device's list, the way the
+	// hub stores a single added command; the hub's own id and sort
+	// assignment in device creates is not modelled.
+	writes := map[byte][]byte{} // burst seq -> body so far
+	h.Handle(wire.FamWriteCommand, func(req wire.Frame) []wire.Frame {
+		hdr, chunk, err := wire.SplitPage(req.Payload)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		body := append(writes[hdr.Marker], chunk...)
+		if len(body) < 3 || int(hdr.Page) < int(body[1])<<8|int(body[2]) {
+			writes[hdr.Marker] = body
+			return []wire.Frame{Status(0)}
+		}
+		delete(writes, hdr.Marker)
+		v, err := wire.VariantFromModel(m.Info.Model)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		_, c, _, err := record.ParseCommandWrite(v, body)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		c.Sort = c.ID
+		if m.Commands == nil {
+			m.Commands = map[byte][]*record.Command{}
+		}
+		m.Commands[c.Device] = append(m.Commands[c.Device], c)
+		return []wire.Frame{Status(0)}
+	})
+	h.Handle(wire.FamDeleteKey, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) != 2 {
+			return []wire.Frame{Status(Rejected)}
+		}
+		dev, id := req.Payload[0], req.Payload[1]
+		cmds := m.Commands[dev]
+		for i, c := range cmds {
+			if c.ID == id {
+				m.Commands[dev] = append(cmds[:i:i], cmds[i+1:]...)
+				return []wire.Frame{Status(0)}
+			}
+		}
+		return []wire.Frame{Status(NotFound)}
 	})
 	h.Handle(wire.FamReqButtons, func(req wire.Frame) []wire.Frame {
 		rows, ok := m.Keymaps[req.Payload[0]]

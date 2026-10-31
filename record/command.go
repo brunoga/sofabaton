@@ -1,6 +1,8 @@
 package record
 
 import (
+	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/brunoga/sofabaton/wire"
@@ -33,6 +35,14 @@ type Command struct {
 
 	variant wire.Variant
 	raw     []byte
+}
+
+// NewCommand returns an empty command record of variant v, for writes.
+func NewCommand(v wire.Variant) (*Command, error) {
+	if _, err := v.Schema(); err != nil {
+		return nil, err
+	}
+	return &Command{variant: v}, nil
 }
 
 // ParseCommand decodes one command record of variant v.
@@ -89,6 +99,66 @@ func (c *Command) AppendRecord(b []byte) ([]byte, error) {
 
 // MarshalBinary returns the record's bytes.
 func (c *Command) MarshalBinary() ([]byte, error) { return c.AppendRecord(nil) }
+
+// WriteBody returns the body of a write of the command (family 0x0E) with
+// its signal data, such as a Descriptor: the number of commands in the
+// burst, the body's page count, the record without its sort byte, the
+// data and a checksum. A device create writes all its commands in one
+// burst of count; adding one command is a burst of 1.
+func (c *Command) WriteBody(count int, data []byte) ([]byte, error) {
+	if count < 1 || count > 0xFF {
+		return nil, fmt.Errorf("record: command burst of %d", count)
+	}
+	if len(data) == 0 {
+		return nil, errors.New("record: command write without data")
+	}
+	rec, err := c.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	rec = rec[:len(rec)-1] // the sort byte is the hub's
+	n := 3 + len(rec) + len(data) + 1
+	b := make([]byte, 0, n)
+	b = append(b, byte(count))
+	b = binary.BigEndian.AppendUint16(b, uint16(wire.PageCount(n)))
+	b = append(b, rec...)
+	b = append(b, data...)
+	return append(b, wire.Checksum(b)), nil
+}
+
+// WritePages returns the payloads of the command's write, one per page,
+// each led by seq, the command's 1-based place in its burst.
+func (c *Command) WritePages(seq, count int, data []byte) ([][]byte, error) {
+	if seq < 1 || seq > count {
+		return nil, fmt.Errorf("record: command %d of a burst of %d", seq, count)
+	}
+	body, err := c.WriteBody(count, data)
+	if err != nil {
+		return nil, err
+	}
+	return wire.Pages(byte(seq), body), nil
+}
+
+// ParseCommandWrite decodes the body of a command write (see WriteBody)
+// into the burst size, the command and its data.
+func ParseCommandWrite(v wire.Variant, body []byte) (count int, c *Command, data []byte, err error) {
+	s, err := v.Schema()
+	if err != nil {
+		return 0, nil, nil, err
+	}
+	rec := s.CommandStride - 1
+	if len(body) < 3+rec+1 {
+		return 0, nil, nil, fmt.Errorf("record: command write of %d bytes", len(body))
+	}
+	if sum := wire.Checksum(body[:len(body)-1]); sum != body[len(body)-1] {
+		return 0, nil, nil, fmt.Errorf("record: command write checksum %#02x, want %#02x", body[len(body)-1], sum)
+	}
+	full := append(append([]byte(nil), body[3:3+rec]...), 0)
+	if c, err = ParseCommand(v, full); err != nil {
+		return 0, nil, nil, err
+	}
+	return int(body[0]), c, body[3+rec : len(body)-1], nil
+}
 
 // ParseCommandList decodes an assembled command-list body (see
 // wire.Assembler): a marker, the page count, the command count, then the
