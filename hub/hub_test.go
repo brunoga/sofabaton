@@ -162,3 +162,42 @@ func TestAddCommand(t *testing.T) {
 		t.Fatalf("after the write: %d commands, last %+v", len(after), after[len(after)-1])
 	}
 }
+
+func TestButtonsAndOrder(t *testing.T) {
+	ctx := context.Background()
+	m := model(t)
+	m.Commands[1][2].Code = record.CodeFromUint(0x002A)
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+
+	// By code, as the app writes it, and by id, for a command without one.
+	ok := record.Binding{Entity: 1, Button: record.ButtonOK, Short: record.Press{Device: 1, Code: record.CodeFromUint(0x002A)}}
+	back := record.Binding{Entity: 1, Button: record.ButtonBack, Short: record.Press{Device: 1, Command: 5}, Long: record.Press{Device: 1, Command: 6}}
+	for _, b := range []record.Binding{ok, back} {
+		if err := c.WriteButton(ctx, b); err != nil {
+			t.Fatal(err)
+		}
+	}
+	rows, err := c.Keymap(ctx, 1)
+	if err != nil || len(rows) != 2 || rows[0].Short.Command != 3 || rows[1] != back {
+		t.Fatalf("keymap %+v %v", rows, err)
+	}
+
+	if _, err := c.Order(ctx, 1); !errors.Is(err, hub.ErrNotFound) {
+		t.Fatalf("order before a write: %v", err)
+	}
+	order := []record.Place{{Command: 2, Position: 1}, {Command: 1, Position: 2}, {Command: 3, Position: record.Unplaced}}
+	if err := c.WriteOrder(ctx, 1, order); err != nil {
+		t.Fatal(err)
+	}
+	got, err := c.Order(ctx, 1)
+	if err != nil || len(got) != 3 || got[0] != order[0] || got[2] != order[2] {
+		t.Fatalf("order %+v %v", got, err)
+	}
+	if err := c.WriteOrder(ctx, 1, []record.Place{{Command: 1, Position: record.Unplaced}}); err == nil {
+		t.Fatal("an order placing nothing was accepted")
+	}
+}

@@ -30,6 +30,10 @@ func reqCommandData(dev, id byte) wire.Frame {
 	return wire.Frame{Family: wire.FamReqBlob, Payload: []byte{dev, id}}
 }
 
+func reqOrder(dev byte) wire.Frame {
+	return wire.Frame{Family: wire.FamReqOrder, Payload: []byte{dev}}
+}
+
 func reqMembers(activity byte) wire.Frame {
 	return wire.Frame{Family: wire.FamReqActivityMap, Payload: []byte{activity}}
 }
@@ -80,12 +84,25 @@ func (c *Client) Commands(ctx context.Context, device byte) ([]*record.Command, 
 }
 
 // Keymap reads the key bindings and favorites of an activity or device.
+// An entity without any is ErrNotFound.
 func (c *Client) Keymap(ctx context.Context, entity byte) ([]record.Binding, error) {
 	body, err := c.single(ctx, reqKeymap(entity), wire.FamKeymapPage)
 	if err != nil {
-		return nil, err
+		return nil, notFound(err)
 	}
 	return record.ParseKeymap(body)
+}
+
+// Order reads the order of a device's commands on the remote's device
+// page. A device without one (on the X2, every IR device the app created)
+// is ErrNotFound.
+func (c *Client) Order(ctx context.Context, device byte) ([]record.Place, error) {
+	body, err := c.single(ctx, reqOrder(device), wire.FamOrderReply)
+	if err != nil {
+		return nil, notFound(err)
+	}
+	_, order, err := record.ParseOrder(body)
+	return order, err
 }
 
 // Macros reads the macros of an activity or device, power sequences

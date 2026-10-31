@@ -1,6 +1,10 @@
 package record
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // Button is a key of the remote, or a favorite slot, as keymap rows and
 // binding writes name it. Favorite slots use low ids; the hard keys start
@@ -29,28 +33,34 @@ const (
 	ButtonNum3     Button = 0xA7
 	ButtonNum2     Button = 0xA8
 	ButtonNum1     Button = 0xA9
-	ButtonUp       Button = 0xAE
-	ButtonLeft     Button = 0xAF
-	ButtonOK       Button = 0xB0
-	ButtonRight    Button = 0xB1
-	ButtonDown     Button = 0xB2
-	ButtonBack     Button = 0xB3
-	ButtonHome     Button = 0xB4
-	ButtonMenu     Button = 0xB5
-	ButtonVolUp    Button = 0xB6
-	ButtonChUp     Button = 0xB7
-	ButtonMute     Button = 0xB8
-	ButtonVolDown  Button = 0xB9
-	ButtonChDown   Button = 0xBA
-	ButtonRewind   Button = 0xBB
-	ButtonPause    Button = 0xBC
-	ButtonForward  Button = 0xBD
-	ButtonRed      Button = 0xBE
-	ButtonGreen    Button = 0xBF
-	ButtonYellow   Button = 0xC0
-	ButtonBlue     Button = 0xC1
-	ButtonPowerOn  Button = 0xC6
-	ButtonPowerOff Button = 0xC7
+	// ButtonPower is the power key: on a device page, what the app calls
+	// the device's power toggle.
+	ButtonPower   Button = 0xAB
+	ButtonUp      Button = 0xAE
+	ButtonLeft    Button = 0xAF
+	ButtonOK      Button = 0xB0
+	ButtonRight   Button = 0xB1
+	ButtonDown    Button = 0xB2
+	ButtonBack    Button = 0xB3
+	ButtonHome    Button = 0xB4
+	ButtonMenu    Button = 0xB5
+	ButtonVolUp   Button = 0xB6
+	ButtonChUp    Button = 0xB7
+	ButtonMute    Button = 0xB8
+	ButtonVolDown Button = 0xB9
+	ButtonChDown  Button = 0xBA
+	ButtonRewind  Button = 0xBB
+	ButtonPause   Button = 0xBC
+	ButtonForward Button = 0xBD
+	ButtonRed     Button = 0xBE
+	ButtonGreen   Button = 0xBF
+	ButtonYellow  Button = 0xC0
+	ButtonBlue    Button = 0xC1
+	// ButtonPowerOn and ButtonPowerOff are not keys of the remote but
+	// rows of a device's keymap that the app binds to the device's power
+	// on and off commands; what reads them is not known.
+	ButtonPowerOn  Button = 0xC2
+	ButtonPowerOff Button = 0xC3
 )
 
 var buttonNames = map[Button]string{
@@ -63,7 +73,21 @@ var buttonNames = map[Button]string{
 	ButtonChUp: "Ch+", ButtonMute: "Mute", ButtonVolDown: "Vol-", ButtonChDown: "Ch-",
 	ButtonRewind: "Rewind", ButtonPause: "Pause", ButtonForward: "Forward", ButtonRed: "Red",
 	ButtonGreen: "Green", ButtonYellow: "Yellow", ButtonBlue: "Blue",
-	ButtonPowerOn: "Power on", ButtonPowerOff: "Power off",
+	ButtonPower: "Power", ButtonPowerOn: "Power On", ButtonPowerOff: "Power Off",
+}
+
+// ParseButton returns the button a name (as String gives it, regardless of
+// case) or a number (0x05) stands for.
+func ParseButton(s string) (Button, error) {
+	for b, n := range buttonNames {
+		if strings.EqualFold(n, s) {
+			return b, nil
+		}
+	}
+	if v, err := strconv.ParseUint(s, 0, 8); err == nil && strings.HasPrefix(s, "0x") {
+		return Button(v), nil
+	}
+	return 0, fmt.Errorf("record: no button %q", s)
 }
 
 // IsHardKey reports whether b is a key of the remote rather than a

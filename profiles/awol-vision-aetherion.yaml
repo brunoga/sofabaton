@@ -60,3 +60,27 @@ commands:
   # Key combinations, as if both keys were pressed
   - {name: Back + Down, code: 0xE0, comment: 'sheet "BACK+DOWN"; not in Sofabaton''s profile; to be tested'}
   - {name: Back + Home, code: 0xE3, comment: 'sheet "Back+home"; not in Sofabaton''s profile; to be tested'}
+
+# The remote's keys on the device's page, as Sofabaton's profile bound them.
+# Power On and Power Off are not keys but rows the app always binds to the
+# device's on and off commands.
+buttons:
+  Power: Power Toggle
+  Up: Up
+  Left: Left
+  OK: OK
+  Right: Right
+  Down: Down
+  Back: Back
+  Home: Home
+  Menu: Menu
+  Vol+: Volume Up
+  Mute: Mute
+  Vol-: Volume Down
+  Power On: Power On
+  Power Off: Power Off
+
+# What activities send to switch the projector on and off, and the inputs
+# they can pick (Home goes back to Google TV), as set up in the app.
+power: {on: Power On, off: Power Off}
+inputs: [HDMI 1, HDMI 2, HDMI 3, Home]

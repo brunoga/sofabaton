@@ -172,3 +172,21 @@ func (e *Entity) Emitters() (r Emitters, ok bool) {
 	}
 	return Emitters(t.Extra[0])<<16 | Emitters(t.Extra[1])<<8 | Emitters(t.Extra[2]), true
 }
+
+// NewIRDeviceTail is the tail of an IR device the app creates on the X2:
+// no power or input setup yet, sent from the hub and both IR ports. The
+// device's update write sets Marker to commit it.
+func NewIRDeviceTail() DeviceTail {
+	return DeviceTail{
+		HasPollTime: true,
+		PowerStyle:  2,
+		HasExtra:    true,
+		Extra:       [3]byte{0, 0, byte(EmitHub | EmitPort1 | EmitPort2)},
+		Color:       1,
+		BTMode:      0xFF,
+	}
+}
+
+// IdleDefault is the idle behavior (family 0x41 [device, behavior]) the
+// app writes for a new device. Its meaning is not known yet.
+const IdleDefault = 0x01

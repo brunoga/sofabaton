@@ -26,6 +26,10 @@ commands:
   - {name: OK, code: 0x28, comment: was "Ok"}
   - {name: Disney+, code: 0xDE}
   - {name: Focus, code: 0xD9, comment: opens the focus screen}
+buttons:
+  OK: OK
+  Back: {short: ok, long: Focus}
+  power: Power On
 `
 
 func TestLoad(t *testing.T) {
@@ -68,6 +72,10 @@ func TestLoadRejects(t *testing.T) {
 		"duplicate":     "device: X\ncommands:\n  - {name: A, descriptor: \"P:X\"}\n  - {name: a, descriptor: \"P:Y\"}\n",
 		"not a byte":    "device: X\nir: {protocol: NEC, system: 0x1}\ncommands:\n  - {name: A, code: 0x100}\n",
 		"other proto":   "device: X\nir: {protocol: RC5, system: 0x1}\ncommands:\n  - {name: A, code: 0x01}\n",
+		"no such key":   "device: X\ncommands:\n  - {name: A, descriptor: \"P:X\"}\nbuttons:\n  Volume: A\n",
+		"no such cmd":   "device: X\ncommands:\n  - {name: A, descriptor: \"P:X\"}\nbuttons:\n  OK: B\n",
+		"same key":      "device: X\ncommands:\n  - {name: A, descriptor: \"P:X\"}\nbuttons:\n  OK: A\n  ok: A\n",
+		"key field":     "device: X\ncommands:\n  - {name: A, descriptor: \"P:X\"}\nbuttons:\n  OK: {shrt: A}\n",
 	} {
 		if _, err := profile.Load(strings.NewReader(text)); err == nil {
 			t.Errorf("%s: accepted", name)
@@ -131,6 +139,10 @@ func TestPlanAndApply(t *testing.T) {
 		`update    2 rename "Ok" -> "OK"`,
 		`update    3 rename "disnesy" -> "Disney+"`,
 		`add       5 "Focus"`,
+		`order       5 commands, as the profile lists them`,
+		`button      Power -> "Power On"`,
+		`button      OK -> "OK"`,
+		`button      Back -> "ok", long "Focus"`,
 	}
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("plan:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
@@ -148,6 +160,11 @@ func TestPlanAndApply(t *testing.T) {
 	if changes, _, _ := profile.Plan(d, st, false); len(changes) != 0 {
 		t.Fatalf("applied, still %v", changes)
 	}
+	for _, b := range st.Keymap {
+		if b.Button == record.ButtonBack && (b.Short.Command != 2 || b.Long.Command != 5) {
+			t.Fatalf("Back is bound to %+v", b)
+		}
+	}
 	// Pruning removes what the profile lacks.
 	changes, _, _ = profile.Plan(d, st, true)
 	if len(changes) != 1 || changes[0].Kind != profile.Remove || changes[0].Command.Label != "Mute" {
@@ -156,12 +173,22 @@ func TestPlanAndApply(t *testing.T) {
 
 	// Export gives back the profile, codes and all.
 	devs, _ := c.Devices(ctx)
-	exported, err := profile.FromHub(devs[0], st.Commands, st.Data)
+	exported, err := profile.FromHub(devs[0], st)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if exported.IR == nil || exported.IR.System != 0x00CE || len(exported.Commands) != 5 || exported.Commands[3].Name != "Mute" {
+	if exported.IR == nil || exported.IR.System != 0x00CE || len(exported.Commands) != 5 || exported.Commands[3].Name != "Focus" || exported.Commands[4].Name != "Mute" {
 		t.Fatalf("exported %+v", exported)
+	}
+	if k := exported.Buttons["Back"]; len(exported.Buttons) != 3 || k.Short != "OK" || k.Long != "Focus" {
+		t.Fatalf("exported buttons %+v", exported.Buttons)
+	}
+	var out bytes.Buffer
+	if err := exported.Encode(&out); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "buttons:\n  Power: Power On\n  OK: OK\n  Back: {short: OK, long: Focus}\n") {
+		t.Fatalf("encoded:\n%s", out.String())
 	}
 }
 
@@ -185,5 +212,48 @@ func TestMaintainedProfiles(t *testing.T) {
 		if filepath.Base(p) == "awol-vision-aetherion.yaml" && len(d.Commands) != 35 {
 			t.Errorf("%s: %d commands, the IR list has 35", p, len(d.Commands))
 		}
+	}
+}
+
+func TestCreate(t *testing.T) {
+	ctx := context.Background()
+	c := simulated(t)
+	d, err := profile.Load(strings.NewReader(aetherion + "power: {on: Power On, off: Power On}\ninputs: [Disney+, Focus]\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.Name, d.Power.Off = "ZZ Test", "OK"
+	var steps []string
+	id, err := profile.Create(ctx, c, d, func(s string) { steps = append(steps, s) })
+	if err != nil || id != 5 {
+		t.Fatalf("created %d: %v", id, err)
+	}
+	if steps[0] != `created device 5 "ZZ Test"` || steps[len(steps)-1] != "sync        device 5 to the remotes" || len(steps) != 1+4+3+2+1+3 || steps[len(steps)-3] != `inputs      ["Disney+" "Focus"]` {
+		t.Fatalf("steps:\n%s", strings.Join(steps, "\n"))
+	}
+	devs, _ := c.Devices(ctx)
+	dev := devs[len(devs)-1]
+	if tail, _ := dev.DeviceTail(); dev.ID != 5 || dev.Name != "ZZ Test" || tail.Marker != 1 || tail.PowerMode != 1 || tail.InputMode != 1 {
+		t.Fatalf("device %+v, tail %+v", dev, tail)
+	}
+	st, err := profile.Read(ctx, c, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if changes, _, err := profile.Plan(d, st, true); err != nil || len(changes) != 0 {
+		t.Fatalf("after the create: %v %v", changes, err)
+	}
+	back, err := profile.FromHub(dev, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if back.Power == nil || back.Power.On != "Power On" || back.Power.Off != "OK" || len(back.Inputs) != 2 || back.Inputs[1] != "Focus" || len(back.Buttons) != 3 || len(back.Commands) != 4 {
+		t.Fatalf("read back %+v", back)
+	}
+	if err := c.DeleteDevice(ctx, id); err != nil {
+		t.Fatal(err)
+	}
+	if devs, _ := c.Devices(ctx); len(devs) != 1 {
+		t.Fatalf("%d devices after the delete", len(devs))
 	}
 }
