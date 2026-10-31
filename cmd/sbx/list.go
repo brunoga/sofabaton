@@ -71,7 +71,7 @@ func list(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	var h hubFlags
 	h.register(fs)
 	fs.Usage = func() {
-		fmt.Fprint(fs.Output(), `usage: sbx list -hub IP [what]
+		fmt.Fprint(fs.Output(), `usage: sbx list [-hub IP] [what]
 
   devices              the devices (the default, with activities)
   activities           the activities and their devices

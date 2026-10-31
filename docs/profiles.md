@@ -88,5 +88,6 @@ Denon AVR-X8500H draft from Denon's IR command chart.
 ## Not yet
 
 Unbinding a key, sequences of more than one command (including
-per-device ones), the device's category and icon, activities, and
-protocols other than NEC for `code`.
+per-device ones), the device's category and icon, activities, Bluetooth
+devices, and protocols other than NEC, Denon-K and Denon for `code`. See
+[ROADMAP.md](../ROADMAP.md).

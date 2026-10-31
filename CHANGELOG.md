@@ -5,53 +5,51 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-31
+
+The first prerelease: reading a hub, and creating and editing IR devices
+from YAML profiles. Verified on an X2 hub (firmware 9).
+
 ### Added
 
-- Repository scaffold: module, `sbx` command stub, CI, release
-  configuration, the port plan and the first protocol docs.
-- `make ci` runs every CI job locally.
-- Package `wire`: frames and their checksum, a resynchronizing stream
-  decoder and an encoder, opcode families named per direction, fixed-width
-  ASCII and UTF-16BE label slots, the paged-write wrapper, and the per-model
-  record dimensions (X1, X1S, X2).
-- Package `record`: the device/activity record (`Entity`) with its device
-  tail and X2 emitter routing, and catalog rows. Decoded records re-encode
-  byte-identically; edits rewrite only the changed fields.
-- `wire.Assembler` joins the pages of a paged reply; `record.Command` and
-  `record.ParseCommandList` decode command lists.
-- `record.Binding` and `record.ParseKeymap`: keymap rows (family 0x3D) and
-  binding writes (0x3E); `record.Button`, the remote's keys.
-- `wire.Burst` collects replies of several paged records; `record.Macro`
-  decodes macro records and builds their (paged) writes.
-- `record.Inputs`: a device's inputs page (family 0x47 replies, 0x46
-  writes).
-- `record.HubInfo`: the hub identity of the banner and of the discovery
-  reply; the discovery families (NOTIFY_ME, CONNECT_READY) in `wire`.
-- Package `transport`: `Dialer` (CALL_ME and the hub's TCP connect-back),
-  `Discoverer` (NOTIFY_ME broadcast discovery) and `Conn`, frames over a
-  connection.
-- Package `session`: serialized request/reply exchanges over a frame
-  connection, with collectors for status acks, family acks and record
-  bursts, a typed rejection error, an unsolicited-frame handler and a tap
-  for logging and captures.
-- Package `hubsim`: a simulated hub for tests.
-- Package `hub`: `Client` connects, identifies the hub from its banner and
-  reads devices, activities, activity members, command lists, keymaps,
-  macros and inputs pages.
-- `hubsim.FromModel` serves a hub configuration given as records.
-- `sbx discover`, `sbx info` and `sbx dump` (read-only, raw bytes kept).
-- `-hub` is optional on every `sbx` command: it defaults to `$SBX_HUB`,
-  else to the only hub that answers discovery.
-- `internal/mdns`: a minimal mDNS browser (one-shot queries) and
-  responder for one IPv4 service; first dependency, `golang.org/x/net`.
-- Package `proxy` and `sbx proxy`: stands between the official app and the
-  hub, mirroring the hub's mDNS advertisement and answering discovery, and
-  relays and records every frame.
-- Package `capture`: frames and notes as JSON lines.
-- `testdata/oracle`: vectors from the upstream implementation (labels,
-  paging, 180 generated device records, upstream's decoding of the corpus's
-  records, upstream's decoding of the corpus's command bursts, binding writes, macro writes and the corpus's macro bursts, inputs pages),
-  `tools/oracle` and `make oracle`, which regenerate them.
-- `testdata/captures/upstream.json`: 171 frames extracted from the upstream
-  project's tests (125 complete), and `tools/extractcaptures`, which
-  extracts them.
+- `sbx`, the command-line tool:
+  - `discover`, `info`, `list` (devices, activities, a device's commands,
+    keys, sequences) and `dump` (the whole configuration as JSON, raw
+    bytes kept: a lossless backup).
+  - `export` and `apply`: a device as a YAML profile, and a diffing apply
+    that changes only what differs (`-n` shows the plan, `-prune` removes
+    commands the profile lacks, `-create` makes a new IR device).
+  - `add-ir`, `remove-ir`, `send`, `remove-device` and `sync`.
+  - `proxy`: stands between the official app and the hub, relaying and
+    recording every frame (`-capture`), with notes typed while it runs.
+  - `-hub` is optional everywhere: it defaults to `$SBX_HUB`, else to the
+    only hub that answers discovery. Devices are given by name or id.
+- Package `profile`: YAML device profiles with commands in the remote's
+  order, keys (short and long presses), power on/off commands and inputs;
+  plans against a hub's state, their application, and creating a device
+  from scratch in the app's order. Renaming a device or command keeps the
+  activities and keys that use it. IR codes as NEC, Denon-K or Denon
+  (Sharp) codes, per device or per command, or the hub's descriptors.
+- Profiles for the AWOL Vision Aetherion projector (from AWOL's IR list)
+  and the Denon AVR-X8500H receiver (from Denon's IR command chart).
+- Package `hub`: the client. Connects, identifies the hub and reads
+  devices, activities and their members, command lists, keymaps, command
+  order, sequences and inputs; writes commands, key bindings, command
+  order, device records (create, update, delete), idle behavior,
+  sequences and inputs; sends commands; syncs the remotes.
+- Packages `wire` (frames, stream decoding, paging, labels, the per-model
+  record dimensions), `record` (the hub's records, re-encoded
+  byte-identically), `transport` (discovery and CALL_ME), `session`
+  (serialized exchanges with typed acks and errors), `proxy`, `capture`
+  (JSON lines) and `hubsim` (a simulated hub for tests);
+  `internal/mdns`, a minimal mDNS browser and responder.
+- Protocol docs with a confidence level per fact, including the X2 app's
+  write flows learned from our own captures, and a roadmap.
+- Test data: frames from upstream's tests, vectors from the upstream
+  implementation (`make oracle`), our X2's dumps and the app captures
+  behind each write flow.
+- `make ci` runs every CI job locally; releases are built with
+  GoReleaser for Linux, macOS and Windows.
+
+[Unreleased]: https://github.com/brunoga/sofabaton/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/brunoga/sofabaton/releases/tag/v0.1.0

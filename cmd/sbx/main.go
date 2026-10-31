@@ -1,17 +1,20 @@
 // Command sbx is a command-line client for Sofabaton hubs.
 //
-//	sbx discover            find hubs on the local network
-//	sbx info -hub IP        show a hub's identity
-//	sbx list -hub IP        list devices, activities, commands, sequences
-//	sbx dump -hub IP        dump a hub's configuration as JSON
-//	sbx proxy -hub IP       stand between the app and the hub, recording
-//	sbx add-ir -hub IP ...  add an IR command to a device
-//	sbx remove-ir -hub IP . delete a command of a device
-//	sbx send -hub IP ...    send a device's command now
-//	sbx export -hub IP ...  write a device's profile (YAML)
-//	sbx apply -hub IP ...   make a device match a profile, or create it
-//	sbx remove-device ...   delete a device
-//	sbx sync -hub IP ...    update the remotes' copy of a device
+//	sbx discover          find hubs on the local network
+//	sbx info              show a hub's identity
+//	sbx list              list devices, activities, commands, sequences
+//	sbx dump              dump a hub's configuration as JSON
+//	sbx proxy             stand between the app and the hub, recording
+//	sbx add-ir ...        add an IR command to a device
+//	sbx remove-ir ...     delete a command of a device
+//	sbx send ...          send a device's command now
+//	sbx export ...        write a device's profile (YAML)
+//	sbx apply ...         make a device match a profile, or create it
+//	sbx remove-device ... delete a device
+//	sbx sync ...          update the remotes' copy of a device
+//
+// Commands that talk to a hub take -hub IP, defaulting to $SBX_HUB, else
+// to the only hub discovery finds.
 package main
 
 import (
