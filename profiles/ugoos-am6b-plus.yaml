@@ -1,0 +1,52 @@
+# Ugoos AM6B Plus (and AM6, AM6 Plus) media player, running CoreELEC.
+#
+# Source: CoreELEC's remote configurations (github.com/CoreELEC/remotes,
+# AmRemote/"Ugoos AM6" and "Ugoos UR-01"): an NEC remote with factory code
+# 0xff000001, i.e. address 0x00 and second address byte 0xFF (Amlogic
+# writes the two address bytes low byte first), so system 0x00FF here.
+# Both files give the same key values; the AM6 one is what CoreELEC's
+# Kodi expects (Context Menu is KEY_C, Home is KEY_HOMEPAGE, Back is
+# KEY_ESC). The Ugoos UR-02 voice remote uses another address (0xe619,
+# system 0x19E6) and other key values; it is not covered here.
+#
+# CoreELEC only obeys these codes when the box's IR receiver has this
+# remote's configuration: the AM6 file as remote.conf in /flash (the boot
+# partition) or /storage/.config, then a reboot.
+#
+# The box has no discrete on and off: Power puts CoreELEC to sleep or
+# wakes it. Untested on the maintainer's box yet.
+device: Ugoos AM6B Plus
+brand: Ugoos
+ir: {protocol: NEC, system: 0x00FF}
+commands:
+  - {name: Power, code: 0x14, comment: 'KEY_POWER'}
+
+  # Navigation
+  - {name: Up, code: 0x03}
+  - {name: Down, code: 0x02}
+  - {name: Left, code: 0x0E}
+  - {name: Right, code: 0x1A}
+  - {name: OK, code: 0x07, comment: 'KEY_ENTER'}
+  - {name: Back, code: 0x01, comment: 'KEY_ESC'}
+  - {name: Home, code: 0x48, comment: 'KEY_HOMEPAGE'}
+  - {name: Context Menu, code: 0x13, comment: 'KEY_C, Kodi''s context menu'}
+
+  # Playback
+  - {name: Play/Pause, code: 0x5C, comment: 'KEY_PLAYPAUSE'}
+
+  # Volume (the box's own, when not using the receiver's)
+  - {name: Volume Up, code: 0x0B}
+  - {name: Volume Down, code: 0x58}
+buttons:
+  Power: Power
+  Up: Up
+  Left: Left
+  OK: OK
+  Right: Right
+  Down: Down
+  Back: Back
+  Exit: Back
+  Home: Home
+  Menu: Context Menu
+  Play: Play/Pause
+  Pause: Play/Pause

@@ -88,7 +88,8 @@ After any change `apply` syncs the device to the remote. IR codes can be
 given as NEC, Denon-K or Denon (Sharp) codes, or as the hub's own
 descriptors. [docs/profiles.md](docs/profiles.md) has the whole format;
 [profiles/](profiles) holds the profiles we maintain (the AWOL Vision
-Aetherion projector, the Denon AVR-X8500H receiver).
+Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos AM6B Plus
+media player).
 
 ### Single commands
 
