@@ -14,4 +14,6 @@ Reference: upstream `docs/protocol/hub-versions.md`.
 | IR emitter routing (hub/ports/remotes) | — | — | yes (device tail bytes 18–21) |
 | Device colors | — | — | palette 1–12 (tail byte 22) |
 
-All `[ref]`. In Go these differences are data in `wire.Variant`.
+All `[ref]`. In Go these differences are data in `wire.Variant`. Writes
+are verified on the X2 only, so `hub.Client` refuses them on the X1 and
+X1S (`hub.ErrUnsupported`); reads work on all three.

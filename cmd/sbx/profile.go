@@ -32,6 +32,9 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	dev, err := findDevice(ctx, c, *device)
 	if err != nil {
 		return err
@@ -114,6 +117,9 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 		if *dry {
 			return nil
 		}
+		if err := c.Writable(); err != nil {
+			return err
+		}
 		if !*yes && !confirm(stdin, stdout, "create it?") {
 			return errors.New("not created")
 		}
@@ -149,6 +155,9 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	if *dry {
 		return nil
 	}
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("apply %d changes to device %d?", len(changes), id)) {
 		return errors.New("not applied")
 	}
@@ -183,6 +192,9 @@ func removeDevice(ctx context.Context, args []string, stdin io.Reader, stdout, s
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	dev, err := findDevice(ctx, c, *device)
 	if err != nil {
 		return err
@@ -214,6 +226,9 @@ func syncCmd(ctx context.Context, args []string, stdout, stderr io.Writer) error
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	e, err := findEntity(ctx, c, *which)
 	if err != nil {
 		return err

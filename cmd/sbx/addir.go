@@ -38,8 +38,8 @@ func addIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	if c.Variant() != wire.X2 {
-		return fmt.Errorf("descriptive IR codes are X2 only, not %v", c.Variant())
+	if err := c.Writable(); err != nil {
+		return err
 	}
 	d, err := findDevice(ctx, c, *device)
 	if err != nil {
@@ -110,6 +110,9 @@ func removeIR(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	d, err := findDevice(ctx, c, *device)
 	if err != nil {
 		return err
@@ -157,6 +160,9 @@ func send(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
 	d, err := findDevice(ctx, c, *device)
 	if err != nil {
 		return err
