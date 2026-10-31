@@ -7,7 +7,13 @@
 # functions the sheet gives only as older 15-bit codes). The chart predates
 # the X8500H, which answers to remote ID 1 by default; codes marked
 # "inferred" come from the ID#2 sheet that way, and codes marked "catalog"
-# are Sofabaton's, not in the chart. Each code is the chart's function.
+# are Sofabaton's, not in the chart. Each code is the chart's function;
+# "tested" ones were checked on the maintainer's receiver (2026-10-31).
+#
+# The X8500H also obeys the chart's 15-bit codes (ir: {protocol: Denon,
+# device: 2}); every function here has a Denon-K code, so they are not
+# needed. Sofabaton's catalog power codes were 15-bit: its Power Off is the
+# chart's Main Zone Off (2/122), and its Power On did nothing.
 #
 # The id is the device's id on the maintainer's hub; pass -device to apply
 # this to another one.
@@ -18,10 +24,10 @@ ir: {protocol: DenonK, device: 4, subdevice: 1}
 commands:
   # Power
   - {name: Power Toggle, code: 5, comment: 'catalog "Power"; the main zone toggle (ID#2 has on 1030, off 1031 but no toggle)'}
-  - {name: Main Zone On, code: 6, comment: 'inferred (ID#2 1030)'}
-  - {name: Main Zone Off, code: 7, comment: 'inferred (ID#2 1031)'}
-  - {name: Power On, descriptor: "P:Sharp1 R:38000 D:1 F:195 C0:1", comment: 'catalog; not decoded yet'}
-  - {name: Power Off, descriptor: "P:Sharp R:38000 D:1 F:61 C0:0 D_CHECKSUM:17 F_CHECKSUM:194 C1:1 D0:17", comment: 'catalog; not decoded yet'}
+  - {name: Main Zone On, code: 6, comment: 'inferred (ID#2 1030); tested'}
+  - {name: Main Zone Off, code: 7, comment: 'inferred (ID#2 1031); tested'}
+  - {name: All Zones On, code: 225, ir: {protocol: Denon, device: 2}, comment: 'chart "All Power ON"'}
+  - {name: All Zones Off, code: 226, ir: {protocol: Denon, device: 2}, comment: 'chart "All Power OFF"'}
   - {name: Sleep, code: 836}
 
   # Navigation
@@ -119,7 +125,7 @@ commands:
   - {name: Dimmer, code: 656, comment: 'inferred'}
   - {name: HDMI Monitor Select, code: 753}
 
-power: {on: Power Toggle, off: Power Off}
+power: {on: Main Zone On, off: Main Zone Off}
 inputs: [Input Blu-ray, Input CBL/SAT, Input Game, Input TV Audio]
 
 buttons:
@@ -143,5 +149,5 @@ buttons:
   Pause: Play/Pause
   Rewind: Skip Back
   Forward: Skip Forward
-  Power On: Power On
-  Power Off: Power Off
+  Power On: Main Zone On
+  Power Off: Main Zone Off

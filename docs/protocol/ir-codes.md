@@ -78,8 +78,24 @@ which reproduces all 69 (`profile.TestDenonK`,
 `testdata/x2/receiver-descriptors.txt`). The other two (power on and
 off) are `P:Sharp1 R:38000 D:1 F:195 C0:1` and `P:Sharp R:38000 D:1 F:61
 C0:0 D_CHECKSUM:17 F_CHECKSUM:194 C1:1 D0:17`: Denon's older 15-bit
-protocol, whose fields do not match the chart's device and function
-numbers (Main Zone On is 2/121 there) in any way found yet `[unknown]`.
+protocol.
+
+### Denon 15-bit as `P:Sharp` `[X2✓]`
+
+Denon's 15-bit frame is 5 address bits, 8 function bits and 2 extension
+bits, LSB first, then a repeat with the function and extension inverted.
+The hub's `P:Sharp` fields read the same bits **one bit later**: `C0` is
+the address's low bit, `D` the other four address bits and the function's
+low bit, `F` the other seven function bits; `D_CHECKSUM` (= `D0`) and
+`F_CHECKSUM` are the same for the repeat frame (whose extension bit makes
+`F_CHECKSUM`'s top bit 1). `C1` is 1 in every code seen.
+
+So the catalog's Power Off is the chart's Main Zone Off, 2/122, and its
+`P:Sharp1 … F:195` Power On is the *repeat* half of Main Zone On (2/121)
+sent as a code; it did nothing on our receiver. Codes we rendered this
+way from the chart (2/121, 2/240, 2/241, 2/242) all worked on our
+AVR-X8500H, as did the Denon-K Main Zone On/Off we derived (4/1/6 and
+4/1/7). Profiles write them as `ir: {protocol: Denon, device: 2}`.
 
 Denon's "IR Command Chart" (summer 2016) gives remote ID 2-4 the same
 functions as ID 1 plus 1024, on subdevice 2; that names the ID 1

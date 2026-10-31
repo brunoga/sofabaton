@@ -68,13 +68,13 @@ type Power struct {
 
 // IR is the IR protocol a device's codes share, and its parameters.
 type IR struct {
-	// Protocol is NEC or DenonK.
+	// Protocol is NEC, DenonK or Denon (Denon's 15-bit codes).
 	Protocol string `yaml:"protocol"`
 	// System is NEC's 16-bit system code, as manufacturers list it: its
 	// high byte becomes the hub's D, its low byte S.
 	System Hex16 `yaml:"system,omitempty"`
 	// Device and Subdevice are DenonK's (4 and 1 for a Denon receiver's
-	// main zone).
+	// main zone); Denon has a device (2 or 12 for a receiver) only.
 	Device    *uint8 `yaml:"device,omitempty"`
 	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }
@@ -86,6 +86,9 @@ type Command struct {
 	// Code is the key value (NEC) or function (DenonK) in the device's IR
 	// protocol.
 	Code *Code `yaml:"code,omitempty"`
+	// IR, when set, is the protocol of this command's code, for devices
+	// that mix protocols.
+	IR *IR `yaml:"ir,omitempty"`
 	// Descriptor is a descriptive IR code (X2): "P:NEC R:38400 D:0 ...".
 	Descriptor string `yaml:"descriptor,omitempty"`
 	// Data is the signal as the hub holds it, in hex, for codes the other
@@ -98,20 +101,24 @@ type Command struct {
 func (c Command) Signal(d *Device) ([]byte, error) {
 	switch {
 	case c.Code != nil:
-		if d.IR == nil {
-			return nil, fmt.Errorf("profile: %q has a code but the device has no ir protocol", c.Name)
+		ir := d.IR
+		if c.IR != nil {
+			ir = c.IR
 		}
-		p, err := protocolNamed(d.IR.Protocol)
+		if ir == nil {
+			return nil, fmt.Errorf("profile: %q has a code but no ir protocol", c.Name)
+		}
+		p, err := protocolNamed(ir.Protocol)
 		if err != nil {
 			return nil, err
 		}
-		if err := p.check(d.IR); err != nil {
-			return nil, err
+		if err := p.check(ir); err != nil {
+			return nil, fmt.Errorf("%w (%q)", err, c.Name)
 		}
 		if c.Code.Value > p.maxCode {
 			return nil, fmt.Errorf("profile: %q: code %d is beyond %s's %d", c.Name, c.Code.Value, p.name, p.maxCode)
 		}
-		return record.Descriptor(p.render(d.IR, c.Code.Value))
+		return record.Descriptor(p.render(ir, c.Code.Value))
 	case c.Descriptor != "":
 		return record.Descriptor(c.Descriptor)
 	case c.Data != "":
@@ -255,7 +262,9 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		d.Commands = append(d.Commands, pc)
 	}
 	// The protocol and parameters most commands share become the device's,
-	// and those commands codes in it; the others keep their descriptors.
+	// and those commands codes in it; commands in another protocol a
+	// profile can express get codes with their own ir, and the rest keep
+	// their descriptors.
 	var best IR
 	most := 0
 	for _, c := range d.Commands {
@@ -277,9 +286,17 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		d.IR = &best
 		p, _ := protocolNamed(best.Protocol)
 		for i, c := range d.Commands {
-			if ir, code, ok := parseCode(c.Descriptor); ok && ir.same(best) {
-				d.Commands[i].Code, d.Commands[i].Descriptor = &Code{Value: code, Decimal: p.decimal}, ""
+			ir, code, ok := parseCode(c.Descriptor)
+			if !ok {
+				continue
 			}
+			cp := p
+			if !ir.same(best) {
+				own := ir
+				d.Commands[i].IR = &own
+				cp, _ = protocolNamed(ir.Protocol)
+			}
+			d.Commands[i].Code, d.Commands[i].Descriptor = &Code{Value: code, Decimal: cp.decimal}, ""
 		}
 	}
 	name := func(p record.Press) (string, bool) {
