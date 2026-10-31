@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -67,21 +66,26 @@ type Power struct {
 	Off string `yaml:"off"`
 }
 
-// IR is the IR protocol a device's codes share.
+// IR is the IR protocol a device's codes share, and its parameters.
 type IR struct {
-	// Protocol is the protocol name; only NEC so far.
+	// Protocol is NEC or DenonK.
 	Protocol string `yaml:"protocol"`
 	// System is NEC's 16-bit system code, as manufacturers list it: its
 	// high byte becomes the hub's D, its low byte S.
-	System Hex16 `yaml:"system"`
+	System Hex16 `yaml:"system,omitempty"`
+	// Device and Subdevice are DenonK's (4 and 1 for a Denon receiver's
+	// main zone).
+	Device    *uint8 `yaml:"device,omitempty"`
+	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }
 
 // Command is one command. Exactly one of Code, Descriptor and Data gives
 // its signal.
 type Command struct {
 	Name string `yaml:"name"`
-	// Code is the key value in the device's IR protocol.
-	Code *Hex8 `yaml:"code,omitempty"`
+	// Code is the key value (NEC) or function (DenonK) in the device's IR
+	// protocol.
+	Code *Code `yaml:"code,omitempty"`
 	// Descriptor is a descriptive IR code (X2): "P:NEC R:38400 D:0 ...".
 	Descriptor string `yaml:"descriptor,omitempty"`
 	// Data is the signal as the hub holds it, in hex, for codes the other
@@ -90,9 +94,6 @@ type Command struct {
 	Comment string `yaml:"comment,omitempty"`
 }
 
-// necCarrier is the carrier field Sofabaton's NEC descriptors carry.
-const necCarrier = 38400
-
 // Signal returns the command's signal data as the hub stores it.
 func (c Command) Signal(d *Device) ([]byte, error) {
 	switch {
@@ -100,10 +101,17 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		if d.IR == nil {
 			return nil, fmt.Errorf("profile: %q has a code but the device has no ir protocol", c.Name)
 		}
-		if !strings.EqualFold(d.IR.Protocol, "NEC") {
-			return nil, fmt.Errorf("profile: ir protocol %q is not supported (only NEC)", d.IR.Protocol)
+		p, err := protocolNamed(d.IR.Protocol)
+		if err != nil {
+			return nil, err
 		}
-		return record.Descriptor(necDescriptor(uint16(d.IR.System), uint8(*c.Code)))
+		if err := p.check(d.IR); err != nil {
+			return nil, err
+		}
+		if c.Code.Value > p.maxCode {
+			return nil, fmt.Errorf("profile: %q: code %d is beyond %s's %d", c.Name, c.Code.Value, p.name, p.maxCode)
+		}
+		return record.Descriptor(p.render(d.IR, c.Code.Value))
 	case c.Descriptor != "":
 		return record.Descriptor(c.Descriptor)
 	case c.Data != "":
@@ -114,28 +122,6 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		return b, nil
 	}
 	return nil, fmt.Errorf("profile: %q has no code, descriptor or data", c.Name)
-}
-
-func necDescriptor(system uint16, code uint8) string {
-	return fmt.Sprintf("P:NEC R:%d D:%d S:%d F:%d", necCarrier, system>>8, system&0xFF, code)
-}
-
-var necPattern = regexp.MustCompile(`^P:NEC R:38400 D:(\d+) S:(\d+) F:(\d+)$`)
-
-// parseNEC returns the system code and key value of an NEC descriptor in
-// Sofabaton's form.
-func parseNEC(desc string) (system uint16, code uint8, ok bool) {
-	m := necPattern.FindStringSubmatch(desc)
-	if m == nil {
-		return 0, 0, false
-	}
-	d, err1 := strconv.ParseUint(m[1], 10, 8)
-	s, err2 := strconv.ParseUint(m[2], 10, 8)
-	f, err3 := strconv.ParseUint(m[3], 10, 8)
-	if err1 != nil || err2 != nil || err3 != nil {
-		return 0, 0, false
-	}
-	return uint16(d)<<8 | uint16(s), uint8(f), true
 }
 
 // Validate checks that every command has a name, unique regardless of
@@ -223,24 +209,8 @@ func (d *Device) Encode(w io.Writer) error {
 	return err
 }
 
-// Hex8 is a byte written in hex (0xE5).
-type Hex8 uint8
-
 // Hex16 is a 16-bit value written in hex (0x00CE).
 type Hex16 uint16
-
-func (h Hex8) MarshalYAML() (any, error) {
-	return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!int", Value: fmt.Sprintf("0x%02X", uint8(h))}, nil
-}
-
-func (h *Hex8) UnmarshalYAML(n *yaml.Node) error {
-	v, err := strconv.ParseUint(n.Value, 0, 8)
-	if err != nil {
-		return fmt.Errorf("line %d: %q is not a byte", n.Line, n.Value)
-	}
-	*h = Hex8(v)
-	return nil
-}
 
 func (h Hex16) MarshalYAML() (any, error) {
 	return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!int", Value: fmt.Sprintf("0x%04X", uint16(h))}, nil
@@ -266,9 +236,7 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 	for _, c := range st.Commands {
 		byID[c.ID] = c
 	}
-	var system uint16
-	nec := len(st.Commands) > 0
-	for i, id := range displayOrder(st.Commands, st.Order) {
+	for _, id := range displayOrder(st.Commands, st.Order) {
 		c := byID[id]
 		raw, ok := st.Data[c.ID]
 		if !ok {
@@ -284,19 +252,34 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		} else {
 			pc.Data = hex.EncodeToString(raw)
 		}
-		if s, _, ok := parseNEC(pc.Descriptor); ok && (i == 0 || s == system) {
-			system = s
-		} else {
-			nec = false
-		}
 		d.Commands = append(d.Commands, pc)
 	}
-	if nec {
-		d.IR = &IR{Protocol: "NEC", System: Hex16(system)}
-		for i := range d.Commands {
-			_, code, _ := parseNEC(d.Commands[i].Descriptor)
-			h := Hex8(code)
-			d.Commands[i].Code, d.Commands[i].Descriptor = &h, ""
+	// The protocol and parameters most commands share become the device's,
+	// and those commands codes in it; the others keep their descriptors.
+	var best IR
+	most := 0
+	for _, c := range d.Commands {
+		ir, _, ok := parseCode(c.Descriptor)
+		if !ok {
+			continue
+		}
+		n := 0
+		for _, o := range d.Commands {
+			if oir, _, ok := parseCode(o.Descriptor); ok && oir.same(ir) {
+				n++
+			}
+		}
+		if n > most {
+			best, most = ir, n
+		}
+	}
+	if most > 0 {
+		d.IR = &best
+		p, _ := protocolNamed(best.Protocol)
+		for i, c := range d.Commands {
+			if ir, code, ok := parseCode(c.Descriptor); ok && ir.same(best) {
+				d.Commands[i].Code, d.Commands[i].Descriptor = &Code{Value: code, Decimal: p.decimal}, ""
+			}
 		}
 	}
 	name := func(p record.Press) (string, bool) {

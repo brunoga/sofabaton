@@ -1,0 +1,147 @@
+# Denon AVR-X8500H / AVR-X8500HA receiver, main zone.
+#
+# Source: Denon, "IR Command Chart", summer 2016
+# (assets.denon.com/documentmaster/us/denon_ir_commandchart_summer_2016.xls),
+# sheets "AVR Main Zone ID#1" (Denon-K device 4, subdevice 1) and "ID#2"
+# (subdevice 2, whose functions are ID#1's plus 1024: they name the ID#1
+# functions the sheet gives only as older 15-bit codes). The chart predates
+# the X8500H, which answers to remote ID 1 by default; codes marked
+# "inferred" come from the ID#2 sheet that way, and codes marked "catalog"
+# are Sofabaton's, not in the chart. Each code is the chart's function.
+#
+# The id is the device's id on the maintainer's hub; pass -device to apply
+# this to another one.
+device: Receiver
+brand: Denon
+id: 2
+ir: {protocol: DenonK, device: 4, subdevice: 1}
+commands:
+  # Power
+  - {name: Power Toggle, code: 5, comment: 'catalog "Power"; the main zone toggle (ID#2 has on 1030, off 1031 but no toggle)'}
+  - {name: Main Zone On, code: 6, comment: 'inferred (ID#2 1030)'}
+  - {name: Main Zone Off, code: 7, comment: 'inferred (ID#2 1031)'}
+  - {name: Power On, descriptor: "P:Sharp1 R:38000 D:1 F:195 C0:1", comment: 'catalog; not decoded yet'}
+  - {name: Power Off, descriptor: "P:Sharp R:38000 D:1 F:61 C0:0 D_CHECKSUM:17 F_CHECKSUM:194 C1:1 D0:17", comment: 'catalog; not decoded yet'}
+  - {name: Sleep, code: 836}
+
+  # Navigation
+  - {name: Up, code: 27, comment: 'inferred (ID#2 Cursor Up 1051)'}
+  - {name: Down, code: 28, comment: 'inferred'}
+  - {name: Left, code: 29, comment: 'inferred'}
+  - {name: Right, code: 30, comment: 'inferred'}
+  - {name: OK, code: 31, comment: 'Enter, inferred (ID#2 1055)'}
+  - {name: Back, code: 34, comment: 'Return'}
+  - {name: Setup, code: 35, comment: 'GUI Menu / Setup'}
+  - {name: Option, code: 949, comment: 'catalog "Menu"'}
+  - {name: Info, code: 624}
+  - {name: Status, code: 640, comment: 'inferred (ID#2)'}
+
+  # Volume
+  - {name: Volume Up, code: 368, comment: 'inferred (ID#2 1392)'}
+  - {name: Volume Down, code: 369, comment: 'inferred'}
+  - {name: Mute, code: 370, comment: 'inferred'}
+  - {name: Channel Level, code: 378, comment: 'inferred (ID#2 Channel Select)'}
+
+  # Inputs
+  - {name: Input CBL/SAT, code: 723, comment: 'inferred (ID#2 SAT)'}
+  - {name: Input Blu-ray, code: 721, comment: 'chart "BD"'}
+  - {name: Input DVD, code: 720, comment: 'inferred'}
+  - {name: Input Game, code: 725}
+  - {name: Input Media Player, code: 726, comment: 'inferred (ID#2 DVR)'}
+  - {name: Input TV Audio, code: 722, comment: 'inferred (ID#2 TV/Cable)'}
+  - {name: Input AUX1, code: 729, comment: 'inferred (ID#2 V.Aux)'}
+  - {name: Input AUX2, code: 730}
+  - {name: Input 8K, code: 730, comment: 'catalog; the same code as AUX2'}
+  - {name: Input CD, code: 706, comment: 'inferred'}
+  - {name: Input Phono, code: 704, comment: 'inferred'}
+  - {name: Input Tuner, code: 705, comment: 'inferred (ID#2 Tuner); the catalog had 719, the chart''s HD Radio'}
+  - {name: Input HEOS, code: 711, comment: 'chart "Net/USB / Online Music"'}
+  - {name: Input USB, code: 718}
+  - {name: Input Bluetooth, code: 751}
+  - {name: Input Spotify, code: 764}
+  - {name: Input Pandora, code: 765}
+  - {name: Input SiriusXM, code: 714}
+  - {name: Tuner FM, code: 153}
+  - {name: Tuner AM, code: 154}
+  - {name: Preset Up, code: 972, comment: 'Main Zone Preset Channel Up'}
+  - {name: Preset Down, code: 973, comment: 'Main Zone Preset Channel Down'}
+  - {name: Preset Next, code: 945, comment: 'catalog'}
+  - {name: Preset Previous, code: 946, comment: 'catalog'}
+
+  # Quick select
+  - {name: Quick Select 1, code: 292}
+  - {name: Quick Select 2, code: 293}
+  - {name: Quick Select 3, code: 294}
+  - {name: Quick Select 4, code: 295}
+
+  # Sound modes
+  - {name: Movie, code: 329}
+  - {name: Music, code: 330, comment: 'catalog; next to Movie (329) and Game (331)'}
+  - {name: Game, code: 331, comment: 'catalog'}
+  - {name: Pure, code: 309, comment: 'catalog'}
+  - {name: Sound Mode Next, code: 349}
+  - {name: Sound Mode Previous, code: 332}
+  - {name: Auto, code: 324}
+  - {name: Dolby Atmos, code: 348, comment: 'chart "Dolby Atmos / Dolby Surround"'}
+  - {name: Stereo, code: 304, comment: 'inferred'}
+  - {name: Direct, code: 306, comment: 'inferred'}
+  - {name: Pure Direct, code: 307, comment: 'inferred'}
+  - {name: Standard, code: 308, comment: 'inferred'}
+  - {name: Rock Arena, code: 340, comment: 'inferred'}
+  - {name: Jazz Club, code: 341, comment: 'inferred'}
+  - {name: Mono Movie, code: 343, comment: 'inferred'}
+  - {name: Matrix, code: 344, comment: 'inferred'}
+  - {name: Video Game, code: 345, comment: 'inferred'}
+  - {name: Virtual, code: 346, comment: 'inferred'}
+  - {name: Restorer, code: 548, comment: 'chart "Audio Restorer"'}
+  - {name: Restorer Off, code: 556}
+  - {name: Restorer Mode 1, code: 557}
+  - {name: Restorer Mode 2, code: 558}
+  - {name: Restorer Mode 3, code: 559}
+  - {name: Dynamic EQ, code: 547, comment: 'toggle'}
+  - {name: Dynamic Volume, code: 545, comment: 'toggle'}
+  - {name: Night Mode, code: 546, comment: 'inferred'}
+  - {name: Audio Delay Up, code: 621}
+  - {name: Audio Delay Down, code: 622}
+
+  # Playback (HEOS, USB, Bluetooth)
+  - {name: Play/Pause, code: 992}
+  - {name: Stop, code: 993, comment: 'the catalog''s Stop sent Return (34)'}
+  - {name: Skip Forward, code: 996}
+  - {name: Skip Back, code: 995}
+  - {name: Repeat, code: 956}
+  - {name: Shuffle, code: 957}
+
+  # Settings
+  - {name: Eco On, code: 874}
+  - {name: Eco Off, code: 873}
+  - {name: Eco Auto, code: 875}
+  - {name: Dimmer, code: 656, comment: 'inferred'}
+  - {name: HDMI Monitor Select, code: 753}
+
+power: {on: Power Toggle, off: Power Off}
+inputs: [Input Blu-ray, Input CBL/SAT, Input Game, Input TV Audio]
+
+buttons:
+  Power: Power Toggle
+  Up: Up
+  Left: Left
+  OK: OK
+  Right: Right
+  Down: Down
+  Back: Back
+  Exit: Back
+  Home: Setup
+  Menu: Option
+  Guide: Info
+  Vol+: Volume Up
+  Vol-: Volume Down
+  Mute: Mute
+  Ch+: Preset Up
+  Ch-: Preset Down
+  Play: Play/Pause
+  Pause: Play/Pause
+  Rewind: Skip Back
+  Forward: Skip Forward
+  Power On: Power On
+  Power Off: Power Off

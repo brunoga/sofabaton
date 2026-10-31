@@ -16,8 +16,9 @@ sbx remove-device -hub IP -device "ZZ Test"      # delete a device
 renames and new signals rewrite a command in place (same id, same code, so
 buttons and sequences that use it keep working), missing commands are
 added, and commands the file lacks are kept unless `-prune` is given.
-Commands are matched by name, then by signal (so a renamed command is
-recognized), then by name regardless of case. The order of the commands
+Commands are matched by name, then by name regardless of case, then by
+signal (so a renamed command is recognized; names go first because
+catalog profiles often give several commands one code). The order of the commands
 in the file is the order of the device's page on the remote; `apply`
 rewrites it when it differs. Keys and power sequences are written when
 they differ; keys the file does not bind are left as they are.
@@ -55,12 +56,14 @@ Each command has exactly one of:
 
 | Field | Meaning |
 |---|---|
-| `code` | key value in the device's `ir` protocol. NEC: the hub's descriptor is `P:NEC R:38400 D:<system high byte> S:<system low byte> F:<code>` ([ir-codes.md](protocol/ir-codes.md)) |
+| `code` | key value in the device's `ir` protocol. NEC (`ir: {protocol: NEC, system: 0x00CE}`): the hub's descriptor is `P:NEC R:38400 D:<system high byte> S:<system low byte> F:<code>` ([ir-codes.md](protocol/ir-codes.md)). DenonK (`ir: {protocol: DenonK, device: 4, subdevice: 1}`): the function number of Denon's IR command charts, rendered as `P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:<code> CHECKSUM:<c>` with the Kaseikyo check byte |
 | `descriptor` | a descriptive IR code as the X2 stores it |
 | `data` | the signal bytes as the hub holds them (hex); can be kept and renamed, not added |
 
-`export` writes `code`s when all of a device's commands are NEC codes of
-one system code, `descriptor`s otherwise, and `data` for anything else.
+`export` takes the protocol and parameters most of a device's commands
+share as the device's `ir` and writes those commands as `code`s, the rest
+as `descriptor`s, and `data` for anything else. Codes keep the base they
+are written in (NEC lists use hex, Denon's decimal).
 Unknown fields are errors.
 
 `buttons` keys are the remote's key names: `Power`, `Up`, `Down`, `Left`,
@@ -79,7 +82,8 @@ remotes; with `power` it also marks the device's power as set up, as the
 app does. Leaving `inputs` out leaves the hub's inputs as they are.
 
 [`profiles/`](../profiles) holds the profiles we maintain, starting with
-the AWOL Vision Aetherion, written from AWOL's published IR list.
+the AWOL Vision Aetherion, written from AWOL's published IR list, and a
+Denon AVR-X8500H draft from Denon's IR command chart.
 
 ## Not yet
 

@@ -3,6 +3,7 @@ package profile_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -37,7 +38,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.ID != 4 || d.IR.System != 0x00CE || len(d.Commands) != 4 || *d.Commands[0].Code != 0xE5 {
+	if d.ID != 4 || d.IR.System != 0x00CE || len(d.Commands) != 4 || d.Commands[0].Code.Value != 0xE5 || d.Commands[0].Code.Decimal {
 		t.Fatalf("%+v", d)
 	}
 	sig, err := d.Commands[3].Signal(d)
@@ -285,5 +286,40 @@ func TestRenameDevice(t *testing.T) {
 	st, _ = profile.Read(ctx, c, 4)
 	if changes, _, _ := profile.Plan(d, st, false); len(changes) != 0 {
 		t.Fatalf("again: %v", changes)
+	}
+}
+
+// Every Denon code on our X2's receiver (Sofabaton's catalog, 2026-10-31)
+// parses as DenonK and renders back to the same descriptor, checksum and
+// all; its two Sharp power codes do not parse.
+func TestDenonK(t *testing.T) {
+	raw, err := os.ReadFile("../testdata/x2/receiver-descriptors.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	four, one := uint8(4), uint8(1)
+	d := &profile.Device{Name: "Receiver", IR: &profile.IR{Protocol: "DenonK", Device: &four, Subdevice: &one}}
+	n := 0
+	for _, desc := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+		var f uint16
+		if _, err := fmt.Sscanf(desc[strings.Index(desc, " F:")+1:], "F:%d", &f); err != nil || !strings.HasPrefix(desc, "P:DenonK") {
+			continue
+		}
+		n++
+		sig, err := profile.Command{Name: "x", Code: &profile.Code{Value: f, Decimal: true}}.Signal(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, _ := record.ParseDescriptor(sig); got != desc {
+			t.Errorf("F:%d renders %q, the hub has %q", f, got, desc)
+		}
+	}
+	if n != 69 {
+		t.Fatalf("%d Denon codes", n)
+	}
+	var out bytes.Buffer
+	d.Commands = []profile.Command{{Name: "Volume Up", Code: &profile.Code{Value: 368, Decimal: true}}}
+	if err := d.Encode(&out); err != nil || !strings.Contains(out.String(), "code: 368") || !strings.Contains(out.String(), "device: 4") {
+		t.Fatalf("%v\n%s", err, out.String())
 	}
 }

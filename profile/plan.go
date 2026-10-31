@@ -195,8 +195,8 @@ func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 // (with prune) removes, then the order, the key bindings, the power
 // sequences, the inputs page, the device's record (power and input modes)
 // and, after any of them, a sync to the remotes. Commands
-// are matched by exact name, then by signal (a rename), then by name
-// regardless of case; the hub's commands the profile does not match are
+// are matched by exact name, then by name regardless of case, then by
+// signal (a rename: several commands can share one, so names go first); the hub's commands the profile does not match are
 // removed only with prune, and returned as kept otherwise, listed after
 // the profile's. Keys the profile does not bind are left as they are.
 func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Command, err error) {
@@ -226,11 +226,11 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 	for i, c := range d.Commands {
 		claim(i, func(h *record.Command) bool { return h.Label == c.Name })
 	}
-	for i := range d.Commands {
-		claim(i, func(h *record.Command) bool { return bytes.Equal(data[h.ID], signals[i]) })
-	}
 	for i, c := range d.Commands {
 		claim(i, func(h *record.Command) bool { return strings.EqualFold(h.Label, c.Name) })
+	}
+	for i := range d.Commands {
+		claim(i, func(h *record.Command) bool { return bytes.Equal(data[h.ID], signals[i]) })
 	}
 
 	var adds []Change
