@@ -1,0 +1,443 @@
+{"t":"2026-10-30T21:21:24-04:00","note":"Android app updating the X2 hub from firmware 8 to 9 through sbx proxy. FirmwareChunk (2A) frames keep their 9-byte header; the image bytes after it are removed (the vendor's code), and the frame checksum is recomputed."}
+{"t":"2026-10-30T21:21:24.483358954-04:00","link":"udp","dir":"to-hub","hex":"a55a0cc380f1b2962c08c0a801341f41b8","family":"0xC3","name":"CallMe"}
+{"t":"2026-10-30T21:21:24.508854759-04:00","link":"app","dir":"to-hub","hex":"a55a000100","family":"0x01","name":"ReqBanner"}
+{"t":"2026-10-30T21:21:24.615276126-04:00","link":"hub","dir":"from-hub","hex":"a55a150280f1b2962c080003202211200800005832204855420a","family":"0x02","name":"Banner"}
+{"t":"2026-10-30T21:21:40.562877412-04:00","link":"app","dir":"to-hub","hex":"a55a1a290000010000000000c764461bb4ef25d51a1b35f7219aed5b30c0c0","family":"0x29","name":"FirmwareStart"}
+{"t":"2026-10-30T21:21:41.522714135-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000033","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:41.580874207-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000135","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:41.80392816-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000134","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:41.811438059-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000236","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:41.921518433-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000235","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:41.989536293-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000337","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:42.104665545-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000336","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:42.193809786-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000438","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:42.404738464-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000437","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:42.501902108-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000539","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:42.720232177-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000538","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:42.811454594-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100063a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:43.020753251-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000639","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:43.118003053-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100073b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:43.330728506-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000073a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:43.425684003-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100083c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:43.64309138-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000083b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:43.73315824-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100093d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:43.865212098-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000093c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:43.939507997-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000a3e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:44.163637996-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000a3d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:44.239501165-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000b3f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:45.551347803-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000b3e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:45.571335132-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000c40","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:45.691314766-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000c3f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:45.702390531-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000d41","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:45.818133406-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000d40","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:45.88508935-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000e42","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:45.995018626-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000e41","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:46.085262592-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001000f43","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:46.200581075-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000000f42","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:46.290575741-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001044","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:46.508319474-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001043","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:46.595437347-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001145","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:46.814397374-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001144","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:46.904091791-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001246","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:47.183023282-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001245","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:47.211940762-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001347","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:47.317877364-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001346","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:47.420715463-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001448","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:47.530778879-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001447","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:47.627169601-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001549","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:47.833659837-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001548","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:47.929459656-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100164a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:48.140803386-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001649","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:48.234522842-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100174b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:48.452349226-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000174a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:48.547148973-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100184c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:48.756414914-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000184b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:48.85191473-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100194d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:49.078220765-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000194c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:49.157717302-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001a4e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:49.366868469-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001a4d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:49.46496483-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001b4f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:49.694708214-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001b4e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:49.703024051-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001c50","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:49.809061446-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001c4f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:49.872597117-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001d51","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:49.995193513-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001d50","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:50.076892149-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001e52","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:50.291445115-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001e51","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:50.384491899-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001001f53","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:50.601283903-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000001f52","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:50.692723287-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002054","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:50.909033215-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002053","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:51.00059064-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002155","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:51.214835766-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002154","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:51.306635668-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002256","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:51.52128353-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002255","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:51.622135762-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002357","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:51.897512834-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002356","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:51.923667917-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002458","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:52.034854108-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002457","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:52.128810523-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002559","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:52.244719587-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002558","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:52.334653215-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100265a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:52.550596791-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002659","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:52.642989499-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100275b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:52.858239687-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000275a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:52.943018985-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100285c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:53.164890202-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000285b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:53.253314958-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100295d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:53.479201926-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000295c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:53.561029013-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002a5e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:53.785181356-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002a5d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:53.792861843-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002b5f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:53.909161505-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002b5e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:53.97260877-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002c60","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:54.102785374-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002c5f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:54.174404168-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002d61","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:54.404537022-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002d60","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:54.484675807-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002e62","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:54.703638788-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002e61","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:54.792580083-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001002f63","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:55.013372408-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000002f62","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:55.098742218-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003064","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:55.322274602-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003063","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:55.404090469-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003165","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:55.627828706-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003164","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:55.714188927-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003266","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:55.943786083-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003265","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:56.02108891-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003367","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:56.241491127-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003366","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:56.327713463-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003468","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:56.547405327-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003467","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:56.631021428-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003569","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:56.916788575-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003568","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:56.941311695-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100366a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:57.047721876-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003669","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:57.143762145-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100376b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:57.355638743-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000376a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:57.454562636-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100386c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:57.660541427-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000386b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:57.672562863-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100396d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:57.780307532-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000396c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:57.823214913-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003a6e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:57.930028995-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003a6d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:57.96500297-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003b6f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:58.072992924-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003b6e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:58.168363298-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003c70","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:58.38599292-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003c6f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:58.477400611-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003d71","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:58.700523197-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003d70","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:58.785323588-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003e72","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:58.99909277-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003e71","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:59.094874726-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001003f73","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:59.304203347-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000003f72","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:59.395908515-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004074","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:59.614330799-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004073","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:21:59.70722151-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004175","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:21:59.920300079-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004174","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:00.010516416-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004276","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:00.225933952-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004275","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:00.322031577-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004377","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:00.533872684-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004376","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:00.628801134-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004478","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:00.838968011-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004477","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:00.93611952-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004579","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:01.148438977-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004578","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:01.23996861-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100467a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:01.514933107-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004679","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:01.547423451-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100477b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:01.660749493-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000477a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:01.669900146-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100487c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:01.779373321-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000487b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:01.85728492-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100497d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:01.965472561-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000497c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:02.062138481-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004a7e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:02.271048637-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004a7d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:02.36784414-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004b7f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:02.579179307-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004b7e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:02.672945275-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004c80","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:02.884395802-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004c7f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:02.919467514-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004d81","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:03.029117886-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004d80","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:03.095495495-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004e82","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:03.205249091-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004e81","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:03.289249135-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001004f83","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:03.505739741-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000004f82","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:03.596264604-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005084","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:03.813871367-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005083","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:03.914768564-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005185","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:04.118728662-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005184","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:04.215011727-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005286","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:04.425721523-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005285","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:04.529028549-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005387","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:04.840757345-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005386","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:04.858154476-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005488","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:04.967935115-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005487","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:05.029244706-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005589","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:05.146250055-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005588","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:05.236675678-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100568a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:05.452041908-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005689","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:05.537908703-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100578b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:05.821944289-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000578a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:05.850742783-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100588c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:05.954300951-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000588b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:06.052896136-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100598d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:06.265541111-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000598c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:06.360243093-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005a8e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:06.618231982-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005a8d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:06.670525272-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005b8f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:06.92575778-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005b8e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:06.982065823-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005c90","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:07.187505192-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005c8f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:07.281849831-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005d91","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:07.506620228-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005d90","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:07.587589771-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005e92","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:07.840104429-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005e91","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:07.897973167-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001005f93","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:08.13179308-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000005f92","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:08.204473872-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006094","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:08.418267873-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006093","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:08.510530456-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006195","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:08.723353558-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006194","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:08.817815323-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006296","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:09.036404882-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006295","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:09.123430564-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006397","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:09.342111595-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006396","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:09.430373267-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006498","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:09.644940005-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006497","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:09.670275092-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006599","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:09.780452037-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006598","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:09.839288487-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100669a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:09.949858277-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006699","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:10.048868357-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100679b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:10.264794303-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000679a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:10.350799059-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100689c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:10.566003076-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000689b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:10.662136431-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100699d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:10.943059215-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000699c","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:10.967561575-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006a9e","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:11.078881358-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006a9d","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:11.174070622-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006b9f","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:11.387215642-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006b9e","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:11.484428299-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006ca0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:11.697829427-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006c9f","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:11.790072898-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006da1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:12.006246148-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006da0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:12.09449775-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006ea2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:12.323122199-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006ea1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:12.404564939-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001006fa3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:12.625191423-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000006fa2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:12.708735756-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010070a4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:12.921791833-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000070a3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:13.015299625-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010071a5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:13.236681222-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000071a4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:13.322596213-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010072a6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:13.542135261-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000072a5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:13.632533406-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010073a7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:13.85015637-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000073a6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:13.862752369-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010074a8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:13.979075227-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000074a7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:14.04040955-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010075a9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:14.166545267-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000075a8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:14.246006217-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010076aa","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:14.462766525-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000076a9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:14.554269879-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010077ab","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:14.774244213-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000077aa","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:14.859783077-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010078ac","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:15.088246039-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000078ab","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:15.169799067-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010079ad","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:15.401626127-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000079ac","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:15.4725168-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007aae","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:15.753557971-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007aad","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:15.783678507-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007baf","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:15.89086544-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007bae","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:15.986840955-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007cb0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:16.196314735-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007caf","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:16.29873376-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007db1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:17.55138494-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007db0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:17.582946232-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007eb2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:17.691818468-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007eb1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:17.728797125-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001007fb3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:17.838568601-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000007fb2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:17.932534143-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010080b4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:18.142013028-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000080b3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:18.2416204-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010081b5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:18.451198918-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000081b4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:18.555279903-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010082b6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:18.758645645-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000082b5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:18.852038576-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010083b7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:19.065769491-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000083b6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:19.161444746-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010084b8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:19.374313181-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000084b7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:19.471582798-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010085b9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:19.682301006-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000085b8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:19.776962585-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010086ba","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:19.98613485-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000086b9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:20.080912328-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010087bb","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:20.295783126-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000087ba","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:20.390486998-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010088bc","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:20.604519332-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000088bb","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:20.671626527-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010089bd","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:20.80991786-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000089bc","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:20.819702694-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008abe","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:20.931589637-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008abd","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:21.001604822-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008bbf","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:21.174672184-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008bbe","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:21.208459431-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008cc0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:21.323637585-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008cbf","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:21.413467425-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008dc1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:21.629467-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008dc0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:21.721640589-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008ec2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:21.933326899-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008ec1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:22.027980816-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001008fc3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:22.243809557-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000008fc2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:22.346904565-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010090c4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:22.548605173-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000090c3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:22.640029177-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010091c5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:22.856849618-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000091c4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:22.949646886-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010092c6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:23.159514961-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000092c5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:23.255895536-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010093c7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:23.470715982-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000093c6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:23.565327364-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010094c8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:23.781366503-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000094c7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:23.871142846-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010095c9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:24.083984739-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000095c8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:24.182630926-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010096ca","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:24.39037842-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000096c9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:24.48575442-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010097cb","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:24.717347866-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000097ca","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:24.7918764-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010098cc","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:25.003382513-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000098cb","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:25.203649722-04:00","link":"app","dir":"to-hub","hex":"a55a092a000001000000010099cd","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:25.437768519-04:00","link":"hub","dir":"from-hub","hex":"a55a082b0000010000000099cc","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:25.519880114-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009ace","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:25.732543127-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009acd","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:25.744965511-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009bcf","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:25.85529074-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009bce","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:25.917257864-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009cd0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:26.041043391-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009ccf","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:26.127609003-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009dd1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:26.412130661-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009dd0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:26.445536328-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009ed2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:26.553100574-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009ed1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:26.634766571-04:00","link":"app","dir":"to-hub","hex":"a55a092a00000100000001009fd3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:26.741421664-04:00","link":"hub","dir":"from-hub","hex":"a55a082b000001000000009fd2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:26.839436633-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a0d4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:27.050836259-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a0d3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:27.148546533-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a1d5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:27.397659369-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a1d4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:27.404817396-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a2d6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:27.515423831-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a2d5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:27.52274417-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a3d7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:27.632179771-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a3d6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:27.851412117-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a4d8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:28.232129433-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a4d7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:28.463428851-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a5d9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:28.637849984-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a5d8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:28.683670906-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a6da","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:28.800545523-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a6d9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:28.808003686-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a7db","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:28.935311673-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a7da","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:28.946878284-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a8dc","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.054204766-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a8db","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.062473167-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100a9dd","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.172274275-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000a9dc","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.178282645-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100aade","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.286543729-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000aadd","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.295814433-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100abdf","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.456649335-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000abde","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.465883328-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100ace0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.575065584-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000acdf","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.584786956-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100ade1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.711142587-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000ade0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.719471595-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100aee2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:29.898071847-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000aee1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:29.905736669-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100afe3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.022755647-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000afe2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.031670488-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b0e4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.143096079-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b0e3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.150382282-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b1e5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.261219885-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b1e4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.276925571-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b2e6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.392693609-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b2e5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.401143437-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b3e7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.510002542-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b3e6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.523589269-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b4e8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.638996862-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b4e7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.647887242-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b5e9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.760076805-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b5e8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.768768898-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b6ea","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.879121915-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b6e9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:30.886374233-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b7eb","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:30.997707064-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b7ea","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.004073421-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b8ec","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.112864313-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b8eb","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.119383178-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100b9ed","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.25223325-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000b9ec","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.259949644-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100baee","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.370637359-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000baed","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.377570798-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100bbef","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.490957903-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000bbee","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.500252138-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100bcf0","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.609563093-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000bcef","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.618475923-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100bdf1","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:31.74472701-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000bdf0","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:31.857263443-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100bef2","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:32.074275454-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000bef1","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:32.169588844-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100bff3","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:32.443857848-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000bff2","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:32.492420119-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c0f4","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:32.59566496-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c0f3","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:32.659872028-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c1f5","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:32.783536013-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c1f4","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:32.850008026-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c2f6","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:32.98874248-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c2f5","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:33.088944245-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c3f7","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:33.305233069-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c3f6","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:33.391297612-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c4f8","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:33.602040607-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c4f7","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:33.705289635-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c5f9","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:33.913275427-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c5f8","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:34.005189954-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c6fa","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:34.216314495-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c6f9","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:34.31504265-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c7fb","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:34.538107189-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c7fa","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:34.628558625-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c8fc","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:34.83907647-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c8fb","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:34.930758974-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100c9fd","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:35.141970193-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000c9fc","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:35.235509729-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100cafe","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:35.456179561-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000cafd","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:35.542411807-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100cbff","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:35.757140718-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000cbfe","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:35.764185734-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100cc00","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:35.869427499-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000ccff","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:35.957232737-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100cd01","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:36.065933654-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000cd00","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:36.162199406-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100ce02","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:36.37183763-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000ce01","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:36.465693884-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100cf03","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:36.680012142-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000cf02","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:36.772626359-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d004","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:36.984566754-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d003","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:37.080813616-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d105","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:37.359423257-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d104","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:37.382821827-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d206","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:37.499206175-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d205","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:37.594086202-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d307","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:37.803555505-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d306","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:37.902032226-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d408","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:38.110185277-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d407","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:38.206205698-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d509","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:38.419916354-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d508","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:38.514032536-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d60a","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:38.726269152-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d609","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:38.819911404-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d70b","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:39.049260359-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d70a","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:39.129121752-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d80c","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 236"}
+{"t":"2026-10-30T21:22:39.346972052-04:00","link":"hub","dir":"from-hub","hex":"a55a082b00000100000000d80b","family":"0x2B","name":"FirmwareAck"}
+{"t":"2026-10-30T21:22:39.432936472-04:00","link":"app","dir":"to-hub","hex":"a55a092a0000010000000100d90d","family":"0x2A","name":"FirmwareChunk","note":"image bytes removed: 72"}
+{"t":"2026-10-30T21:22:39.659879078-04:00","link":"hub","dir":"from-hub","hex":"a55a062c00000100000032","family":"0x2C","name":"FirmwareDone"}
+{"t":"2026-10-30T21:22:48.900617837-04:00","link":"udp","dir":"to-hub","hex":"a55a00c1c0","family":"0xC1","name":"NotifyMe"}
+{"t":"2026-10-30T21:22:48.900726014-04:00","link":"udp","dir":"from-hub","hex":"a55a15c280f1b2962c086403202211200800005832204855422e","family":"0xC2","name":"NotifyReply"}
+{"t":"2026-10-30T21:22:58.887037112-04:00","link":"udp","dir":"to-hub","hex":"a55a0cc380f1b2962c08c0a801341f41b8","family":"0xC3","name":"CallMe"}
