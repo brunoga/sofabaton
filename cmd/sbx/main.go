@@ -11,6 +11,7 @@
 //	sbx export -hub IP ...  write a device's profile (YAML)
 //	sbx apply -hub IP ...   make a device match a profile, or create it
 //	sbx remove-device ...   delete a device
+//	sbx sync -hub IP ...    update the remotes' copy of a device
 package main
 
 import (
@@ -57,6 +58,8 @@ commands:
              (-f file; -n shows the plan, -prune removes commands the
              profile lacks; -create makes it a new IR device)
   remove-device  delete a device (-device ID)
+  sync       update the remotes' copy of a device or activity (-device ID);
+             apply does it after changing anything
   version    print the version
 
 Close the Sofabaton app first: a hub serves one client at a time and does
@@ -97,6 +100,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return export(ctx, args, stdout, stderr)
 	case "apply":
 		return apply(ctx, args, stdin, stdout, stderr)
+	case "sync":
+		return syncCmd(ctx, args, stdout, stderr)
 	case "remove-device":
 		return removeDevice(ctx, args, stdin, stdout, stderr)
 	case "proxy":

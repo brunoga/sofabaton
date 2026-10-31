@@ -278,6 +278,9 @@ buttons:
 	if err := sbx("", "apply", "-f", file, "-n"); err != nil || !strings.Contains(out.String(), "already matches") {
 		t.Fatalf("after the create: %v\n%s", err, out.String())
 	}
+	if err := sbx("", "sync", "-device", "zz test"); err != nil || !strings.Contains(out.String(), `synced`) {
+		t.Fatalf("sync: %v\n%s", err, out.String())
+	}
 	if err := sbx("n\n", "remove-device", "-device", "zz test"); err == nil {
 		t.Fatal("deleted without a yes")
 	}

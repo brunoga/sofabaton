@@ -196,3 +196,31 @@ func removeDevice(ctx context.Context, args []string, stdin io.Reader, stdout, s
 	fmt.Fprintf(stdout, "deleted device %d %q\n", dev.ID, dev.Name)
 	return nil
 }
+
+// syncCmd has the hub update the remotes' copy of a device or activity.
+func syncCmd(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+	fs := flag.NewFlagSet("sync", flag.ContinueOnError)
+	var h hubFlags
+	h.register(fs)
+	which := fs.String("device", "", "device or activity name or id (required)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *which == "" {
+		return errors.New("-device is required")
+	}
+	c, err := h.connect(ctx, stderr)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = c.Close() }()
+	e, err := findEntity(ctx, c, *which)
+	if err != nil {
+		return err
+	}
+	if err := c.Sync(ctx, e.ID); err != nil {
+		return err
+	}
+	fmt.Fprintf(stdout, "synced %d %q to the remotes\n", e.ID, e.Name)
+	return nil
+}
