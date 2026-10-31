@@ -47,6 +47,12 @@ var discoverHubs = func(ctx context.Context) ([]transport.Announcement, error) {
 	return d.Discover(ctx)
 }
 
+// banner heads the help, with the version.
+const banner = `sbx %s: local control of Sofabaton X1, X1S and X2 hubs, without the
+app or the cloud. https://github.com/brunoga/sofabaton
+
+`
+
 const usage = `usage: sbx <command> [flags]
 
 commands:
@@ -124,6 +130,7 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		fmt.Fprintln(stdout, version)
 		return nil
 	case "help", "-h", "-help", "--help":
+		fmt.Fprintf(stdout, banner, version)
 		fmt.Fprint(stdout, usage)
 		return nil
 	}

@@ -90,6 +90,10 @@ func TestUsage(t *testing.T) {
 		t.Fatal("unknown command accepted")
 	}
 	out.Reset()
+	if err := run(context.Background(), strings.NewReader(""), []string{"--help"}, &out, &errs); err != nil || !strings.HasPrefix(out.String(), "sbx dev: ") || !strings.Contains(out.String(), "usage: sbx") {
+		t.Fatalf("--help: %q %v", out.String(), err)
+	}
+	out.Reset()
 	if err := run(context.Background(), strings.NewReader(""), []string{"version"}, &out, &errs); err != nil || strings.TrimSpace(out.String()) != "dev" {
 		t.Fatalf("version: %q %v", out.String(), err)
 	}
