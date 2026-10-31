@@ -14,6 +14,13 @@ Primary target hardware: **X2 hub + X2 remote** (owned), with the official
 **Android app** available for capture. X1/X1S support is kept in the wire
 model (dimensions differ) but is not validated by us.
 
+Beyond the official app, once device and activity creation work fully:
+
+- **Per-device sequences** (requested 2026-10-31): sequences that belong to a
+  device and are usable in every activity that includes it, e.g. "3D on" /
+  "3D off" on the Aetherion projector, each several button presses, instead
+  of one copy per activity (the app only offers activity sequences). See R6.
+
 Non-goals (for now): Home Assistant integration, the upstream persistent-cache
 / snapshot-diff editor engine, multi-hub server.
 
@@ -129,11 +136,12 @@ Design rules:
 | P2 | `record` decoders/encoders for catalog, device body, commands, keymaps, macros, inputs, blobs | golden + oracle vectors pass | done except IR blobs (with P6/P7): entities, catalog and membership rows, commands, keymaps and bindings, macros, inputs, hub info |
 | P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | done: discovery, connect and banner verified on our X2 |
 | P4 | Read API in `hub`: catalog, commands, buttons, macros, blob dump, send key; **full backup dump** to JSON | complete dump of our X2, round-trip of every record | reads done; full read-only dump of our X2, all 43 records round-trip; blob dump and send key to come |
-| P5 | `proxy` + `capture` + `sbx proxy`: Android app attaches through us | app works through proxy; JSONL captures of app flows | proxy done; the Android app attached through it and ran a hub firmware update (8 → 9); the proxy now survives the reboot. Read-only and device-create sessions pending |
+| P5 | `proxy` + `capture` + `sbx proxy`: Android app attaches through us | app works through proxy; JSONL captures of app flows | done: the app works through the proxy; captured a firmware update, browsing, and two IR device creates (Hisense, Aetherion Max) |
 | P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | — |
 | P7 | `codec/ir` generators + open IR DB import (raw and X2 `P:`) | generated codes operate real equipment | — |
 | P8 | Research tracks R1–R5 → close L1, L2, L5 | BT and RF device create work on X2 | — |
 | P9 | Wifi classes (ip/roku/hue/sonos/mqtt), restore from backup | — | — |
+| P9b | Beyond the app: per-device sequences (R6) | a "3D on" sequence on the Aetherion, usable from every activity that includes it | — |
 | P10 | Web UI (separate plan): HTTP/WS API over `hub`, device/command/sequence editor | — | — |
 
 P5 is intentionally early: the proxy is our main research instrument.
@@ -156,6 +164,14 @@ app's own backup are the safety net for live write testing.
   → patched APK or rooted phone). Personal-interop only; decide later.
 - **R5 Category semantics**: create one device per app category; tabulate
   device_type, icon, input_mode, power_style, share_mode, default keymap.
+- **R6 Per-device sequences**: devices already carry macros: the app
+  writes `POWER_ON`/`POWER_OFF` as macros of the device itself (`12` with
+  the device id and keys `C6`/`C7`). Find out whether the hub accepts other
+  device macros (other key ids, own labels), how the remote shows them on
+  the device's page, and whether an activity can bind a button to a
+  device's macro, so one definition serves every activity. Fallback if the
+  hub cannot: our tool keeps the sequence per device and writes the copies
+  into each activity that includes the device, keeping them in sync.
 - Every finding → `docs/` with confidence level + a capture in `testdata/`.
 
 ## 8. Open questions
