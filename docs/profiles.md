@@ -22,6 +22,10 @@ in the file is the order of the device's page on the remote; `apply`
 rewrites it when it differs. Keys and power sequences are written when
 they differ; keys the file does not bind are left as they are.
 
+A `device:` (or `brand:`) different from the hub's renames the device in
+place: activities refer to devices by id, so they keep it. (On our X2,
+2026-10-31, AWOLVision became Aetherion this way.)
+
 `-create` makes the profile's device as a new IR device instead, in the
 order the app uses: the device, its commands, keys, idle behavior and
 power sequences, the commit, then its inputs. It refuses a name the hub

@@ -258,3 +258,32 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("%d devices after the delete", len(devs))
 	}
 }
+
+func TestRenameDevice(t *testing.T) {
+	ctx := context.Background()
+	c := simulated(t)
+	st, err := profile.Read(ctx, c, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := profile.FromHub(st.Entity, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.Name = "Aetherion"
+	changes, _, err := profile.Plan(d, st, false)
+	if err != nil || len(changes) != 2 || changes[0].Kind != profile.Record ||
+		changes[0].String() != `record      rename device "Aetherion Max" -> "Aetherion" (brand "AWOL Vision"), power mode 0 style 0, input mode 0` {
+		t.Fatalf("plan %v %v", changes, err)
+	}
+	if err := profile.Apply(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	if devs, _ := c.Devices(ctx); devs[0].Name != "Aetherion" || devs[0].ID != 4 {
+		t.Fatalf("after: %+v", devs[0])
+	}
+	st, _ = profile.Read(ctx, c, 4)
+	if changes, _, _ := profile.Plan(d, st, false); len(changes) != 0 {
+		t.Fatalf("again: %v", changes)
+	}
+}
