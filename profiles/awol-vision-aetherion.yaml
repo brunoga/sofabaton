@@ -7,7 +7,7 @@
 #
 # The id is the device's id on the maintainer's hub; pass -device to apply
 # this to another one.
-device: AWOLVision
+device: Aetherion
 brand: AWOL Vision
 id: 4
 ir: {protocol: NEC, system: 0x00CE}

@@ -32,7 +32,9 @@ const (
 	Sequence
 	// Inputs writes the device's inputs page.
 	Inputs
-	// Record rewrites the device's record: its power and input modes.
+	// Record rewrites the device's record: its name and brand, its power
+	// and input modes. Activities refer to the device by id, so a rename
+	// keeps them.
 	Record
 	// Sync updates the remotes' copy of the device.
 	Sync
@@ -84,7 +86,8 @@ type Change struct {
 	// Page is the new inputs page (Inputs), selected by Names.
 	Page  *record.Inputs
 	Names []string
-	// Entity is the device's new record (Record).
+	// Entity is the device's new record (Record); Renamed tells whether
+	// its name or brand changes, from Name.
 	Entity *record.Entity
 }
 
@@ -117,7 +120,11 @@ func (c Change) String() string {
 		return fmt.Sprintf("inputs      %q", c.Names)
 	case Record:
 		t, _ := c.Entity.DeviceTail()
-		return fmt.Sprintf("record      power mode %d style %d, input mode %d", t.PowerMode, t.PowerStyle, t.InputMode)
+		s := fmt.Sprintf("record      power mode %d style %d, input mode %d", t.PowerMode, t.PowerStyle, t.InputMode)
+		if c.Renamed {
+			s = fmt.Sprintf("record      rename device %q -> %q (brand %q), power mode %d style %d, input mode %d", c.Name, c.Entity.Name, c.Entity.Brand, t.PowerMode, t.PowerStyle, t.InputMode)
+		}
+		return s
 	case Sync:
 		return fmt.Sprintf("sync        device %d to the remotes", c.Device)
 	}
@@ -388,13 +395,18 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		if d.Inputs != nil {
 			want.InputMode = record.InputsDirect
 		}
-		if want != t {
+		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
+		if want != t || renamed {
 			ne := *e
 			ne.Tail = append([]byte(nil), e.Tail...)
 			if err := ne.SetDeviceTail(want); err != nil {
 				return nil, nil, err
 			}
-			changes = append(changes, Change{Kind: Record, Entity: &ne})
+			ne.Name = d.Name
+			if d.Brand != "" {
+				ne.Brand = d.Brand
+			}
+			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name})
 		}
 	}
 	// The remotes keep their own copy of the device and do not see edits
