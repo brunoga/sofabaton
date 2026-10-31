@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `sbx --help` starts with a banner: name, version and what sbx is.
+
 ## [0.1.0] - 2026-10-31
 
 The first prerelease: reading a hub, and creating and editing IR devices
