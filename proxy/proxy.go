@@ -49,6 +49,10 @@ type Config struct {
 	Broadcast          netip.Addr
 	// NoMDNS turns the mDNS advertisement off.
 	NoMDNS bool
+	// DialTimeout bounds each reconnection attempt (default 20s), and
+	// Backoff is the first wait between attempts (default 1s, doubling up
+	// to 30s).
+	DialTimeout, Backoff time.Duration
 	// Tap sees every frame, after it is relayed. It must not block.
 	Tap func(link string, dir wire.Direction, f wire.Frame)
 	// Log receives progress messages; nil discards them.
@@ -57,22 +61,23 @@ type Config struct {
 
 // Proxy is a running proxy.
 type Proxy struct {
-	cfg  Config
-	log  *slog.Logger
-	info *record.HubInfo
-	hub  *transport.Conn
-	udp  *net.UDPConn
-	mdns *mdns.Responder
+	cfg   Config
+	log   *slog.Logger
+	udp   *net.UDPConn
+	local netip.Addr
 
-	mu  sync.Mutex
-	app *transport.Conn
+	mu     sync.Mutex
+	closed bool
+	hub    *transport.Conn // nil while the hub is away
+	info   *record.HubInfo
+	mdns   *mdns.Responder
+	app    *transport.Conn
 }
 
 // Start connects to the hub and starts serving the app. It returns once
-// the proxy is ready; Run then serves until ctx is done or the hub goes
-// away.
+// the proxy is ready; Run then serves until ctx is done.
 func Start(ctx context.Context, cfg Config) (*Proxy, error) {
-	p := &Proxy{cfg: cfg, log: cfg.Log}
+	p := &Proxy{cfg: cfg, log: cfg.Log, local: cfg.LocalAddr}
 	if p.log == nil {
 		p.log = slog.New(slog.DiscardHandler)
 	}
@@ -85,53 +90,75 @@ func Start(ctx context.Context, cfg Config) (*Proxy, error) {
 	if !p.cfg.Broadcast.IsValid() {
 		p.cfg.Broadcast = netip.AddrFrom4([4]byte{255, 255, 255, 255})
 	}
-
-	// The hub stops advertising once it has a client: read its
-	// advertisement first.
-	var svc *mdns.Service
-	if !cfg.NoMDNS {
-		svc = p.browse(ctx)
+	if p.cfg.Backoff <= 0 {
+		p.cfg.Backoff = time.Second
 	}
 
-	conn, err := cfg.Dialer.Dial(ctx, cfg.Hub)
-	if err != nil {
-		return nil, err
-	}
-	p.hub = conn
-	if p.info, err = banner(ctx, conn); err != nil {
-		_ = conn.Close()
-		return nil, err
-	}
-	p.log.Info("connected to the hub", "name", p.info.Name, "model", p.info.Variant, "firmware", p.info.Firmware)
-
-	local := cfg.LocalAddr
-	if !local.IsValid() {
-		if addr, ok := conn.LocalAddr().(*net.TCPAddr); ok {
-			local = addr.AddrPort().Addr().Unmap()
-		}
-	}
 	var lc net.ListenConfig
 	pc, err := lc.ListenPacket(ctx, "udp4", fmt.Sprintf(":%d", p.cfg.AppPort))
 	if err != nil {
-		_ = conn.Close()
 		return nil, fmt.Errorf("proxy: listening for the app: %w", err)
 	}
 	p.udp = pc.(*net.UDPConn)
-
-	if !cfg.NoMDNS {
-		s := mirror(svc, p.info)
-		s.Addr = local
-		if p.mdns, err = mdns.Advertise(s, nil); err != nil {
-			p.close()
-			return nil, err
-		}
-		p.log.Info("advertising", "instance", s.Instance, "addr", local)
+	if err := p.connect(ctx); err != nil {
+		p.close()
+		return nil, err
 	}
 	return p, nil
 }
 
-// Info is the hub's identity.
-func (p *Proxy) Info() *record.HubInfo { return p.info }
+// connect reads the hub's advertisement, connects to the hub, reads its
+// identity and advertises the proxy in its place.
+func (p *Proxy) connect(ctx context.Context) error {
+	// The hub stops advertising once it has a client: read its
+	// advertisement first.
+	var svc *mdns.Service
+	if !p.cfg.NoMDNS {
+		svc = p.browse(ctx)
+	}
+	conn, err := p.cfg.Dialer.Dial(ctx, p.cfg.Hub)
+	if err != nil {
+		return err
+	}
+	info, err := banner(ctx, conn)
+	if err != nil {
+		_ = conn.Close()
+		return err
+	}
+	p.log.Info("connected to the hub", "name", info.Name, "model", info.Variant, "firmware", info.Firmware)
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed {
+		_ = conn.Close()
+		return net.ErrClosed
+	}
+	if !p.local.IsValid() {
+		if addr, ok := conn.LocalAddr().(*net.TCPAddr); ok {
+			p.local = addr.AddrPort().Addr().Unmap()
+		}
+	}
+	if !p.cfg.NoMDNS {
+		s := mirror(svc, info)
+		s.Addr = p.local
+		r, err := mdns.Advertise(s, nil)
+		if err != nil {
+			_ = conn.Close()
+			return err
+		}
+		p.mdns = r
+		p.log.Info("advertising", "instance", s.Instance, "addr", p.local)
+	}
+	p.hub, p.info = conn, info
+	return nil
+}
+
+// Info is the hub's identity, as last read.
+func (p *Proxy) Info() *record.HubInfo {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.info
+}
 
 // AppAttached reports whether the app is connected.
 func (p *Proxy) AppAttached() bool {
@@ -140,40 +167,97 @@ func (p *Proxy) AppAttached() bool {
 	return p.app != nil
 }
 
-// Run serves until ctx is done or the hub disconnects, then shuts down.
+// HubAttached reports whether the proxy holds the hub's connection.
+func (p *Proxy) HubAttached() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.hub != nil
+}
+
+// Run serves until ctx is done, then shuts down. When the hub goes away
+// (it reboots after a firmware update) the proxy withdraws its
+// advertisement, drops the app and reconnects, retrying with backoff, so
+// the app finds the hub again once it is back.
 func (p *Proxy) Run(ctx context.Context) error {
 	defer p.close()
 	stop := context.AfterFunc(ctx, p.close)
 	defer stop()
 
-	hubErr := make(chan error, 1)
-	go func() { hubErr <- p.fromHub() }()
 	go p.serveUDP(ctx)
-
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-hubErr:
+	for {
+		p.mu.Lock()
+		hub := p.hub
+		p.mu.Unlock()
+		if hub == nil {
+			return nil // closed
+		}
+		err := p.fromHub(hub)
 		if ctx.Err() != nil {
 			return nil
 		}
-		return fmt.Errorf("proxy: hub connection: %w", err)
+		p.log.Warn("lost the hub; withdrawing and reconnecting", "err", err)
+		p.drop()
+		if err := p.reconnect(ctx); err != nil {
+			return nil // ctx is done
+		}
+	}
+}
+
+// reconnect retries connect until it succeeds or ctx is done.
+func (p *Proxy) reconnect(ctx context.Context) error {
+	wait := p.cfg.Backoff
+	for {
+		dctx, cancel := context.WithTimeout(ctx, p.dialTimeout())
+		err := p.connect(dctx)
+		cancel()
+		if err == nil {
+			return nil
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		p.log.Info("the hub is not back yet", "err", err, "retry", wait)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(wait):
+		}
+		wait = min(2*wait, 30*time.Second)
+	}
+}
+
+func (p *Proxy) dialTimeout() time.Duration {
+	if p.cfg.DialTimeout > 0 {
+		return p.cfg.DialTimeout
+	}
+	return 20 * time.Second
+}
+
+// drop releases the hub, the app and the advertisement, leaving the UDP
+// listener up (and silent until the hub is back).
+func (p *Proxy) drop() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.mdns != nil {
+		_ = p.mdns.Close() // sends goodbye
+		p.mdns = nil
+	}
+	if p.app != nil {
+		_ = p.app.Close()
+		p.app = nil
+	}
+	if p.hub != nil {
+		_ = p.hub.Close()
+		p.hub = nil
 	}
 }
 
 func (p *Proxy) close() {
-	if p.mdns != nil {
-		_ = p.mdns.Close()
-	}
-	if p.udp != nil {
-		_ = p.udp.Close()
-	}
 	p.mu.Lock()
-	if p.app != nil {
-		_ = p.app.Close()
-	}
+	p.closed = true
 	p.mu.Unlock()
-	_ = p.hub.Close()
+	p.drop()
+	_ = p.udp.Close()
 }
 
 func (p *Proxy) tap(link string, dir wire.Direction, f wire.Frame) {
@@ -183,10 +267,10 @@ func (p *Proxy) tap(link string, dir wire.Direction, f wire.Frame) {
 }
 
 // fromHub relays the hub's frames to the app, dropping them while no app
-// is attached.
-func (p *Proxy) fromHub() error {
+// is attached, until the hub connection fails.
+func (p *Proxy) fromHub(hub *transport.Conn) error {
 	for {
-		f, err := p.hub.ReadFrame()
+		f, err := hub.ReadFrame()
 		if err != nil {
 			return err
 		}
@@ -204,7 +288,8 @@ func (p *Proxy) fromHub() error {
 	}
 }
 
-// fromApp relays the app's frames to the hub until the app disconnects.
+// fromApp relays the app's frames to the hub until the app disconnects or
+// the hub goes away.
 func (p *Proxy) fromApp(app *transport.Conn) {
 	defer func() {
 		p.mu.Lock()
@@ -221,7 +306,13 @@ func (p *Proxy) fromApp(app *transport.Conn) {
 			return
 		}
 		p.tap(LinkApp, wire.ToHub, f)
-		if err := p.hub.WriteFrame(f); err != nil {
+		p.mu.Lock()
+		hub := p.hub
+		p.mu.Unlock()
+		if hub == nil {
+			return
+		}
+		if err := hub.WriteFrame(f); err != nil {
 			p.log.Warn("writing to the hub", "err", err)
 			return
 		}
@@ -240,6 +331,9 @@ func (p *Proxy) serveUDP(ctx context.Context) {
 			continue
 		}
 		p.tap(LinkUDP, wire.ToHub, f)
+		if !p.HubAttached() {
+			continue // stay silent until the hub is back
+		}
 		switch f.Family {
 		case wire.FamNotifyMe:
 			p.notifyReply()
@@ -252,7 +346,7 @@ func (p *Proxy) serveUDP(ctx context.Context) {
 // notifyReply answers a discovery probe the way the hub does: a broadcast
 // of its identity.
 func (p *Proxy) notifyReply() {
-	info := *p.info
+	info := *p.Info()
 	info.Marker = 0x64 // what hubs send in discovery replies
 	reply := wire.Frame{Family: wire.FamNotifyReply, Payload: info.AppendPayload(nil)}
 	raw, err := reply.MarshalBinary()
@@ -276,7 +370,7 @@ func (p *Proxy) callMe(ctx context.Context, f wire.Frame, from *net.UDPAddr) {
 		return // the app repeats CALL_ME until it is called
 	}
 	target := netip.AddrPortFrom(from.AddrPort().Addr().Unmap(), addr.Port())
-	d := net.Dialer{Timeout: 5 * time.Second}
+	d := net.Dialer{Timeout: 5 * time.Second, KeepAliveConfig: transport.KeepAlive}
 	c, err := d.DialContext(ctx, "tcp4", target.String())
 	if err != nil {
 		p.log.Warn("calling the app back", "addr", target, "err", err)

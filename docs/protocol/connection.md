@@ -50,7 +50,7 @@ checked on the corpus (`record.TestHubInfoCorpus`):
 |---|---|---|
 | NOTIFY_ME probe, broadcast to UDP 8102 | `C1` | none (`A5 5A 00 C1 C0`) |
 | NOTIFY_ME reply, broadcast to UDP 8100 | `C2` | hub info (below) |
-| CALL_ME, to UDP 8102 | `C3` | 6 zero bytes, client IPv4, TCP port (BE16) |
+| CALL_ME, to UDP 8102 | `C3` | 6 bytes (see below), client IPv4, TCP port (BE16) |
 | CONNECT_READY beacon, to UDP 8100 | `C4` | hub id (6), `00` |
 
 ## Hub info (banner `0x02`, discovery reply `C2`) `[ref]`
@@ -70,11 +70,38 @@ the same payload:
 
 Our X2 `[X2✓]`: discovery reply and banner as above; banner opcode
 `0x1502`, marker `00`, flags `00 00`, firmware 8, id = MAC. CALL_ME and the
-connect-back to a port in 8200+ work.
+connect-back to a port in 8200+ work. After the update to firmware 9
+(2026-10-30) the banner, the TXT `AVER=9` and a full dump are unchanged
+apart from the version.
+
+### CALL_ME from the Android app `[X2✓]`
+
+Seen through `sbx proxy` (2026-10-30):
+
+```
+A5 5A 0C C3 | 80 F1 B2 96 2C 08 | C0 A8 01 34 | 1F 41 | B8
+            | the hub's id      | 192.168.1.52 (BE) | port 8001
+```
+
+The app puts the hub's id in the first six bytes (we send zeros; the hub
+takes either), writes its IP **big-endian** (upstream saw little-endian
+`[ref]`; the hub uses the source address anyway) and listens on TCP 8001.
+
+### Reboots and liveness `[X2✓]`
+
+At the end of a firmware update the hub reboots without closing its TCP
+connection: no FIN or RST reaches the client, so a blocked read waits until
+TCP keep-alive gives up. `transport` sets short keep-alive probes on hub
+connections (`transport.KeepAlive`: 5 s idle, 3 probes 5 s apart). The
+app, meanwhile, goes back to discovery (`NOTIFY_ME`) and waits for the hub
+to come back, presumably for its new firmware number. A proxy must
+therefore stop answering for the hub while it is away and re-read the
+banner once it is back, which `proxy.Run` does.
 
 ## TODO
 
-- [ ] Keepalive behaviour and idle timeouts
+- [ ] Does the hub send any keep-alive of its own, and does it drop idle
+      clients? (none seen in a 1.5 h idle proxy session)
 - [ ] Port list (UDP/TCP) and firewall notes: hub UDP 8102 (CALL_ME,
       probes), discovery replies broadcast to UDP 8100, connect-back to the
       client's TCP port (upstream uses 8200–8263; whether the hub accepts
