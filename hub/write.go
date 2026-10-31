@@ -10,11 +10,12 @@ import (
 	"github.com/brunoga/sofabaton/wire"
 )
 
-// AddCommand writes cmd, with its signal data (a record.Descriptor, say),
-// as a new command of its device: a command burst of one (family 0x0E),
-// every page acknowledged with a status ack. cmd.ID must be free on the
-// device; see NextCommandID.
-func (c *Client) AddCommand(ctx context.Context, cmd *record.Command, data []byte) error {
+// WriteCommand writes cmd, with its signal data (a record.Descriptor,
+// say), as command cmd.ID of its device: a command burst of one (family
+// 0x0E), every page acknowledged with a status ack. A free id adds the
+// command (see NextCommandID); a used one overwrites it in place, which
+// renames or recodes it and keeps the buttons that refer to it.
+func (c *Client) WriteCommand(ctx context.Context, cmd *record.Command, data []byte) error {
 	pages, err := cmd.WritePages(1, 1, data)
 	if err != nil {
 		return err

@@ -91,7 +91,8 @@ takes either), writes its IP **big-endian** (upstream saw little-endian
 
 While a client (the app) is connected, the hub closes UDP 8102: a CALL_ME
 gets an ICMP port-unreachable, which a connected UDP socket reports as
-"connection refused". `transport` turns that into `ErrBusy`.
+"connection refused". `transport` reports it as `ErrRefused`; the same
+happens for an address that is not a hub at all.
 
 ### Reboots and liveness `[X2✓]`
 

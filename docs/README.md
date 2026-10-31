@@ -29,6 +29,7 @@ capture. When we contradict upstream, say so explicitly.
 | [protocol/hub-variants.md](protocol/hub-variants.md) | X1 / X1S / X2 differences |
 | [protocol/records.md](protocol/records.md) | Record layouts (device body, commands, keymaps, macros, inputs) |
 | [protocol/write-flows.md](protocol/write-flows.md) | Create/update sequences and acks |
+| [profiles.md](profiles.md) | Our YAML device profiles: export, edit, apply |
 | [protocol/firmware-update.md](protocol/firmware-update.md) | The app's hub firmware update |
 | [protocol/ir-codes.md](protocol/ir-codes.md) | IR blob formats: raw timing, Pronto, X2 `P:` descriptive |
 | [research/README.md](research/README.md) | Research tracks R1–R5 and capture log |

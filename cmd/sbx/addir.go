@@ -74,7 +74,7 @@ func addIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		}
 		return nil
 	}
-	if err := c.AddCommand(ctx, cmd, data); err != nil {
+	if err := c.WriteCommand(ctx, cmd, data); err != nil {
 		return err
 	}
 	after, err := c.Commands(ctx, dev)

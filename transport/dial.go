@@ -27,9 +27,10 @@ const (
 // word; short probes notice in seconds instead of minutes.
 var KeepAlive = net.KeepAliveConfig{Enable: true, Idle: 5 * time.Second, Interval: 5 * time.Second, Count: 3}
 
-// ErrBusy reports a hub that refuses to be called because it is serving
-// another client: it closes its UDP port while connected.
-var ErrBusy = errors.New("hub is busy")
+// ErrRefused reports an address whose UDP port 8102 is closed: a hub
+// closes it while it serves a client, and anything that is not a hub has
+// it closed too.
+var ErrRefused = errors.New("CALL_ME refused")
 
 // Dialer opens sessions with hubs. The zero value uses the defaults.
 type Dialer struct {
@@ -105,7 +106,7 @@ func (d *Dialer) Dial(ctx context.Context, hub netip.Addr) (*Conn, error) {
 	for {
 		if _, err := udp.Write(call); err != nil {
 			if errors.Is(err, syscall.ECONNREFUSED) {
-				return nil, fmt.Errorf("transport: hub %v refused CALL_ME: %w (it serves one client at a time; close the Sofabaton app)", hub, ErrBusy)
+				return nil, fmt.Errorf("transport: %v: %w: a hub serving another client (it takes one at a time; close the Sofabaton app), or not a hub", hub, ErrRefused)
 			}
 			return nil, fmt.Errorf("transport: sending CALL_ME: %w", err)
 		}

@@ -1,0 +1,62 @@
+# AWOL Vision Aetherion (Max, Pro, Plus) projectors.
+#
+# Source: AWOL Vision, "AWOL Aetherion IR & IP & RS232 Control", 2026-08-01,
+# sheet "IR List": NEC, system code 0x00CE; each code below is the sheet's
+# key value. Sofabaton's "Aetherion Max" catalog profile has 26 of its 35
+# keys; the rest are marked "not in Sofabaton's profile".
+#
+# The id is the device's id on the maintainer's hub; pass -device to apply
+# this to another one.
+device: AWOLVision
+brand: AWOL Vision
+id: 4
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  # Power
+  - {name: Power Toggle, code: 0x1A, comment: 'sheet "POWER"'}
+  - {name: Power On, code: 0xE5}
+  - {name: Power Off, code: 0xE6}
+  - {name: Low Power, code: 0xE4, comment: 'sheet "LOW POWER"; not in Sofabaton''s profile; what it does is to be tested'}
+
+  # Navigation
+  - {name: Up, code: 0x26}
+  - {name: Down, code: 0x27}
+  - {name: Left, code: 0x24}
+  - {name: Right, code: 0x25}
+  - {name: OK, code: 0x28}
+  - {name: Back, code: 0x5C}
+  - {name: Home, code: 0x5B}
+  - {name: Menu, code: 0x5A}
+  - {name: Dashboard, code: 0x0F, comment: 'not in Sofabaton''s profile; to be tested'}
+
+  # Volume
+  - {name: Volume Up, code: 0x0A}
+  - {name: Volume Down, code: 0x0B}
+  - {name: Mute, code: 0x1B}
+
+  # Inputs
+  - {name: Input Menu, code: 0x12, comment: 'sheet "Input"'}
+  - {name: HDMI 1, code: 0xE7}
+  - {name: HDMI 2, code: 0xE8}
+  - {name: HDMI 3, code: 0xE9}
+  - {name: DisplayPort, code: 0xEA, comment: 'sheet "DP"; not in Sofabaton''s profile'}
+  - {name: Composite, code: 0xEB, comment: 'not in Sofabaton''s profile'}
+
+  # Apps and Google TV
+  - {name: Netflix, code: 0xDC}
+  - {name: YouTube, code: 0xDB}
+  - {name: Prime Video, code: 0xDD}
+  - {name: Disney+, code: 0xDE}
+  - {name: Live Guide, code: 0xE2}
+  - {name: Free TV, code: 0xEC, comment: 'sheet "Free TV/Live TV"; not in Sofabaton''s profile'}
+  - {name: Google Assistant, code: 0xE1, comment: 'sheet "Assistant"'}
+  - {name: Favorite, code: 0xED, comment: 'not in Sofabaton''s profile'}
+
+  # Projector
+  - {name: Focus, code: 0xD9, comment: 'opens the focus screen; not in Sofabaton''s profile'}
+  - {name: Select Profile, code: 0xD8, comment: 'sheet "Profile"; probably the Google TV profile, to be tested'}
+  - {name: AI Box, code: 0xDA, comment: 'to be tested'}
+
+  # Key combinations, as if both keys were pressed
+  - {name: Back + Down, code: 0xE0, comment: 'sheet "BACK+DOWN"; not in Sofabaton''s profile; to be tested'}
+  - {name: Back + Home, code: 0xE3, comment: 'sheet "Back+home"; not in Sofabaton''s profile; to be tested'}
