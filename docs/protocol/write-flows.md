@@ -195,6 +195,16 @@ Re-creating ZZ Test with HDMI 1 and 2 as inputs, our X2 accepted all of it
 and the page reads back as written; `sbx remove-device` deleted the first
 ZZ Test in 3.8 s.
 
+## Remote sync `[X2✓]`
+
+The remote keeps its own copy of each device. After our renames, adds and
+order write on the Aetherion (no sync), our X2's remote still showed the
+original catalog list: old names ("disnesy", "Power") in id order. The
+freshly created ZZ Test, whose create ended with `65 [device, 01]`, was
+current: its two power sequences first, as "Turn On" and "Turn Off", then
+its 10 commands in order. `apply` now ends every change with that sync;
+`sbx sync -device X` sends it alone.
+
 ## Activity create `[ref:X1/X1S]`
 
 `0x37` header → `0x3E` bindings → `0x12` macros → remote sync.

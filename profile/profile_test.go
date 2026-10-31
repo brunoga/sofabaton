@@ -143,6 +143,7 @@ func TestPlanAndApply(t *testing.T) {
 		`button      Power -> "Power On"`,
 		`button      OK -> "OK"`,
 		`button      Back -> "ok", long "Focus"`,
+		`sync        device 4 to the remotes`,
 	}
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("plan:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
@@ -167,7 +168,7 @@ func TestPlanAndApply(t *testing.T) {
 	}
 	// Pruning removes what the profile lacks.
 	changes, _, _ = profile.Plan(d, st, true)
-	if len(changes) != 1 || changes[0].Kind != profile.Remove || changes[0].Command.Label != "Mute" {
+	if len(changes) != 2 || changes[0].Kind != profile.Remove || changes[0].Command.Label != "Mute" || changes[1].Kind != profile.Sync {
 		t.Fatalf("prune %v", changes)
 	}
 

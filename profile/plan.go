@@ -187,7 +187,7 @@ func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 // changes that make the hub match the profile: command updates, adds and
 // (with prune) removes, then the order, the key bindings, the power
 // sequences, the inputs page, the device's record (power and input modes)
-// and, after new inputs, a sync to the remotes. Commands
+// and, after any of them, a sync to the remotes. Commands
 // are matched by exact name, then by signal (a rename), then by name
 // regardless of case; the hub's commands the profile does not match are
 // removed only with prune, and returned as kept otherwise, listed after
@@ -353,7 +353,6 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		}
 	}
 
-	newInputs := false
 	if d.Inputs != nil {
 		var entries []record.InputEntry
 		var names []string
@@ -375,7 +374,6 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			}
 			page.Entries = entries
 			changes = append(changes, Change{Kind: Inputs, Page: page, Names: names})
-			newInputs = true
 		}
 	}
 	if e := st.Entity; e != nil {
@@ -399,7 +397,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			changes = append(changes, Change{Kind: Record, Entity: &ne})
 		}
 	}
-	if newInputs {
+	// The remotes keep their own copy of the device and do not see edits
+	// until it is synced (our X2's remote kept the old names and order).
+	if len(changes) > 0 {
 		changes = append(changes, Change{Kind: Sync, Device: st.Device})
 	}
 	return changes, kept, nil
