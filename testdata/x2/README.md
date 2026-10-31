@@ -7,6 +7,7 @@ owner's consent.
 |---|---|---|
 | `dump-fw8.json` | `sbx dump` of the whole configuration, firmware 8 | `cmd/sbx.TestDumpRoundTrip` |
 | `dump-fw9.json` | the same after the update to firmware 9 (identical but for the version) | `cmd/sbx.TestDumpRoundTrip` |
+| `app-add-ir-device.jsonl` | `sbx proxy`, with notes: browsing a device and an activity, then adding a Hisense TV from the catalog and deleting it | `capture.TestX2AddIRDevice` |
 | `app-firmware-update.jsonl` | `sbx proxy`: the Android app updating the hub from 8 to 9; image bytes removed | `capture.TestX2FirmwareUpdate` |
 
 The configuration: devices Receiver, Blu-ray and Projector/Google TV (a
