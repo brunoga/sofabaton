@@ -148,3 +148,44 @@ func removeIR(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 	fmt.Fprintf(stdout, "removed %q (id %d) from device %d\n", target.Label, target.ID, dev)
 	return nil
 }
+
+// send makes the hub send one of a device's commands now.
+func send(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+	fs := flag.NewFlagSet("send", flag.ContinueOnError)
+	var h hubFlags
+	h.register(fs)
+	device := fs.Uint("device", 0, "device id (required; see sbx dump)")
+	label := fs.String("command", "", "the command's label")
+	id := fs.Uint("id", 0, "the command's id, instead of -command")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *device == 0 || *device > 0xFF || (*label == "") == (*id == 0) {
+		return errors.New("-device and one of -command or -id are required")
+	}
+	c, err := h.connect(ctx, stderr)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = c.Close() }()
+	dev := byte(*device)
+	cmds, err := c.Commands(ctx, dev)
+	if err != nil {
+		return err
+	}
+	var target *record.Command
+	for _, x := range cmds {
+		if (*id != 0 && uint(x.ID) == *id) || (*label != "" && strings.EqualFold(x.Label, *label)) {
+			target = x
+			break
+		}
+	}
+	if target == nil {
+		return fmt.Errorf("device %d has no such command", dev)
+	}
+	if err := c.Run(ctx, dev, []record.Step{hub.StepFor(target)}); err != nil {
+		return err
+	}
+	fmt.Fprintf(stdout, "sent %q (id %d) of device %d\n", target.Label, target.ID, dev)
+	return nil
+}

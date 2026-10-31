@@ -193,3 +193,17 @@ func TestExportApply(t *testing.T) {
 		t.Fatalf("after apply: %v\n%s", err, out.String())
 	}
 }
+
+func TestSend(t *testing.T) {
+	simulated(t)
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"send", "-hub", "192.0.2.1", "-device", "1", "-command", "power"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), `sent "Power" (id 1) of device 1`) {
+		t.Fatalf("send:\n%s", out.String())
+	}
+	if err := run(context.Background(), strings.NewReader(""), []string{"send", "-hub", "192.0.2.1", "-device", "1", "-command", "Nope"}, &out, &errs); err == nil {
+		t.Fatal("sent a command that does not exist")
+	}
+}

@@ -13,6 +13,8 @@ type Model struct {
 	Commands   map[byte][]*record.Command // by device
 	// Data is the commands' signal data, by device and command id.
 	Data map[byte]map[byte][]byte
+	// Runs records the macros run with family 0x5F.
+	Runs []*record.Macro
 	Keymaps    map[byte][]record.Binding  // by entity
 	Macros     map[byte][]*record.Macro   // by entity
 	Inputs     map[byte]*record.Inputs    // by device
@@ -104,6 +106,22 @@ func FromModel(m *Model) *Hub {
 		}
 		c.Sort = 0xFF // added commands get no place on the remote
 		m.Commands[c.Device] = append(cmds, c)
+		return []wire.Frame{Status(0)}
+	})
+	h.Handle(wire.FamRunMacro, func(req wire.Frame) []wire.Frame {
+		_, body, err := wire.SplitPage(req.Payload)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		v, err := wire.VariantFromModel(m.Info.Model)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		mac, err := record.ParseMacro(v, body)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		m.Runs = append(m.Runs, mac)
 		return []wire.Frame{Status(0)}
 	})
 	h.Handle(wire.FamReqBlob, func(req wire.Frame) []wire.Frame {

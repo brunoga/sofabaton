@@ -100,6 +100,16 @@ The hub's reply to a command data request (`0C [device, id]`, answered in
 `0D`) carries the same body as a write, but its last byte is not the sum8
 (upstream calls it a replay tail); writers recompute it.
 
+## Running commands now `[X2✓]`
+
+`5F` carries a macro body that the hub runs at once and does not store:
+the entity (the device), key `00`, the steps, an empty label. The app uses
+it to test a power command while setting a device up (`record.TestRunMacroMatchesTheApp`
+rebuilds both captured frames); each step names its command by device,
+id and code, delay `FF` for a single step. Status ack `00`.
+`hub.Client.Run` and `sbx send`: on our X2 (2026-10-31) Focus and Power Off
+sent this way worked on the projector.
+
 ## Deleting one command `[X2✓]`
 
 `10 [device, command id]`, status ack after a hub-side sweep (upstream

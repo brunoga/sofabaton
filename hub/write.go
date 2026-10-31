@@ -63,3 +63,31 @@ func NextCommandID(cmds []*record.Command) (byte, error) {
 	}
 	return 0, fmt.Errorf("hub: no free command id")
 }
+
+// Run makes the hub carry out steps now, as a macro of entity that is not
+// stored (family 0x5F; the app sends one to test a power command). A step
+// names its command by device, id and code, as in record.Macro.
+func (c *Client) Run(ctx context.Context, entity byte, steps []record.Step) error {
+	m, err := record.NewMacro(c.variant, entity, 0, "")
+	if err != nil {
+		return err
+	}
+	m.Steps = steps
+	pages, err := m.WritePages()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	for i, p := range pages {
+		if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamRunMacro, Payload: p}, session.Status()); err != nil {
+			return fmt.Errorf("hub: running %d steps, page %d of %d: %w", len(steps), i+1, len(pages), err)
+		}
+	}
+	return nil
+}
+
+// StepFor is the macro step that sends cmd once.
+func StepFor(cmd *record.Command) record.Step {
+	return record.Step{Device: cmd.Device, Command: cmd.ID, Code: cmd.Code, Delay: 0xFF}
+}
