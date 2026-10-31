@@ -40,6 +40,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   macros and inputs pages.
 - `hubsim.FromModel` serves a hub configuration given as records.
 - `sbx discover`, `sbx info` and `sbx dump` (read-only, raw bytes kept).
+- `-hub` is optional on every `sbx` command: it defaults to `$SBX_HUB`,
+  else to the only hub that answers discovery.
 - `internal/mdns`: a minimal mDNS browser (one-shot queries) and
   responder for one IPv4 service; first dependency, `golang.org/x/net`.
 - Package `proxy` and `sbx proxy`: stands between the official app and the

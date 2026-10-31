@@ -7,8 +7,6 @@ import (
 	"io"
 	"text/tabwriter"
 	"time"
-
-	"github.com/brunoga/sofabaton/transport"
 )
 
 func discover(ctx context.Context, args []string, stdout io.Writer) error {
@@ -19,8 +17,7 @@ func discover(ctx context.Context, args []string, stdout io.Writer) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, *wait)
 	defer cancel()
-	var d transport.Discoverer
-	found, err := d.Discover(ctx)
+	found, err := discoverHubs(ctx)
 	if err != nil {
 		return err
 	}

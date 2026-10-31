@@ -23,10 +23,12 @@ import (
 	"net/netip"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/session"
+	"github.com/brunoga/sofabaton/transport"
 	"github.com/brunoga/sofabaton/wire"
 )
 
@@ -35,6 +37,12 @@ var version = "dev"
 
 // dialHub opens a client; tests replace it with a simulated hub.
 var dialHub = hub.Dial
+
+// discoverHubs finds the hubs on the network; tests replace it.
+var discoverHubs = func(ctx context.Context) ([]transport.Announcement, error) {
+	var d transport.Discoverer
+	return d.Discover(ctx)
+}
 
 const usage = `usage: sbx <command> [flags]
 
@@ -61,6 +69,9 @@ commands:
   sync       update the remotes' copy of a device or activity (-device ID);
              apply does it after changing anything
   version    print the version
+
+Commands that talk to a hub take -hub IP. Without it they use $SBX_HUB
+or, if that is unset, the hub discovery finds when only one answers.
 
 Close the Sofabaton app first: a hub serves one client at a time and does
 not answer discovery while the app is connected.
@@ -125,18 +136,15 @@ type hubFlags struct {
 }
 
 func (h *hubFlags) register(fs *flag.FlagSet) {
-	fs.StringVar(&h.addr, "hub", "", "hub IP address (required)")
+	fs.StringVar(&h.addr, "hub", os.Getenv(hubEnv), "hub IP address (default $"+hubEnv+", else the one hub discovery finds)")
 	fs.BoolVar(&h.verbose, "v", false, "log every frame to stderr")
 	fs.DurationVar(&h.timeout, "timeout", 20*time.Second, "time to wait for the hub to connect back")
 }
 
 func (h *hubFlags) connect(ctx context.Context, stderr io.Writer) (*hub.Client, error) {
-	if h.addr == "" {
-		return nil, errors.New("-hub is required")
-	}
-	addr, err := netip.ParseAddr(h.addr)
+	addr, err := hubAddr(ctx, h.addr, stderr)
 	if err != nil {
-		return nil, fmt.Errorf("-hub: %w", err)
+		return nil, err
 	}
 	var opts hub.Options
 	if h.verbose {
@@ -147,4 +155,41 @@ func (h *hubFlags) connect(ctx context.Context, stderr io.Writer) (*hub.Client, 
 	dctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 	return dialHub(dctx, addr, opts)
+}
+
+// hubEnv names the environment variable with the default hub address.
+const hubEnv = "SBX_HUB"
+
+// discoverWait is how long hubAddr listens for hubs.
+const discoverWait = 3 * time.Second
+
+// hubAddr parses a -hub flag or, when it is empty, discovers the hub: the
+// only one that answers, or an error naming them all.
+func hubAddr(ctx context.Context, flag string, stderr io.Writer) (netip.Addr, error) {
+	if flag != "" {
+		addr, err := netip.ParseAddr(flag)
+		if err != nil {
+			return netip.Addr{}, fmt.Errorf("-hub: %w", err)
+		}
+		return addr, nil
+	}
+	ctx, cancel := context.WithTimeout(ctx, discoverWait)
+	defer cancel()
+	found, err := discoverHubs(ctx)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("finding a hub (or give -hub): %w", err)
+	}
+	switch len(found) {
+	case 0:
+		return netip.Addr{}, errors.New("no hub answered discovery; give -hub (a hub connected to the app does not answer)")
+	case 1:
+		a := found[0]
+		fmt.Fprintf(stderr, "using hub %v (%s, %v)\n", a.Addr, a.Info.Name, a.Info.Variant)
+		return a.Addr, nil
+	}
+	names := make([]string, len(found))
+	for i, a := range found {
+		names[i] = fmt.Sprintf("%v (%s)", a.Addr, a.Info.Name)
+	}
+	return netip.Addr{}, fmt.Errorf("%d hubs answered, give -hub: %s", len(found), strings.Join(names, ", "))
 }

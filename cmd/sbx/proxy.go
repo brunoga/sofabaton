@@ -3,12 +3,10 @@ package main
 import (
 	"bufio"
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log/slog"
-	"net/netip"
 	"os"
 	"strings"
 	"time"
@@ -20,7 +18,7 @@ import (
 
 func proxyCmd(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("proxy", flag.ContinueOnError)
-	hubAddr := fs.String("hub", "", "hub IP address (required)")
+	hubFlag := fs.String("hub", os.Getenv(hubEnv), "hub IP address (default $"+hubEnv+", else the one hub discovery finds)")
 	out := fs.String("capture", "", "append every frame to this capture file (JSON lines)")
 	verbose := fs.Bool("v", false, "log every frame to stderr")
 	noMDNS := fs.Bool("no-mdns", false, "do not advertise over mDNS (the Android app needs it)")
@@ -28,12 +26,9 @@ func proxyCmd(ctx context.Context, args []string, stdin io.Reader, stdout, stder
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *hubAddr == "" {
-		return errors.New("-hub is required")
-	}
-	addr, err := netip.ParseAddr(*hubAddr)
+	addr, err := hubAddr(ctx, *hubFlag, stderr)
 	if err != nil {
-		return fmt.Errorf("-hub: %w", err)
+		return err
 	}
 
 	var rec *capture.Writer
