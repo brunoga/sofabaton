@@ -31,9 +31,45 @@ with their own opcode and echo a byte (see table). No reply → timeout.
 5. `0x08` finalize with the real id.
 6. remote sync.
 
-Upstream observed the X2 app doing `0xD507` create then `0xD508` update, and
-**no** remote-sync frame after create/rename (the hub syncs the remote itself)
-`[ref]`. To confirm with our own capture.
+### Observed on the X2 `[X2✓]`
+
+The Android app adding a Hisense TV from the cloud catalog, with the hub as
+the emitter (2026-10-31, `testdata/x2/app-add-ir-device.jsonl`, checked by
+`capture.TestX2AddIRDevice`). It took 33 s, all of it on the hub link. The
+cloud only supplied the content; nothing the hub needs comes from anywhere
+else:
+
+| # | Frame | Count | Ack |
+|---|---|---|---|
+| 1 | `07` CreateDevice, id `FF`, name, catalog code id, emitter routing `00 00 07` | 1 | `07` with the new id (`04`) |
+| 2 | `0E` WriteCommand, one per command (below) | 61 | `03` accepted, each |
+| 3 | `3E` WriteButton: button id → the command's 6-byte code | 36 | `3E` echoing the button |
+| 4 | `41` SetIdleBehavior `04 01` | 1 | `03` |
+| 5 | `12` WriteMacro: `POWER_ON` and `POWER_OFF`, each one step | 2 | `12` echoing the key |
+| 6 | `08` UpdateDevice: the create's record with the real id and the tail's commit marker set to 1, nothing else changed | 1 | `03` |
+
+No remote-sync frame follows (as upstream saw `[ref]`): the hub updates
+the remote itself. Deleting the device (`09` with its id) was acknowledged
+only after 13.5 s.
+
+#### `0E` WriteCommand body `[X2✓]`
+
+Each write is one page, `[seq, 00 01]` with `seq` counting from 1, then:
+
+```
+3D 00 01          command count (61), pages of this record
+04 00 0D          device id, command id (00: the hub assigns), type IR
+00 00 00 00 17 18 code: the catalog's function id; buttons and macros refer to it
+50 00 6F 00 ..    label, 60 bytes UTF-16BE ("Power off")
+00 1D             descriptor length
+00 00 11 00 94 70 magic (upstream's name; 0x9470 is 38 000)
+"P:NEC R:38400 D:4 S:251 F:114"
+00 00 00 00       padding
+70                sum8 of the body from the count byte
+```
+
+The signal is the **descriptor text**: protocol and parameters, rendered
+into IR by the hub. See [ir-codes.md](ir-codes.md).
 
 ## Activity create `[ref:X1/X1S]`
 
