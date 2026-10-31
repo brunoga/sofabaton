@@ -2,7 +2,9 @@
 // commands: a YAML file with comments, which can be exported from a hub,
 // edited and applied back. Applying compares the file with the hub and
 // makes only the changes needed (see Plan), so commands keep their ids and
-// the buttons and sequences that refer to them.
+// the buttons and sequences that refer to them. The commands' order is
+// the order of the device's page on the remote, and buttons binds the
+// remote's keys to them.
 //
 //	# AWOL Vision Aetherion Max, from AWOL's IR list
 //	device: Aetherion Max
@@ -14,6 +16,12 @@
 //	  - {name: Focus, code: 0xD9, comment: opens the focus screen}
 //	  - {name: Other, descriptor: "P:NEC R:38400 D:4 S:251 F:114"}
 //	  - {name: Learned, data: "00 a4 ..."}   # opaque bytes, as the hub holds them
+//	power: {on: Power On, off: Power Off}
+//	inputs: [Other]
+//	buttons:
+//	  Power: Power On
+//	  OK: Other
+//	  Back: {short: Other, long: Focus}
 package profile
 
 import (
@@ -23,6 +31,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -38,8 +47,24 @@ type Device struct {
 	// ID is the device's id on the hub the profile belongs to.
 	ID uint8 `yaml:"id,omitempty"`
 	// IR, when set, lets commands give just a code.
-	IR       *IR       `yaml:"ir,omitempty"`
+	IR *IR `yaml:"ir,omitempty"`
+	// Commands are in the order the remote lists them on the device's
+	// page.
 	Commands []Command `yaml:"commands"`
+	Buttons  Buttons   `yaml:"buttons,omitempty"`
+	// Power, when set, makes the device's power sequences, which
+	// activities run to switch it on and off, send one command each.
+	Power *Power `yaml:"power,omitempty"`
+	// Inputs, when set, are the commands that select each of the device's
+	// inputs, in order: activities switch the device to one of them.
+	Inputs []string `yaml:"inputs,omitempty"`
+}
+
+// Power names the commands of a device's POWER_ON and POWER_OFF
+// sequences.
+type Power struct {
+	On  string `yaml:"on"`
+	Off string `yaml:"off"`
 }
 
 // IR is the IR protocol a device's codes share.
@@ -114,7 +139,8 @@ func parseNEC(desc string) (system uint16, code uint8, ok bool) {
 }
 
 // Validate checks that every command has a name, unique regardless of
-// case, and exactly one valid signal.
+// case, and exactly one valid signal, and that the buttons run commands of
+// the profile.
 func (d *Device) Validate() error {
 	if d.Name == "" {
 		return errors.New("profile: no device name")
@@ -144,6 +170,25 @@ func (d *Device) Validate() error {
 		if _, err := c.Signal(d); err != nil {
 			errs = append(errs, err)
 		}
+	}
+	errs = append(errs, d.validateButtons()...)
+	if p := d.Power; p != nil {
+		for _, c := range []string{p.On, p.Off} {
+			if d.find(c) < 0 {
+				errs = append(errs, fmt.Errorf("profile: power: %q is not a command of the profile", c))
+			}
+		}
+	}
+	seenInput := map[int]bool{}
+	for _, c := range d.Inputs {
+		i := d.find(c)
+		switch {
+		case i < 0:
+			errs = append(errs, fmt.Errorf("profile: inputs: %q is not a command of the profile", c))
+		case seenInput[i]:
+			errs = append(errs, fmt.Errorf("profile: inputs: %q appears twice", c))
+		}
+		seenInput[i] = true
 	}
 	return errors.Join(errs...)
 }
@@ -210,16 +255,22 @@ func (h *Hex16) UnmarshalYAML(n *yaml.Node) error {
 	return nil
 }
 
-// FromHub builds a device's profile from what the hub holds: its record,
-// its commands and their signal data by command id. Descriptive codes
-// become descriptors, other signals data; when every command is an NEC
-// code of one system code, they become codes of the device's IR protocol.
-func FromHub(dev *record.Entity, cmds []*record.Command, data map[byte][]byte) (*Device, error) {
+// FromHub builds a device's profile from what the hub holds for it (see
+// Read): its commands in the remote's order, with their signals, and its
+// key bindings. Descriptive codes become descriptors, other signals data;
+// when every command is an NEC code of one system code, they become codes
+// of the device's IR protocol.
+func FromHub(dev *record.Entity, st *State) (*Device, error) {
 	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID}
+	byID := map[byte]*record.Command{}
+	for _, c := range st.Commands {
+		byID[c.ID] = c
+	}
 	var system uint16
-	nec := len(cmds) > 0
-	for i, c := range cmds {
-		raw, ok := data[c.ID]
+	nec := len(st.Commands) > 0
+	for i, id := range displayOrder(st.Commands, st.Order) {
+		c := byID[id]
+		raw, ok := st.Data[c.ID]
 		if !ok {
 			return nil, fmt.Errorf("profile: no data for command %d %q", c.ID, c.Label)
 		}
@@ -248,5 +299,86 @@ func FromHub(dev *record.Entity, cmds []*record.Command, data map[byte][]byte) (
 			d.Commands[i].Code, d.Commands[i].Descriptor = &h, ""
 		}
 	}
+	name := func(p record.Press) (string, bool) {
+		if p.Device != dev.ID {
+			return "", false
+		}
+		c, ok := byID[p.Command]
+		if !ok {
+			return "", false
+		}
+		return c.Label, true
+	}
+	for _, b := range st.Keymap {
+		short, ok := name(b.Short)
+		if !ok {
+			continue // a key of another device's command: not this profile's
+		}
+		k := Key{Short: short}
+		if !b.Long.IsZero() {
+			if k.Long, ok = name(b.Long); !ok {
+				continue
+			}
+		}
+		if d.Buttons == nil {
+			d.Buttons = Buttons{}
+		}
+		d.Buttons[b.Button.String()] = k
+	}
+	var power Power
+	for _, m := range st.Macros {
+		if len(m.Steps) != 1 {
+			continue // more than a command: not what a profile describes
+		}
+		name, ok := name(record.Press{Device: m.Steps[0].Device, Command: m.Steps[0].Command})
+		switch {
+		case !ok:
+		case m.ID == record.MacroPowerOn:
+			power.On = name
+		case m.ID == record.MacroPowerOff:
+			power.Off = name
+		}
+	}
+	if power.On != "" && power.Off != "" {
+		d.Power = &power
+	}
+	if in := st.Inputs; in != nil && in.Mode == record.InputsDirect {
+		for _, e := range in.Entries {
+			if n, ok := name(record.Press{Device: dev.ID, Command: e.Command}); ok {
+				d.Inputs = append(d.Inputs, n)
+			}
+		}
+	}
 	return d, nil
+}
+
+// displayOrder returns the ids of a device's commands in the order the
+// remote lists them: those the order places by position, then the others
+// by id. A device without an order lists them by id.
+func displayOrder(cmds []*record.Command, order []record.Place) []byte {
+	pos := map[byte]int{}
+	for _, p := range order {
+		if p.Placed() {
+			pos[p.Command] = int(p.Position)
+		}
+	}
+	ids := make([]byte, 0, len(cmds))
+	for _, c := range cmds {
+		ids = append(ids, c.ID)
+	}
+	slices.SortFunc(ids, func(a, b byte) int {
+		pa, oka := pos[a]
+		pb, okb := pos[b]
+		switch {
+		case oka && okb && pa != pb:
+			return pa - pb
+		case oka != okb:
+			if oka {
+				return -1
+			}
+			return 1
+		}
+		return int(a) - int(b)
+	})
+	return ids
 }

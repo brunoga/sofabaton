@@ -144,8 +144,18 @@ func TestButtons(t *testing.T) {
 	if !ButtonNum5.X2Only() || Button(0x01).IsHardKey() || Button(0x01).String() != "Button(0x01)" {
 		t.Fatal("numpad / favorite slot")
 	}
-	if len(buttonNames) != 41 {
+	if len(buttonNames) != 42 {
 		t.Fatalf("%d buttons", len(buttonNames))
+	}
+	for s, want := range map[string]Button{"ok": ButtonOK, "Vol+": ButtonVolUp, "power on": ButtonPowerOn, "0x05": 0x05, "5": ButtonNum5} {
+		if b, err := ParseButton(s); err != nil || b != want {
+			t.Errorf("ParseButton(%q) = %v, %v; want %v", s, b, err, want)
+		}
+	}
+	for _, s := range []string{"", "Volume", "0x100", "07"} {
+		if b, err := ParseButton(s); err == nil {
+			t.Errorf("ParseButton(%q) = %v", s, b)
+		}
 	}
 }
 

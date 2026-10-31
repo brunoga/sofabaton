@@ -173,14 +173,16 @@ func TestExportApply(t *testing.T) {
 		t.Fatalf("exported %s %v", data, err)
 	}
 	edited := strings.Replace(string(data), "name: Focus", "name: Lens Focus", 1) +
-		"  - name: Menu\n    code: 0x5A\n    comment: from the IR list\n"
+		"  - name: Menu\n    code: 0x5A\n    comment: from the IR list\n" +
+		"buttons:\n  OK: {short: Menu, long: Lens Focus}\n"
 	if err := os.WriteFile(file, []byte(edited), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := sbx("", "apply", "-hub", "192.0.2.1", "-f", file, "-n"); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), `rename "Focus" -> "Lens Focus"`) || !strings.Contains(out.String(), `add       1 "Menu"`) {
+	if !strings.Contains(out.String(), `rename "Focus" -> "Lens Focus"`) || !strings.Contains(out.String(), `add       1 "Menu"`) ||
+		!strings.Contains(out.String(), `button      OK -> "Menu", long "Lens Focus"`) {
 		t.Fatalf("plan:\n%s", out.String())
 	}
 	if err := sbx("n\n", "apply", "-hub", "192.0.2.1", "-f", file); err == nil {
@@ -225,6 +227,9 @@ func TestList(t *testing.T) {
 	if got := sbx("commands", "tv"); !strings.Contains(got, "1   Power") {
 		t.Fatalf("list commands:\n%s", got)
 	}
+	if got := sbx("buttons", "watch tv"); !strings.Contains(got, "LONG PRESS") {
+		t.Fatalf("list buttons:\n%s", got)
+	}
 	if got := sbx("sequences"); !strings.Contains(got, "SEQUENCE") {
 		t.Fatalf("list sequences:\n%s", got)
 	}
@@ -238,5 +243,45 @@ func TestDeviceByName(t *testing.T) {
 	var out, errs bytes.Buffer
 	if err := run(context.Background(), strings.NewReader(""), []string{"send", "-hub", "192.0.2.1", "-device", "tv", "-command", "Power"}, &out, &errs); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCreateAndRemoveDevice(t *testing.T) {
+	simulated(t)
+	file := t.TempDir() + "/new.yaml"
+	if err := os.WriteFile(file, []byte(`device: ZZ Test
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  - {name: Power On, code: 0xE5}
+  - {name: Power Off, code: 0xE6}
+  - {name: Focus, code: 0xD9}
+power: {on: Power On, off: Power Off}
+buttons:
+  OK: Focus
+`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out, errs bytes.Buffer
+	sbx := func(stdin string, args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(stdin), append(args[:1:1], append([]string{"-hub", "192.0.2.1"}, args[1:]...)...), &out, &errs)
+	}
+	if err := sbx("", "apply", "-f", file, "-create", "-n"); err != nil || !strings.Contains(out.String(), `create IR device "ZZ Test" with 3 commands, 1 buttons, powered by "Power On" and "Power Off"`) {
+		t.Fatalf("dry run: %v\n%s", err, out.String())
+	}
+	if err := sbx("y\n", "apply", "-f", file, "-create"); err != nil || !strings.Contains(out.String(), "done: committed device") {
+		t.Fatalf("create: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "apply", "-f", file, "-create", "-n"); err == nil {
+		t.Fatal("created it twice")
+	}
+	if err := sbx("", "apply", "-f", file, "-n"); err != nil || !strings.Contains(out.String(), "already matches") {
+		t.Fatalf("after the create: %v\n%s", err, out.String())
+	}
+	if err := sbx("n\n", "remove-device", "-device", "zz test"); err == nil {
+		t.Fatal("deleted without a yes")
+	}
+	if err := sbx("y\n", "remove-device", "-device", "zz test"); err != nil || !strings.Contains(out.String(), `deleted device`) {
+		t.Fatalf("remove: %v\n%s", err, out.String())
 	}
 }

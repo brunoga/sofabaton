@@ -9,7 +9,8 @@
 //	sbx remove-ir -hub IP . delete a command of a device
 //	sbx send -hub IP ...    send a device's command now
 //	sbx export -hub IP ...  write a device's profile (YAML)
-//	sbx apply -hub IP ...   make a device match a profile
+//	sbx apply -hub IP ...   make a device match a profile, or create it
+//	sbx remove-device ...   delete a device
 package main
 
 import (
@@ -40,7 +41,8 @@ commands:
   discover   find hubs on the local network
   info       show a hub's identity
   list       list devices and activities, a device's commands
-             (list commands NAME) or sequences (list sequences [NAME])
+             (list commands NAME), what keys run (list buttons NAME) or
+             sequences (list sequences [NAME])
   dump       dump a hub's configuration as JSON (a lossless backup: raw
              record bytes are kept next to the decoded view)
   proxy      stand between the Sofabaton app and the hub, relaying and
@@ -49,10 +51,12 @@ commands:
              (-device ID -label NAME -code "P:NEC ..."; -n shows the write)
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
   send       send a device's command now (-device ID, -command NAME or -id N)
-  export     write a device's commands as a profile (YAML: -device ID [-o file])
+  export     write a device's profile: commands in the remote's order,
+             keys and power sequences (YAML: -device ID [-o file])
   apply      make a device match a profile, changing only what differs
              (-f file; -n shows the plan, -prune removes commands the
-             profile lacks)
+             profile lacks; -create makes it a new IR device)
+  remove-device  delete a device (-device ID)
   version    print the version
 
 Close the Sofabaton app first: a hub serves one client at a time and does
@@ -93,6 +97,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return export(ctx, args, stdout, stderr)
 	case "apply":
 		return apply(ctx, args, stdin, stdout, stderr)
+	case "remove-device":
+		return removeDevice(ctx, args, stdin, stdout, stderr)
 	case "proxy":
 		return proxyCmd(ctx, args, stdin, stdout, stderr)
 	case "version", "-version", "--version":

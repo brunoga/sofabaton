@@ -75,7 +75,7 @@ into IR by the hub. See [ir-codes.md](ir-codes.md).
 
 A burst of one: `seq` 1, count 1, the record with the next free command
 id (the app's creates send id 0 and let the hub number them; upstream
-gives an explicit id here), then the data. `hub.Client.AddCommand` and
+gives an explicit id here), then the data. `hub.Client.WriteCommand` and
 `sbx add-ir` do this; `record.TestCommandWriteMatchesTheApp` rebuilds all
 87 of the app's captured command writes byte for byte with the same
 encoder.
@@ -84,9 +84,9 @@ First write of ours to our X2 (2026-10-31): "Focus" on the Aetherion Max,
 `P:NEC R:38400 D:0 S:206 F:217` from AWOL Vision's IR list (a key
 Sofabaton's profile left out). Status ack `00`; the hub lists it as
 command 27, keeps code `000000000000` as written and gives it sort `FF`
-(no position on the remote's device page; upstream follows up with a
-`61` sort-table write, not done yet). Sent from the app, it opened the
-projector's focus screen.
+(every command record on our X2 has sort `FF`: the remote's order is a
+separate table, below). Sent from the app, it opened the projector's
+focus screen.
 
 ## Renaming a command `[X2✓]`
 
@@ -120,12 +120,87 @@ display-sort table keeps the deleted id until rewritten `[ref]`.
 Focus was deleted, the hub stopped listing it, and adding it again gave it
 the same id, 27.
 
+## Key bindings `[X2✓]`
+
+`3E`, one key per write: `01 0001 01 0001`, the 18-byte row (entity,
+button, short press `device code6 command`, long press the same), sum8 of
+the body from its fourth byte. The hub acks with `3E [button, ?]`; the
+second byte is the button plus `3E` in every ack we saw. A write replaces
+the key's row.
+
+The app names the command by **code alone** (command id `00`); the hub
+fills in the id, and the keymap reads back (`3C [entity, FF]` → `3D`) with
+both. `capture.TestX2ButtonWrites` rebuilds all 50 of the app's key writes
+from `record.Binding`. Commands we add have code `000000000000`, so we
+name them by id and code `0` instead: on our X2 (2026-10-31) the hub
+accepted that for all 7 keys of a new device, and the keymap reads back
+with those ids (`sbx list buttons`).
+
+Key ids are in `record/button.go`. Device keymaps written by the app
+also carry `AB` (the power key, bound to the device's power toggle) and
+`C2`/`C3`, bound to its power on and off commands. `C2`/`C3` are not keys
+of the remote; what reads them is not known `[inferred]`.
+
+## Command order `[X2✓]`
+
+The order of a device's page on the remote is a table of
+`(command id, position)` pairs, positions from 1, `FF` (or `00`) for none
+`[ref]`. It is read with `62 [device]`, answered in `63` with
+`01 pages16 device pairs...` (no checksum). It is written with `61`: the
+same body plus a sum8, in pages behind `01 page16`, status ack. Upstream
+saw an X1S refuse a table that places nothing (status `06`) `[ref]`.
+
+On our X2 (2026-10-31), the three IR devices the app created had **no
+table** (`62` answered status `07`). The Bluetooth device had one placing
+none of its 25 commands. The remote presumably lists the commands of a
+device without a table by id `[inferred]`. Our `61` write of the
+Aetherion's 35 commands in the profile's order was accepted and read back
+as written.
+
+## Device create from scratch `[X2✓]`
+
+The app's create flow (above), with our own records and no catalog. On
+our X2 (2026-10-31), `sbx apply -create` made "ZZ Test" (8 Aetherion
+codes) in 5.7 s:
+
+1. `07` a new record (id `FF`): class IR, type 2 and icon 1 (the Hisense's),
+   code id all zeros, `record.NewIRDeviceTail` (emitters hub + both ports,
+   marker 0). Ack `07 05`.
+2. `0E` each command as a burst of one, ids 1..8, code 0.
+3. `3E` the keys, naming commands by id (above).
+4. `41 [05, 01]`.
+5. `12` `POWER_ON` (`C6`) and `POWER_OFF` (`C7`), one step each, by id.
+6. `08` the record with id 5 and marker 1.
+
+Every step was acked; the device lists, its keys and sequences read back
+as written. `capture.TestX2CreateFrames` rebuilds the app's create,
+idle-behavior, power-sequence and commit frames from records made from
+scratch. What a zero code id or our type and icon change on the remote is
+still to be seen.
+
+### Inputs `[X2✓]`
+
+When the user says the device switches inputs, the app writes, after the
+commit:
+
+1. `46` the inputs page, mode 1 (each input its own command), the entries
+   `command code6 ordinal label`, status ack per page.
+   `capture.TestX2InputsWrite` rebuilds the Aetherion's (HDMI 1-3, Home)
+   byte for byte from `record.Inputs`.
+2. `08` the record with the tail's input mode 1. (Its power setup before
+   that also rewrote the record with power mode 1 and style 3.)
+3. `65 [device, 01]`, the X2's per-device sync to the remotes `[ref]`.
+
+Re-creating ZZ Test with HDMI 1 and 2 as inputs, our X2 accepted all of it
+and the page reads back as written; `sbx remove-device` deleted the first
+ZZ Test in 3.8 s.
+
 ## Activity create `[ref:X1/X1S]`
 
 `0x37` header → `0x3E` bindings → `0x12` macros → remote sync.
 
 ## TODO
 
-- [ ] Delete device/activity, membership, favorites, ordering (`0x11`, `0x51`, `0x61`, `0x65`)
+- [ ] Delete activity, membership, favorites, device and activity ordering (`0x11`, `0x51`, `0x65`)
 - [ ] Paging rules per family (`0x0E` uses `[command_seq, page_be]`)
 - [ ] X2 remote-sync targeting and "busy updating remote" status `0x11`

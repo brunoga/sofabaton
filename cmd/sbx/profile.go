@@ -41,7 +41,7 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 		if err != nil {
 			return err
 		}
-		p, err := profile.FromHub(dev, st.Commands, st.Data)
+		p, err := profile.FromHub(dev, st)
 		if err != nil {
 			return err
 		}
@@ -69,6 +69,7 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	prune := fs.Bool("prune", false, "also remove the hub's commands the profile lacks")
 	dry := fs.Bool("n", false, "show the plan only")
 	yes := fs.Bool("y", false, "apply without asking")
+	create := fs.Bool("create", false, "create the profile's device as a new IR device")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -98,6 +99,30 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 		return err
 	}
 	defer func() { _ = c.Close() }()
+	if *create {
+		if *device != "" {
+			return errors.New("-create makes a new device; it takes no -device")
+		}
+		if _, err := findDevice(ctx, c, p.Name); err == nil {
+			return fmt.Errorf("a device named %q exists; rename the profile's device or apply to it", p.Name)
+		}
+		fmt.Fprintf(stdout, "create IR device %q with %d commands, %d buttons", p.Name, len(p.Commands), len(p.Buttons))
+		if p.Power != nil {
+			fmt.Fprintf(stdout, ", powered by %q and %q", p.Power.On, p.Power.Off)
+		}
+		fmt.Fprintln(stdout)
+		if *dry {
+			return nil
+		}
+		if !*yes && !confirm(stdin, stdout, "create it?") {
+			return errors.New("not created")
+		}
+		id, err := profile.Create(ctx, c, p, func(s string) { fmt.Fprintln(stdout, "done:", s) })
+		if err != nil && id != 0 {
+			return fmt.Errorf("%w (device %d is on the hub, uncommitted: sbx remove-device -device %d)", err, id, id)
+		}
+		return err
+	}
 	dev, err := findDevice(ctx, c, which)
 	if err != nil {
 		return err
@@ -124,14 +149,50 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	if *dry {
 		return nil
 	}
-	if !*yes {
-		fmt.Fprintf(stdout, "apply %d changes to device %d? [y/N] ", len(changes), id)
-		line, _ := bufio.NewReader(stdin).ReadString('\n')
-		if a := strings.ToLower(strings.TrimSpace(line)); a != "y" && a != "yes" {
-			return errors.New("not applied")
-		}
+	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("apply %d changes to device %d?", len(changes), id)) {
+		return errors.New("not applied")
 	}
 	return profile.Apply(ctx, c, changes, func(ch profile.Change) {
 		fmt.Fprintln(stdout, "done:", ch)
 	})
+}
+
+// confirm asks a yes or no question.
+func confirm(stdin io.Reader, stdout io.Writer, question string) bool {
+	fmt.Fprintf(stdout, "%s [y/N] ", question)
+	line, _ := bufio.NewReader(stdin).ReadString('\n')
+	a := strings.ToLower(strings.TrimSpace(line))
+	return a == "y" || a == "yes"
+}
+
+// removeDevice deletes a device from the hub.
+func removeDevice(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	fs := flag.NewFlagSet("remove-device", flag.ContinueOnError)
+	var h hubFlags
+	h.register(fs)
+	device := fs.String("device", "", "device name or id (required)")
+	yes := fs.Bool("y", false, "delete without asking")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *device == "" {
+		return errors.New("-device is required")
+	}
+	c, err := h.connect(ctx, stderr)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = c.Close() }()
+	dev, err := findDevice(ctx, c, *device)
+	if err != nil {
+		return err
+	}
+	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("delete device %d %q, its commands, and its place in activities?", dev.ID, dev.Name)) {
+		return errors.New("not deleted")
+	}
+	if err := c.DeleteDevice(ctx, dev.ID); err != nil {
+		return err
+	}
+	fmt.Fprintf(stdout, "deleted device %d %q\n", dev.ID, dev.Name)
+	return nil
 }

@@ -76,6 +76,7 @@ func list(ctx context.Context, args []string, stdout, stderr io.Writer) error {
   devices              the devices (the default, with activities)
   activities           the activities and their devices
   commands DEVICE      a device's commands
+  buttons ENTITY       what the keys of an activity or device run
   sequences [ENTITY]   the sequences (macros) of an activity or device, or of all
 
 DEVICE and ENTITY are names or ids.
@@ -125,6 +126,15 @@ DEVICE and ENTITY are names or ids.
 			fmt.Fprintf(tw, "%d\t%s\t%v\n", x.ID, x.Label, x.Type)
 		}
 		return nil
+	case "buttons":
+		if len(rest) != 1 {
+			return errors.New("list buttons takes one device or activity")
+		}
+		e, err := findEntity(ctx, c, rest[0])
+		if err != nil {
+			return err
+		}
+		return listButtons(ctx, c, tw, e)
 	case "sequences":
 		var entities []*record.Entity
 		switch len(rest) {
@@ -149,7 +159,7 @@ DEVICE and ENTITY are names or ids.
 		}
 		return listSequences(ctx, c, tw, entities)
 	}
-	return fmt.Errorf("list: unknown %q (devices, activities, commands, sequences)", what)
+	return fmt.Errorf("list: unknown %q (devices, activities, commands, buttons, sequences)", what)
 }
 
 func listDevices(ctx context.Context, c *hub.Client, w io.Writer) error {
@@ -188,15 +198,63 @@ func listActivities(ctx context.Context, c *hub.Client, w io.Writer) error {
 // presumably the input the activity selects for it (not yet confirmed).
 const macroInput = 0xC5
 
-func listSequences(ctx context.Context, c *hub.Client, w io.Writer, entities []*record.Entity) error {
+// commandNamer names devices' commands as "device: label", reading each
+// device's commands once.
+func commandNamer(ctx context.Context, c *hub.Client) (name func(device, id byte) string, devices map[byte]string, err error) {
 	labels := map[byte]map[byte]string{} // device -> command id -> label
-	names := map[byte]string{}
+	devices = map[byte]string{}
 	devs, err := c.Devices(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, d := range devs {
+		devices[d.ID] = d.Name
+	}
+	return func(device, id byte) string {
+		if labels[device] == nil {
+			labels[device] = map[byte]string{}
+			if cmds, err := c.Commands(ctx, device); err == nil {
+				for _, x := range cmds {
+					labels[device][x.ID] = x.Label
+				}
+			}
+		}
+		label, ok := labels[device][id]
+		if !ok {
+			label = fmt.Sprintf("command %d", id)
+		}
+		return devices[device] + ": " + label
+	}, devices, nil
+}
+
+func listButtons(ctx context.Context, c *hub.Client, w io.Writer, e *record.Entity) error {
+	rows, err := c.Keymap(ctx, e.ID)
+	if errors.Is(err, hub.ErrNotFound) {
+		fmt.Fprintf(w, "%s has no buttons\n", e.Name)
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	for _, d := range devs {
-		names[d.ID] = d.Name
+	name, _, err := commandNamer(ctx, c)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(w, "KEY\tPRESS\tLONG PRESS\n")
+	for _, b := range rows {
+		long := ""
+		if !b.Long.IsZero() {
+			long = name(b.Long.Device, b.Long.Command)
+		}
+		fmt.Fprintf(w, "%v\t%s\t%s\n", b.Button, name(b.Short.Device, b.Short.Command), long)
+	}
+	return nil
+}
+
+func listSequences(ctx context.Context, c *hub.Client, w io.Writer, entities []*record.Entity) error {
+	command, names, err := commandNamer(ctx, c)
+	if err != nil {
+		return err
 	}
 	step := func(s record.Step) string {
 		if s.IsDelay() {
@@ -211,19 +269,7 @@ func listSequences(ctx context.Context, c *hub.Client, w io.Writer, entities []*
 		case macroInput:
 			return names[s.Device] + ": its input for the activity"
 		}
-		if labels[s.Device] == nil {
-			labels[s.Device] = map[byte]string{}
-			if cmds, err := c.Commands(ctx, s.Device); err == nil {
-				for _, x := range cmds {
-					labels[s.Device][x.ID] = x.Label
-				}
-			}
-		}
-		label, ok := labels[s.Device][s.Command]
-		if !ok {
-			label = fmt.Sprintf("command %d", s.Command)
-		}
-		return names[s.Device] + ": " + label
+		return command(s.Device, s.Command)
 	}
 	fmt.Fprintf(w, "OF\tKEY\tSEQUENCE\tSTEPS\n")
 	for _, e := range entities {

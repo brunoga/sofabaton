@@ -8,6 +8,8 @@ comments). `profile` reads and writes them; `sbx` uses them:
 sbx export -hub IP -device 4 -o aetherion.yaml   # back up a device
 sbx apply  -hub IP -f aetherion.yaml -n          # show what would change
 sbx apply  -hub IP -f aetherion.yaml             # change it (asks first)
+sbx apply  -hub IP -f new.yaml -create           # make it a new IR device
+sbx remove-device -hub IP -device "ZZ Test"      # delete a device
 ```
 
 `apply` compares the file with the hub and changes only what differs:
@@ -15,7 +17,15 @@ renames and new signals rewrite a command in place (same id, same code, so
 buttons and sequences that use it keep working), missing commands are
 added, and commands the file lacks are kept unless `-prune` is given.
 Commands are matched by name, then by signal (so a renamed command is
-recognized), then by name regardless of case.
+recognized), then by name regardless of case. The order of the commands
+in the file is the order of the device's page on the remote; `apply`
+rewrites it when it differs. Keys and power sequences are written when
+they differ; keys the file does not bind are left as they are.
+
+`-create` makes the profile's device as a new IR device instead, in the
+order the app uses: the device, its commands, keys, idle behavior and
+power sequences, the commit, then its inputs. It refuses a name the hub
+already has.
 
 ## Format
 
@@ -30,6 +40,11 @@ commands:
   - {name: Other, descriptor: "P:NEC R:38400 D:4 S:251 F:114"}
   - {name: Learned, data: "00a4..."}  # the hub's bytes, for codes the
                                        # other forms cannot express
+power: {on: Power On, off: Power Off}  # the POWER_ON and POWER_OFF sequences
+inputs: [HDMI 1, HDMI 2]               # the commands that select each input
+buttons:                               # the remote's keys on the device's page
+  OK: Other
+  Back: {short: Other, long: Focus}    # a long press runs another command
 ```
 
 Each command has exactly one of:
@@ -44,11 +59,26 @@ Each command has exactly one of:
 one system code, `descriptor`s otherwise, and `data` for anything else.
 Unknown fields are errors.
 
+`buttons` keys are the remote's key names: `Power`, `Up`, `Down`, `Left`,
+`Right`, `OK`, `Back`, `Home`, `Menu`, `Vol+`, `Vol-`, `Mute`, `Ch+`,
+`Ch-`, `Play`, `Pause`, `Rewind`, `Forward`, `Guide`, `DVR`, `Exit`, `Red`,
+`Green`, `Yellow`, `Blue`, `A`, `B`, `C`, `0`-`9`, `-`, `Enter`, and `Power
+On`/`Power Off` (rows the app binds to the device's on and off commands;
+not keys). Case does not matter. `power` takes effect only when both
+sequences are a single command; `export` writes it then.
+
+`inputs` answers the app's "does this device switch inputs?": the
+commands that select each input, in order, for activities to pick from.
+`apply` writes the inputs page (keeping the hub's input labels when only
+they differ), sets the device's input mode, and syncs the device to the
+remotes; with `power` it also marks the device's power as set up, as the
+app does. Leaving `inputs` out leaves the hub's inputs as they are.
+
 [`profiles/`](../profiles) holds the profiles we maintain, starting with
 the AWOL Vision Aetherion, written from AWOL's published IR list.
 
 ## Not yet
 
-Creating a device from a profile, button bindings, sequences (including
-per-device ones), the remote's command order, and protocols other than
-NEC for `code`.
+Unbinding a key, sequences of more than one command (including
+per-device ones), the device's category and icon, activities, and
+protocols other than NEC for `code`.
