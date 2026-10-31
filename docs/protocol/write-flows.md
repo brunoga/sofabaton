@@ -71,6 +71,33 @@ Each write is one page, `[seq, 00 01]` with `seq` counting from 1, then:
 The signal is the **descriptor text**: protocol and parameters, rendered
 into IR by the hub. See [ir-codes.md](ir-codes.md).
 
+## Adding one command to a device `[X2✓]`
+
+A burst of one: `seq` 1, count 1, the record with the next free command
+id (the app's creates send id 0 and let the hub number them; upstream
+gives an explicit id here), then the data. `hub.Client.AddCommand` and
+`sbx add-ir` do this; `record.TestCommandWriteMatchesTheApp` rebuilds all
+87 of the app's captured command writes byte for byte with the same
+encoder.
+
+First write of ours to our X2 (2026-10-31): "Focus" on the Aetherion Max,
+`P:NEC R:38400 D:0 S:206 F:217` from AWOL Vision's IR list (a key
+Sofabaton's profile left out). Status ack `00`; the hub lists it as
+command 27, keeps code `000000000000` as written and gives it sort `FF`
+(no position on the remote's device page; upstream follows up with a
+`61` sort-table write, not done yet). Sent from the app, it opened the
+projector's focus screen.
+
+## Deleting one command `[X2✓]`
+
+`10 [device, command id]`, status ack after a hub-side sweep (upstream
+timed up to 12 s on big X1 configurations; ours took under 2.5 s with the
+connection); the hub drops bindings that used the command `[ref]`. The
+display-sort table keeps the deleted id until rewritten `[ref]`.
+`sbx remove-ir` and `hub.Client.DeleteCommand`: on our X2 (2026-10-31)
+Focus was deleted, the hub stopped listing it, and adding it again gave it
+the same id, 27.
+
 ## Activity create `[ref:X1/X1S]`
 
 `0x37` header → `0x3E` bindings → `0x12` macros → remote sync.

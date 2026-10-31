@@ -95,3 +95,52 @@ func TestUsage(t *testing.T) {
 		t.Fatalf("version: %q %v", out.String(), err)
 	}
 }
+
+func TestAddIR(t *testing.T) {
+	simulated(t)
+	code := "P:NEC R:38400 D:0 S:206 F:217"
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"add-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus", "-code", code, "-n"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(out.String(), "WriteCommand 01 00 01 01 00 01 01 02 0d") {
+		t.Fatalf("dry run:\n%s", out.String())
+	}
+	out.Reset()
+	if err := run(context.Background(), strings.NewReader(""), []string{"add-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus", "-code", code}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), `added "Focus" to device 1: id 2`) {
+		t.Fatalf("add:\n%s", out.String())
+	}
+	for _, bad := range [][]string{
+		{"-device", "1", "-label", "power", "-code", code}, // label taken
+		{"-device", "9", "-label", "X", "-code", code},     // no such device
+		{"-device", "1", "-label", "X", "-code", "NEC 1"},  // not a descriptor
+	} {
+		if err := run(context.Background(), strings.NewReader(""), append([]string{"add-ir", "-hub", "192.0.2.1"}, bad...), &out, &errs); err == nil {
+			t.Errorf("add-ir %v succeeded", bad)
+		}
+	}
+}
+
+func TestRemoveIR(t *testing.T) {
+	simulated(t)
+	var out, errs bytes.Buffer
+	run1 := func(args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(""), args, &out, &errs)
+	}
+	if err := run1("add-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus", "-code", "P:NEC R:38400 D:0 S:206 F:217"); err != nil {
+		t.Fatal(err)
+	}
+	if err := run1("remove-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "focus"); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), `removed "Focus" (id 2) from device 1`) {
+		t.Fatalf("remove:\n%s", out.String())
+	}
+	if err := run1("remove-ir", "-hub", "192.0.2.1", "-device", "1", "-label", "Focus"); err == nil {
+		t.Fatal("removed it twice")
+	}
+}

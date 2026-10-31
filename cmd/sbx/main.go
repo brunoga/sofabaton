@@ -4,6 +4,8 @@
 //	sbx info -hub IP        show a hub's identity
 //	sbx dump -hub IP        dump a hub's configuration as JSON
 //	sbx proxy -hub IP       stand between the app and the hub, recording
+//	sbx add-ir -hub IP ...  add an IR command to a device
+//	sbx remove-ir -hub IP . delete a command of a device
 package main
 
 import (
@@ -37,6 +39,9 @@ commands:
              record bytes are kept next to the decoded view)
   proxy      stand between the Sofabaton app and the hub, relaying and
              recording every frame (-capture file.jsonl)
+  add-ir     add an IR command to a device, from a descriptive code
+             (-device ID -label NAME -code "P:NEC ..."; -n shows the write)
+  remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
   version    print the version
 
 Close the Sofabaton app first: a hub serves one client at a time and does
@@ -65,6 +70,10 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return info(ctx, args, stdout, stderr)
 	case "dump":
 		return dump(ctx, args, stdout, stderr)
+	case "add-ir":
+		return addIR(ctx, args, stdout, stderr)
+	case "remove-ir":
+		return removeIR(ctx, args, stdout, stderr)
 	case "proxy":
 		return proxyCmd(ctx, args, stdin, stdout, stderr)
 	case "version", "-version", "--version":

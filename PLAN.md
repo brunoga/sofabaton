@@ -137,7 +137,7 @@ Design rules:
 | P3 | `transport` + `session` + `hubsim`; discovery & connect | connect to real X2, read banner/identity; hubsim tests | done: discovery, connect and banner verified on our X2 |
 | P4 | Read API in `hub`: catalog, commands, buttons, macros, blob dump, send key; **full backup dump** to JSON | complete dump of our X2, round-trip of every record | reads done; full read-only dump of our X2, all 43 records round-trip; blob dump and send key to come |
 | P5 | `proxy` + `capture` + `sbx proxy`: Android app attaches through us | app works through proxy; JSONL captures of app flows | done: the app works through the proxy; captured a firmware update, browsing, and two IR device creates (Hisense, Aetherion Max) |
-| P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | — |
+| P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | started: one IR command added from a published IR list and working on the projector (`sbx add-ir`); command delete verified live |
 | P7 | `codec/ir` generators + open IR DB import (raw and X2 `P:`) | generated codes operate real equipment | — |
 | P8 | Research tracks R1–R5 → close L1, L2, L5 | BT and RF device create work on X2 | — |
 | P9 | Wifi classes (ip/roku/hue/sonos/mqtt), restore from backup | — | — |
