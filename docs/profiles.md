@@ -83,7 +83,8 @@ app does. Leaving `inputs` out leaves the hub's inputs as they are.
 
 [`profiles/`](../profiles) holds the profiles we maintain, starting with
 the AWOL Vision Aetherion, written from AWOL's published IR list, and a
-Denon AVR-X8500H draft from Denon's IR command chart.
+Denon AVR-X8500H from Denon's IR command chart, and the Ugoos AM6B Plus
+from CoreELEC's remote configuration.
 
 ## Not yet
 

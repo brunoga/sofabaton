@@ -8,6 +8,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `sbx --help` starts with a banner: name, version and what sbx is.
+- A profile for the Ugoos AM6B Plus running CoreELEC (NEC, from CoreELEC's
+  remote configuration).
 
 ## [0.1.0] - 2026-10-31
 
