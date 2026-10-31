@@ -2,6 +2,7 @@
 //
 //	sbx discover            find hubs on the local network
 //	sbx info -hub IP        show a hub's identity
+//	sbx list -hub IP        list devices, activities, commands, sequences
 //	sbx dump -hub IP        dump a hub's configuration as JSON
 //	sbx proxy -hub IP       stand between the app and the hub, recording
 //	sbx add-ir -hub IP ...  add an IR command to a device
@@ -38,6 +39,8 @@ const usage = `usage: sbx <command> [flags]
 commands:
   discover   find hubs on the local network
   info       show a hub's identity
+  list       list devices and activities, a device's commands
+             (list commands NAME) or sequences (list sequences [NAME])
   dump       dump a hub's configuration as JSON (a lossless backup: raw
              record bytes are kept next to the decoded view)
   proxy      stand between the Sofabaton app and the hub, relaying and
@@ -76,6 +79,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return discover(ctx, args, stdout)
 	case "info":
 		return info(ctx, args, stdout, stderr)
+	case "list":
+		return list(ctx, args, stdout, stderr)
 	case "dump":
 		return dump(ctx, args, stdout, stderr)
 	case "add-ir":

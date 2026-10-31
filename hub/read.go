@@ -50,7 +50,8 @@ func (c *Client) Activities(ctx context.Context) ([]*record.Entity, error) {
 
 // Members reads the devices that belong to an activity.
 func (c *Client) Members(ctx context.Context, activity byte) ([]*record.Entity, error) {
-	return c.entities(ctx, reqMembers(activity), wire.FamActivityMapPage)
+	members, err := c.entities(ctx, reqMembers(activity), wire.FamActivityMapPage)
+	return members, notFound(err)
 }
 
 func (c *Client) entities(ctx context.Context, req wire.Frame, fam wire.Family) ([]*record.Entity, error) {
@@ -92,7 +93,7 @@ func (c *Client) Keymap(ctx context.Context, entity byte) ([]record.Binding, err
 func (c *Client) Macros(ctx context.Context, entity byte) ([]*record.Macro, error) {
 	bodies, err := c.Records(ctx, reqMacros(entity), wire.FamMacroPage)
 	if err != nil {
-		return nil, err
+		return nil, notFound(err)
 	}
 	out := make([]*record.Macro, 0, len(bodies))
 	for i, body := range bodies {

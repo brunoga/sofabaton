@@ -18,14 +18,14 @@ func addIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("add-ir", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	device := fs.Uint("device", 0, "device id (required; see sbx dump)")
+	device := fs.String("device", "", "device name or id (required; see sbx list)")
 	label := fs.String("label", "", "the command's label (required)")
 	code := fs.String("code", "", `descriptive IR code (required), e.g. "P:NEC R:38400 D:0 S:206 F:217"`)
 	dry := fs.Bool("n", false, "show the write without sending it")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *device == 0 || *device > 0xFF || *label == "" || *code == "" {
+	if *device == "" || *label == "" || *code == "" {
 		return errors.New("-device, -label and -code are required")
 	}
 	data, err := record.Descriptor(*code)
@@ -41,10 +41,11 @@ func addIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if c.Variant() != wire.X2 {
 		return fmt.Errorf("descriptive IR codes are X2 only, not %v", c.Variant())
 	}
-	dev := byte(*device)
-	if err := hasDevice(ctx, c, dev); err != nil {
+	d, err := findDevice(ctx, c, *device)
+	if err != nil {
 		return err
 	}
+	dev := d.ID
 	cmds, err := c.Commands(ctx, dev)
 	if err != nil {
 		return err
@@ -90,31 +91,18 @@ func addIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	return fmt.Errorf("written and acknowledged, but the hub does not list command %d", id)
 }
 
-func hasDevice(ctx context.Context, c *hub.Client, id byte) error {
-	devs, err := c.Devices(ctx)
-	if err != nil {
-		return err
-	}
-	for _, d := range devs {
-		if d.ID == id {
-			return nil
-		}
-	}
-	return fmt.Errorf("no device %d", id)
-}
-
 // removeIR deletes a command of a device, by label or id.
 func removeIR(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("remove-ir", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	device := fs.Uint("device", 0, "device id (required; see sbx dump)")
+	device := fs.String("device", "", "device name or id (required; see sbx list)")
 	label := fs.String("label", "", "the command's label")
 	id := fs.Uint("id", 0, "the command's id, instead of -label")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *device == 0 || *device > 0xFF || (*label == "") == (*id == 0) {
+	if *device == "" || (*label == "") == (*id == 0) {
 		return errors.New("-device and one of -label or -id are required")
 	}
 	c, err := h.connect(ctx, stderr)
@@ -122,10 +110,11 @@ func removeIR(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	dev := byte(*device)
-	if err := hasDevice(ctx, c, dev); err != nil {
+	d, err := findDevice(ctx, c, *device)
+	if err != nil {
 		return err
 	}
+	dev := d.ID
 	cmds, err := c.Commands(ctx, dev)
 	if err != nil {
 		return err
@@ -154,13 +143,13 @@ func send(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("send", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	device := fs.Uint("device", 0, "device id (required; see sbx dump)")
+	device := fs.String("device", "", "device name or id (required; see sbx list)")
 	label := fs.String("command", "", "the command's label")
 	id := fs.Uint("id", 0, "the command's id, instead of -command")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *device == 0 || *device > 0xFF || (*label == "") == (*id == 0) {
+	if *device == "" || (*label == "") == (*id == 0) {
 		return errors.New("-device and one of -command or -id are required")
 	}
 	c, err := h.connect(ctx, stderr)
@@ -168,7 +157,11 @@ func send(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	dev := byte(*device)
+	d, err := findDevice(ctx, c, *device)
+	if err != nil {
+		return err
+	}
+	dev := d.ID
 	cmds, err := c.Commands(ctx, dev)
 	if err != nil {
 		return err

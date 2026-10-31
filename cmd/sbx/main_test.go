@@ -207,3 +207,36 @@ func TestSend(t *testing.T) {
 		t.Fatal("sent a command that does not exist")
 	}
 }
+
+func TestList(t *testing.T) {
+	simulated(t)
+	var out, errs bytes.Buffer
+	sbx := func(args ...string) string {
+		t.Helper()
+		out.Reset()
+		if err := run(context.Background(), strings.NewReader(""), append([]string{"list", "-hub", "192.0.2.1"}, args...), &out, &errs); err != nil {
+			t.Fatalf("list %v: %v", args, err)
+		}
+		return out.String()
+	}
+	if got := sbx(); !strings.Contains(got, "TV") || !strings.Contains(got, "Watch TV") {
+		t.Fatalf("list:\n%s", got)
+	}
+	if got := sbx("commands", "tv"); !strings.Contains(got, "1   Power") {
+		t.Fatalf("list commands:\n%s", got)
+	}
+	if got := sbx("sequences"); !strings.Contains(got, "SEQUENCE") {
+		t.Fatalf("list sequences:\n%s", got)
+	}
+	if err := run(context.Background(), strings.NewReader(""), []string{"list", "-hub", "192.0.2.1", "commands", "Radio"}, &out, &errs); err == nil || !strings.Contains(err.Error(), `"TV"`) {
+		t.Fatalf("unknown device: %v", err)
+	}
+}
+
+func TestDeviceByName(t *testing.T) {
+	simulated(t)
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"send", "-hub", "192.0.2.1", "-device", "tv", "-command", "Power"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+}

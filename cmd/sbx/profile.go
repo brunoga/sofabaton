@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/brunoga/sofabaton/profile"
@@ -18,12 +19,12 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 	fs := flag.NewFlagSet("export", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	device := fs.Uint("device", 0, "device id (required; see sbx dump)")
+	device := fs.String("device", "", "device name or id (required; see sbx list)")
 	out := fs.String("o", "", "write to this file instead of stdout")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *device == 0 || *device > 0xFF {
+	if *device == "" {
 		return errors.New("-device is required")
 	}
 	c, err := h.connect(ctx, stderr)
@@ -31,14 +32,11 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	devs, err := c.Devices(ctx)
+	dev, err := findDevice(ctx, c, *device)
 	if err != nil {
 		return err
 	}
-	for _, dev := range devs {
-		if dev.ID != byte(*device) {
-			continue
-		}
+	{
 		st, err := profile.Read(ctx, c, dev.ID)
 		if err != nil {
 			return err
@@ -59,7 +57,6 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 		fmt.Fprintf(w, "# %s (%s), exported from %s\n", p.Name, p.Brand, c.Info().Name)
 		return p.Encode(w)
 	}
-	return fmt.Errorf("no device %d", *device)
 }
 
 // apply makes a device on the hub match a profile.
@@ -68,7 +65,7 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	var h hubFlags
 	h.register(fs)
 	file := fs.String("f", "", "the profile (required)")
-	device := fs.Uint("device", 0, "device id (default: the profile's id)")
+	device := fs.String("device", "", "device name or id (default: the profile's id, else its device name)")
 	prune := fs.Bool("prune", false, "also remove the hub's commands the profile lacks")
 	dry := fs.Bool("n", false, "show the plan only")
 	yes := fs.Bool("y", false, "apply without asking")
@@ -87,12 +84,13 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	if err != nil {
 		return err
 	}
-	id := byte(p.ID)
-	if *device != 0 {
-		id = byte(*device)
-	}
-	if id == 0 {
-		return errors.New("the profile has no id; pass -device")
+	which := *device
+	switch {
+	case which != "":
+	case p.ID != 0:
+		which = strconv.Itoa(int(p.ID))
+	default:
+		which = p.Name
 	}
 
 	c, err := h.connect(ctx, stderr)
@@ -100,9 +98,11 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	if err := hasDevice(ctx, c, id); err != nil {
+	dev, err := findDevice(ctx, c, which)
+	if err != nil {
 		return err
 	}
+	id := dev.ID
 	st, err := profile.Read(ctx, c, id)
 	if err != nil {
 		return err
