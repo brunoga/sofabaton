@@ -24,6 +24,30 @@ so the cloud catalog is a database of (protocol, parameters) per button,
 the same kind of data open IR databases publish (device / subdevice /
 function per protocol, e.g. irdb).
 
+### Checked against a manufacturer's IR list `[X2✓]`
+
+AWOL Vision publishes its Aetherion projectors' IR list (NEC, system code
+`0x00CE`, one key value per button; `testdata/x2/aetherion-ir-list.json`).
+Sofabaton built the "Aetherion Max" profile from it, and the app wrote all
+26 of its commands as `P:NEC R:38400 D:0 S:206 F:<key value>`: the system
+code's high byte is `D`, its low byte `S`, the key value `F`, in decimal
+(`capture.TestX2Aetherion`). Hisense's `D:0 S:191` is its system code
+`0x00BF` the same way. Power on, Power off, HDMI 1 to 3 and Home, sent by
+the hub, all worked on the projector. Sofabaton left 9 of the list's 35 keys out of the
+profile (Focus, Dashboard, LOW POWER, DP, Composite, Free TV, Favorite and
+two key combinations).
+
+So an NEC device's profile can be built from its published IR list alone.
+
+### Command codes are label ids `[X2✓]`
+
+The 6-byte code of each command is the same across brands for the same
+label: Power on `1713`, Power off `1718`, Home `07C7`, Netflix `0D36`, Ok
+`002A`, Mute `006A` on both the Hisense and the Aetherion. Labels spelled
+differently get different codes (`Navigate_up` `002E`, `Navigate up`
+`4FAF`), so the code looks like an id in Sofabaton's dictionary of key
+names, not part of the signal. Buttons and macros refer to commands by it.
+
 Open: which protocol names the X2 renders (upstream photon-verified many),
 whether the catalog code id and the per-command codes must be real catalog
 ids, and what a learned (raw) code looks like in the same write.
