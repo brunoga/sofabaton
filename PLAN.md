@@ -166,7 +166,10 @@ app's own backup are the safety net for live write testing.
   device_type, icon, input_mode, power_style, share_mode, default keymap.
 - **R6 Per-device sequences**: devices already carry macros: the app
   writes `POWER_ON`/`POWER_OFF` as macros of the device itself (`12` with
-  the device id and keys `C6`/`C7`). Find out whether the hub accepts other
+  the device id and keys `C6`/`C7`), and activity POWER_ON/POWER_OFF
+  sequences do not repeat the devices' codes: their steps call the
+  device's keys `C6`/`C7` (and `C5`, presumably the activity's input), so
+  an activity step already runs a device's sequence `[X2✓]`. Find out whether the hub accepts other
   device macros (other key ids, own labels), how the remote shows them on
   the device's page, and whether an activity can bind a button to a
   device's macro, so one definition serves every activity. Fallback if the
