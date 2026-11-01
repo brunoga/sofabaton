@@ -135,3 +135,50 @@ func (c *Client) DeleteMacro(ctx context.Context, entity, id byte) error {
 	}
 	return nil
 }
+
+// MaxFavoriteCommand is the highest command id the hub takes as a
+// favorite (upstream, X1S: 200 and above are refused with status 0x09).
+const MaxFavoriteCommand = 199
+
+// AddFavorite adds a favorite to an activity: b's short press, with
+// b.Button 0. It is a binding write (family 0x3E) whose ack carries the id
+// the hub gives the favorite, which is then its keymap row's button and
+// its id on the remote's list (shared with the activity's macros). The
+// app then writes that list with WriteOrder and syncs (upstream, X1 and
+// X1S).
+func (c *Client) AddFavorite(ctx context.Context, b record.Binding) (byte, error) {
+	if err := c.Writable(); err != nil {
+		return 0, err
+	}
+	if b.Button != 0 {
+		return 0, fmt.Errorf("hub: adding a favorite: button %v is not 0", b.Button)
+	}
+	if b.Short.Command > MaxFavoriteCommand {
+		return 0, fmt.Errorf("hub: command %d cannot be a favorite (the hub takes up to %d)", b.Short.Command, MaxFavoriteCommand)
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	ack := &session.Ack{Family: wire.FamButtonAck}
+	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamWriteButton, Payload: b.WritePayload()}, ack); err != nil {
+		return 0, fmt.Errorf("hub: adding a favorite to activity %d: %w", b.Entity, err)
+	}
+	if len(ack.Frame.Payload) == 0 || ack.Frame.Payload[0] == 0 {
+		return 0, fmt.Errorf("hub: adding a favorite to activity %d: ack without an id", b.Entity)
+	}
+	return ack.Frame.Payload[0], nil
+}
+
+// DeleteFavorite deletes a favorite of an activity by its id (family
+// 0x10 [activity, id], as for macros; upstream saw the hub take about 5
+// s). The app then rewrites the remote's list and syncs.
+func (c *Client) DeleteFavorite(ctx context.Context, activity, id byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamDeleteKey, Payload: []byte{activity, id}}, session.Status()); err != nil {
+		return fmt.Errorf("hub: deleting favorite %d of activity %d: %w", id, activity, err)
+	}
+	return nil
+}

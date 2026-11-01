@@ -253,6 +253,23 @@ Upstream's notes (X1, X1S) agree where they overlap.
 activity's list, and left the keys as they were. (On a device the same
 frame deletes a command.)
 
+## Favorites `[X2✓]`
+
+Upstream's flow (X1, X1S), checked on our X2 (2026-11-01):
+
+- **Add:** `0x3E` with button `00` and the short press (device, the
+  command's code, its id). The ack `3E [id, …]` carries the id the hub
+  gives the favorite: the next free one of the activity's macros and
+  favorites, which share one id space (ours got 2 and 3 after a macro
+  at 1). The keymap then has a row with that id as its button. Then
+  `0x61`, the whole list (macros and favorites) with the new one placed,
+  and the sync. Command ids above 199 are refused (upstream, X1S).
+- **Delete:** `0x10 [activity, id]`, as for a macro, then the list
+  and the sync. Ours took about 14 s, upstream saw about 5.
+- **Order:** `0x61` and the sync, as for macros.
+
+The keymap rows that are not hard keys are the favorites.
+
 ## Device macros `[X2✓]`
 
 A device holds macros other than its power ones: `0x12` with the device
@@ -280,6 +297,6 @@ record of our copy.
 
 ## TODO
 
-- [ ] Delete activity, membership, favorites, device and activity ordering (`0x11`, `0x51`, `0x65`)
+- [ ] Delete activity, membership, device and activity ordering (`0x11`, `0x51`, `0x65`)
 - [ ] Paging rules per family (`0x0E` uses `[command_seq, page_be]`)
 - [ ] X2 remote-sync targeting and "busy updating remote" status `0x11`

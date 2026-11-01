@@ -157,11 +157,18 @@ func FromModel(m *Model) *Hub {
 			return []wire.Frame{Status(Rejected)}
 		}
 		dev, id := req.Payload[0], req.Payload[1]
-		if record.IsActivityID(dev) { // a macro of the activity
+		if record.IsActivityID(dev) { // a macro or favorite of the activity
 			macros := m.Macros[dev]
 			for i, mac := range macros {
 				if mac.ID == id {
 					m.Macros[dev] = append(macros[:i:i], macros[i+1:]...)
+					return []wire.Frame{Status(0)}
+				}
+			}
+			rows := m.Keymaps[dev]
+			for i, b := range rows {
+				if byte(b.Button) == id && !b.Button.IsHardKey() {
+					m.Keymaps[dev] = append(rows[:i:i], rows[i+1:]...)
 					return []wire.Frame{Status(0)}
 				}
 			}
@@ -210,6 +217,14 @@ func FromModel(m *Model) *Hub {
 		}
 		if m.Keymaps == nil {
 			m.Keymaps = map[byte][]record.Binding{}
+		}
+		if record.IsActivityID(b.Entity) && b.Button == 0 { // a new favorite
+			if b.Short.Command > 199 {
+				return []wire.Frame{Status(0x09)}
+			}
+			b.Button = record.Button(m.freeID(b.Entity))
+			m.Keymaps[b.Entity] = append(m.Keymaps[b.Entity], b)
+			return []wire.Frame{{Family: wire.FamButtonAck, Payload: []byte{byte(b.Button), byte(b.Button) + 0x3E}}}
 		}
 		rows := m.Keymaps[b.Entity]
 		i := 0
@@ -368,14 +383,7 @@ func FromModel(m *Model) *Hub {
 		}
 		macros := m.Macros[mac.Entity]
 		if mac.ID == 0 { // a new macro: the hub gives it a free id
-			used := map[byte]bool{}
-			for _, o := range macros {
-				used[o.ID] = true
-			}
-			mac.ID = 1
-			for used[mac.ID] {
-				mac.ID++
-			}
+			mac.ID = m.freeID(mac.Entity)
 		}
 		if record.IsActivityID(mac.Entity) && mac.ID == record.MacroPowerOn {
 			// The hub takes an activity's members from its POWER_ON
@@ -500,4 +508,23 @@ func entityRows(fam wire.Family, entities []*record.Entity) []wire.Frame {
 		recs = append(recs, body[3:])
 	}
 	return Reply(fam, recs...)
+}
+
+// freeID is the lowest id an entity's new macro or favorite gets: an
+// activity's macros and favorites share one id space.
+func (m *Model) freeID(entity byte) byte {
+	used := map[byte]bool{}
+	for _, o := range m.Macros[entity] {
+		used[o.ID] = true
+	}
+	for _, b := range m.Keymaps[entity] {
+		if !b.Button.IsHardKey() {
+			used[byte(b.Button)] = true
+		}
+	}
+	id := byte(1)
+	for used[id] {
+		id++
+	}
+	return id
 }

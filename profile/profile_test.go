@@ -902,3 +902,91 @@ func TestLookYAML(t *testing.T) {
 		t.Fatalf("unknown icon:\n%s", out)
 	}
 }
+
+// Favorites are added, placed after the activity's macros, reordered,
+// exported and, pruned, removed.
+func TestFavorites(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
+	read := func() (*profile.ActivityState, *profile.Activity) {
+		t.Helper()
+		st, err := profile.ReadActivity(ctx, c, 0x65)
+		if err != nil {
+			t.Fatal(err)
+		}
+		a, err := profile.ActivityFromHub(st)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return st, a
+	}
+	plan := func(a *profile.Activity, prune bool, want ...string) []profile.ActivityChange {
+		t.Helper()
+		st, _ := read()
+		changes, err := profile.PlanActivity(a, st, prune)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var got []string
+		for _, ch := range changes {
+			got = append(got, ch.String())
+		}
+		if strings.Join(got, "\n") != strings.Join(want, "\n") {
+			t.Fatalf("plan:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+		}
+		return changes
+	}
+	apply := func(changes []profile.ActivityChange) {
+		t.Helper()
+		if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	_, a := read()
+	if a.Favorites != nil {
+		t.Fatalf("favorites %q", a.Favorites)
+	}
+	a.Favorites = profile.FavoriteList{"TV: Menu", "AVR: Volume Up"}
+	apply(plan(a, false,
+		`favorite    add "TV: Menu"`,
+		`favorite    add "AVR: Volume Up"`,
+		"order       3 macros and favorites",
+		"sync        activity 101 to the remotes"))
+	plan(a, false)
+	st, back := read()
+	if !slices.Equal(back.Favorites, a.Favorites) || len(back.Buttons) != len(a.Buttons) {
+		t.Fatalf("exported favorites %q, buttons %v", back.Favorites, back.Buttons)
+	}
+	// They share the macros' ids, and follow them on the list.
+	if len(st.Order) != 3 || st.Order[0].Command != 1 || st.Order[1].Command == 1 {
+		t.Fatalf("order %v", st.Order)
+	}
+
+	a.Favorites = profile.FavoriteList{"AVR: Volume Up", "TV: Menu"}
+	apply(plan(a, false, "order       3 macros and favorites", "sync        activity 101 to the remotes"))
+	if _, back := read(); !slices.Equal(back.Favorites, a.Favorites) {
+		t.Fatalf("reordered %q", back.Favorites)
+	}
+
+	a.Favorites = profile.FavoriteList{"TV: Menu"}
+	plan(a, false, "order       3 macros and favorites", "sync        activity 101 to the remotes")
+	apply(plan(a, true,
+		`favorite    remove "AVR: Volume Up"`,
+		"order       2 macros and favorites",
+		"sync        activity 101 to the remotes"))
+	if _, back := read(); !slices.Equal(back.Favorites, a.Favorites) {
+		t.Fatalf("pruned %q", back.Favorites)
+	}
+
+	a.Favorites = profile.FavoriteList{"TV: Menu", "TV: Nothing"}
+	if st, _ := read(); true {
+		if _, err := profile.PlanActivity(a, st, false); err == nil {
+			t.Fatal("an unknown command planned")
+		}
+	}
+	a.Favorites = profile.FavoriteList{"Lamp: On"}
+	if err := a.Validate(); err == nil {
+		t.Fatal("a favorite of no member validated")
+	}
+}

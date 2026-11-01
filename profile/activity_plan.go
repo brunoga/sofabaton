@@ -35,6 +35,11 @@ const (
 	// ActRecord rewrites the activity's record: its name, or the record
 	// as the hub holds it after its members change, as the app does.
 	ActRecord
+	// ActNewFavorite adds a favorite, Binding's short press; the hub
+	// gives it its id.
+	ActNewFavorite
+	// ActRemoveFavorite deletes the favorite Favorite.
+	ActRemoveFavorite
 )
 
 // ActivityChange is one step of an activity's plan.
@@ -59,7 +64,11 @@ type ActivityChange struct {
 	// macro, Name is the device's.
 	Entity  *record.Entity
 	Renamed bool
-	Name    string
+	// Name is also a favorite's "Device: Command" (ActNewFavorite,
+	// ActRemoveFavorite).
+	Name string
+	// Favorite is the id of the favorite to delete (ActRemoveFavorite).
+	Favorite byte
 	// Look describes an ActRecord's change of icon and color.
 	Look string
 
@@ -67,13 +76,15 @@ type ActivityChange struct {
 }
 
 // OrderEntry is one entry of an activity's list: one of its own macros
-// by name, a new copy of a device's macro (by its key), or anything else
-// by id.
+// by name, a new copy of a device's macro (by its key), a new favorite
+// (by its key), or anything else by id.
 type OrderEntry struct {
 	Macro string
 	ID    byte
 
 	Copy string
+	// Favorite is a new favorite, by favKey.
+	Favorite string
 }
 
 func (c ActivityChange) String() string {
@@ -96,6 +107,10 @@ func (c ActivityChange) String() string {
 		return s
 	case ActSync:
 		return fmt.Sprintf("sync        activity %d to the remotes", c.Activity)
+	case ActNewFavorite:
+		return fmt.Sprintf("favorite    add %q", c.Name)
+	case ActRemoveFavorite:
+		return fmt.Sprintf("favorite    remove %q", c.Name)
 	case ActRecord:
 		if c.Renamed {
 			return fmt.Sprintf("record      rename activity %q -> %q%s", c.Name, c.Entity.Name, c.Look)
@@ -410,8 +425,30 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		}
 	}
 
-	// The remote's list: the profile's macros in its order, then what
-	// else the list has (favorites, macros kept), in their order.
+	favChanges, favOrder, favRemoved, err := planFavorites(a, st, r, prune)
+	if err != nil {
+		return nil, err
+	}
+	changes = append(changes, favChanges...)
+	removed = append(removed, favRemoved...)
+	if len(favChanges) > 0 {
+		reorder = true
+	}
+	favPlaced := map[byte]bool{} // the profile's favorites already there
+	for _, e := range favOrder {
+		if e.Favorite == "" {
+			favPlaced[e.ID] = true
+		}
+	}
+	for id := range favPlaced {
+		if !slices.ContainsFunc(st.Order, func(p record.Place) bool { return p.Command == id && p.Placed() }) {
+			reorder = true // a favorite not on the list yet
+		}
+	}
+
+	// The remote's list: the profile's macros in its order, its
+	// favorites in theirs, then what else the list has (favorites,
+	// macros kept), in their order.
 	seqID := map[byte]string{}
 	for name, m := range own {
 		seqID[m.ID] = name
@@ -420,6 +457,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	for _, s := range a.Macros {
 		order = append(order, OrderEntry{Macro: s.Name})
 	}
+	order = append(order, favOrder...)
 	var tail []OrderEntry // new copies, after the rest
 	for _, k := range newCopies {
 		tail = append(tail, OrderEntry{Copy: k})
@@ -438,6 +476,9 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			}
 		} else {
 			current = append(current, OrderEntry{ID: p.Command})
+			if favPlaced[p.Command] {
+				continue
+			}
 		}
 		order = append(order, current[len(current)-1])
 	}
@@ -452,7 +493,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	}
 	order = append(order, tail...)
 	if reorder || len(st.Order) > 0 && !slices.EqualFunc(order, current, func(x, y OrderEntry) bool {
-		return strings.EqualFold(x.Macro, y.Macro) && x.ID == y.ID
+		return strings.EqualFold(x.Macro, y.Macro) && x.ID == y.ID && x.Favorite == y.Favorite
 	}) {
 		if len(order) > 0 {
 			changes = append(changes, ActivityChange{Kind: ActOrder, Activity: act, Order: order})
@@ -634,6 +675,11 @@ func (ap activityApplier) apply(ctx context.Context, c *hub.Client, ch ActivityC
 				if id, ok = ap.ids[e.Copy]; !ok {
 					return fmt.Errorf("profile: macro %q was not created", e.Copy)
 				}
+			case e.Favorite != "":
+				var ok bool
+				if id, ok = ap.ids[e.Favorite]; !ok {
+					return fmt.Errorf("profile: a favorite was not added")
+				}
 			case e.Macro != "":
 				var ok bool
 				if id, ok = ap.ids[strings.ToLower(e.Macro)]; !ok {
@@ -657,6 +703,14 @@ func (ap activityApplier) apply(ctx context.Context, c *hub.Client, ch ActivityC
 		return c.WriteButton(ctx, b)
 	case ActSync:
 		return c.Sync(ctx, ch.Activity)
+	case ActNewFavorite:
+		id, err := c.AddFavorite(ctx, ch.Binding)
+		if err == nil {
+			ap.ids[favKey(ch.Binding.Short)] = id
+		}
+		return err
+	case ActRemoveFavorite:
+		return c.DeleteFavorite(ctx, ch.Activity, ch.Favorite)
 	case ActRecord:
 		// The record as the hub holds it now (its power state moves),
 		// with the profile's name, icon and color.
