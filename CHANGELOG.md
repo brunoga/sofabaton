@@ -7,6 +7,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `icon:` and `color:` in device and activity profiles: `export` reads
+  them, and `apply` rewrites the record (and syncs) when they differ.
+  They are the hub's numbers (color: the X2's palette, 1-12).
+
 - Device macros: `macros:` in a device's profile, of its own commands and
   pauses. The remote cannot show a device's own macros (it shows each as
   the same blank entry), so `apply` copies them into every activity with

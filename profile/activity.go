@@ -41,7 +41,11 @@ import (
 type Activity struct {
 	Name string `yaml:"activity"`
 	// ID is the activity's id on the hub the profile belongs to.
-	ID      uint8    `yaml:"id,omitempty"`
+	ID uint8 `yaml:"id,omitempty"`
+	// Icon and Color are the activity's on the remote: an icon number
+	// and a palette color (1-12). 0 leaves the hub's as they are.
+	Icon    uint8    `yaml:"icon,omitempty"`
+	Color   uint8    `yaml:"color,omitempty"`
 	Devices []Member `yaml:"devices"`
 	// Buttons bind the remote's keys to the devices' commands and macros
 	// ("Device: Command") or to the activity's macros (by name).
@@ -266,7 +270,7 @@ func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, []*record.
 // ActivityFromHub builds an activity's profile from its state (see
 // ReadActivity).
 func ActivityFromHub(st *ActivityState) (*Activity, error) {
-	a := &Activity{Name: st.Entity.Name, ID: st.Entity.ID}
+	a := &Activity{Name: st.Entity.Name, ID: st.Entity.ID, Icon: st.Entity.Icon, Color: st.Entity.ActivityColor()}
 	device := func(id byte) string {
 		if n, ok := st.Names[id]; ok {
 			return n
@@ -370,6 +374,9 @@ func (a *Activity) Validate() error {
 		return errors.New("profile: no activity name")
 	}
 	var errs []error
+	if err := validateLook(a.Color); err != nil {
+		errs = append(errs, err)
+	}
 	members := map[string]bool{}
 	for _, m := range a.Devices {
 		if m.Device == "" {

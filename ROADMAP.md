@@ -21,6 +21,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
   device (the remote cannot show a device's own), kept in step, and run
   from activity keys as "Device: Macro".
 - Device templates, by transport and maker, carried by `sbx` (`sbx new`).
+- Icons and colors of devices and activities, by the hub's numbers.
 
 ## Next
 
@@ -33,14 +34,16 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
    `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
-3. **Keys.** Unbinding a key.
+3. **Keys.** Unbinding a key, and an activity's favorites: capture the
+   app adding and removing one.
 4. **Restore.** Write a `dump` back to a hub.
 
 ## Later
 
 - More IR protocols for profile codes (NECx, Sony, RC5/RC6, Samsung,
   Panasonic …) and import from open IR databases (PLAN P7, R3).
-- Device category and icon (PLAN L5, R5).
+- Device category (PLAN L5, R5), and names for the icon and color
+  numbers.
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).
 - The Denon receiver's Zone 2 and Zone 3 codes.

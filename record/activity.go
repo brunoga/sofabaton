@@ -1,6 +1,10 @@
 package record
 
-import "github.com/brunoga/sofabaton/wire"
+import (
+	"fmt"
+
+	"github.com/brunoga/sofabaton/wire"
+)
 
 // ActivityIcon is the icon the X2 app gave the activity it created.
 const ActivityIcon = 10
@@ -24,4 +28,23 @@ func NewActivity(v wire.Variant, name string, color byte) (*Entity, error) {
 		e.Tail[activityColorAt] = color
 	}
 	return e, nil
+}
+
+// ActivityColor is an activity's color (palette 1-12), 0 when its tail
+// is too short to carry one (X1).
+func (e *Entity) ActivityColor() byte {
+	if len(e.Tail) > activityColorAt {
+		return e.Tail[activityColorAt]
+	}
+	return 0
+}
+
+// SetActivityColor sets an activity's color, in a copy of its tail.
+func (e *Entity) SetActivityColor(c byte) error {
+	if len(e.Tail) <= activityColorAt {
+		return fmt.Errorf("record: the %v's activity records have no color", e.variant)
+	}
+	e.Tail = append([]byte(nil), e.Tail...)
+	e.Tail[activityColorAt] = c
+	return nil
 }
