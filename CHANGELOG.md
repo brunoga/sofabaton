@@ -7,6 +7,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Activity writes in `hub`: `ConfirmMember`, `CreateActivity`,
+  `UpdateActivity`, `DeleteActivity`, `CreateMacro` (the hub assigns the
+  id) and `DeleteMacro`; `record.NewActivity`. All but `DeleteMacro`
+  rebuild the X2 app's frames byte for byte from our capture.
 - `sbx export -activity`: an activity's profile (devices and their
   inputs, keys, power sequences and sequences across its devices), and
   `profile.Activity`, `ReadActivity` and `ActivityFromHub`.

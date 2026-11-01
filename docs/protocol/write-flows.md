@@ -205,40 +205,49 @@ current: its two power sequences first, as "Turn On" and "Turn Off", then
 its 10 commands in order. `apply` now ends every change with that sync;
 `sbx sync -device X` sends it alone.
 
-## Activities `[ref:X1/X1S]`
+## Activities `[X2✓]`
 
-Upstream's flows, validated on X1 and X1S, none yet on the X2; ours wait
-for a capture of the X2 app.
+From our capture of the X2 app (`testdata/x2/app-activity.jsonl`, checked
+frame by frame by `capture.TestX2Activity`).
 
-- **Create:** family `0x37` with a device-shaped record (id `FF`), acked
-  by `0x37` with the new id; no commit record. Then key bindings (`0x3E`,
-  entity = the activity), macros (`0x12`) and a remote sync. The hub
-  appends the activity to the end of the list.
-- **Members:** each member is written with `0x4F [device, 00]` (the full
-  list, in order, each status-acked). The activity's POWER_ON then gets
-  the device's `C6` step (its POWER_ON sequence) and `C5` step (its input:
-  the step's duration byte is the input's ordinal in the device's inputs
-  page, 0 for none), POWER_OFF its `C7` step. The macros' label slots must
-  be rewritten as read: a rebuilt slot is refused (status `0C`).
-- **Removing a member:** no frame of its own. Rewriting POWER_ON without
-  the device's steps makes the hub drop it from POWER_OFF, the members,
-  the keys and the favorites.
-- **Keys:** `0x3E` as for devices; a key that runs one of the activity's
-  macros names the activity as its device and the macro's id as its
-  command.
-- **Sequences (user macros):** `0x12` at a free id (1-197, shared with
-  favorites; `C6`/`C7` are the power sequences). The app writes id `00`
-  and the hub answers with the id it gave. Steps are 10 bytes (device,
-  command, code, duration, delay); a pause is all `FF` but its delay
-  (seconds). The remote lists them with the favorites, in the order of
-  the activity's `0x61` table. Delete: `0x10 [activity, id]`.
-- **Delete:** `0x09 [activity]`.
-- **Rename:** a rewrite of the activity's record.
+**Create**, in the app's order:
 
-Read on our X2 `[X2✓]`: activities' POWER_ON sequences are, per member,
-a `C6` step and a 1-second pause, then per member a `C5` step and a pause
-(the `C5` duration is the ordinal, 0 for members not switched); `C6`
-steps carry duration 1 for IR devices and 0 for Bluetooth ones.
+1. For each member with inputs, `0x48 [device]` (its inputs page) and,
+   for every member, `0x42 [device]` (its idle behavior): reads.
+2. `0x4F [device, 00]` for every member, each status-acked.
+3. `0x37` with a new activity record (id `FF`, icon 10, the tail
+   `FC 00 FC 00`… with the color at byte 22); ack `0x37 [id]`.
+4. POWER_ON (`0x12`, key `C6`): per member its `C6` step (the device's
+   POWER_ON sequence) and a 1-second pause, then per member its `C5` step
+   (its input: the step's duration is the input's ordinal in the device's
+   inputs page, 0 for none) and a pause. POWER_OFF (`C7`): per member its
+   `C7` step and a pause. Each acked by `0x12 [key]`. The hub takes the
+   members from POWER_ON.
+5. Keys (`0x3E`, entity = the activity): the app copied the main
+   device's keys (the Ugoos's) and the audio device's volume and mute keys
+   (the receiver's).
+6. `0x65 [activity, 01]`, the sync.
+
+**A sequence:** `0x12` with id `00`; the ack `0x12 [id]` carries the id the
+hub gave it (1 for the first). Then `0x61 [activity, (id, position)…]`, the
+order of the remote's list, as for device commands, and the sync. Steps are
+10 bytes (device, command, code, duration, delay); a pause is `FF` but for
+its delay (seconds). Editing one rewrites it at its id (ack `0x12 [id]`).
+
+**A key:** `0x3E` as for devices, then the sync.
+
+**Removing a member:** POWER_ON and POWER_OFF rewritten without the
+device's steps (the app dropped the pauses too), from the records as read
+(their label slots kept), the sync, then `0x38` with the activity's record
+as the hub holds it. The POWER_ON ack came back as `0x12 [01]`, not the key.
+
+**Rename:** `0x38` with the record as the hub holds it and the new name;
+the record's power state is the activity's current one.
+
+**Delete:** `0x39 [activity]`, status-acked.
+
+Upstream's notes (X1, X1S) agree where they overlap; they also delete a
+sequence with `0x10 [activity, id]`, not yet seen on the X2.
 
 ## TODO
 

@@ -140,6 +140,61 @@ func TestWritesX2Only(t *testing.T) {
 	}
 }
 
+func TestActivityWrites(t *testing.T) {
+	m := model(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = c.Close() }()
+	for _, d := range []byte{1, 2} {
+		if err := c.ConfirmMember(ctx, d); err != nil {
+			t.Fatal(err)
+		}
+	}
+	e, _ := record.NewActivity(wire.X2, "Movie", 4)
+	id, err := c.CreateActivity(ctx, e)
+	if err != nil || id != 0x66 {
+		t.Fatalf("create: %d %v", id, err)
+	}
+	if members, err := c.Members(ctx, id); err != nil || len(members) != 2 {
+		t.Fatalf("members: %v %v", members, err)
+	}
+	seq, _ := record.NewMacro(wire.X2, id, 0, "Lights")
+	seq.Steps = []record.Step{{Device: 1, Command: 1, Delay: 0xFF}}
+	sid, err := c.CreateMacro(ctx, seq)
+	if err != nil || sid != 1 {
+		t.Fatalf("create macro: %d %v", sid, err)
+	}
+	seq.ID = 5
+	if _, err := c.CreateMacro(ctx, seq); err == nil {
+		t.Fatal("created a macro with an id")
+	}
+	if err := c.WriteOrder(ctx, id, []record.Place{{Command: sid, Position: 1}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.DeleteMacro(ctx, id, sid); err != nil {
+		t.Fatal(err)
+	}
+	acts, _ := c.Activities(ctx)
+	renamed := *acts[len(acts)-1]
+	renamed.Name = "Movies"
+	if err := c.UpdateActivity(ctx, &renamed); err != nil {
+		t.Fatal(err)
+	}
+	if acts, _ := c.Activities(ctx); acts[len(acts)-1].Name != "Movies" {
+		t.Fatalf("renamed to %q", acts[len(acts)-1].Name)
+	}
+	if err := c.DeleteActivity(ctx, id); err != nil {
+		t.Fatal(err)
+	}
+	if acts, _ := c.Activities(ctx); len(acts) != 1 {
+		t.Fatalf("%d activities after the delete", len(acts))
+	}
+}
+
 func TestDefaultTimeout(t *testing.T) {
 	h := hubsim.FromModel(model(t))
 	h.Handle(wire.FamReqDevices, func(wire.Frame) []wire.Frame { return nil }) // never answers
