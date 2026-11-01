@@ -7,6 +7,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `apply -prune` on an activity unbinds the keys its profile lacks
+  (`0x10 [activity, key]` and the sync, upstream's flow; checked on our
+  X2). A device's keys are left alone: there the frame deletes a
+  command.
+
 - Activity favorites: `favorites:` in an activity's profile, commands
   of its devices on the remote's list after its macros. `apply` adds
   them, reorders them and, with `-prune`, removes them; `export` reads

@@ -990,3 +990,41 @@ func TestFavorites(t *testing.T) {
 		t.Fatal("a favorite of no member validated")
 	}
 }
+
+// With prune, the keys the profile lacks are unbound; without, they stay.
+func TestUnbind(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
+	st, err := profile.ReadActivity(ctx, c, 0x65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.ActivityFromHub(st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.Favorites = profile.FavoriteList{"TV: Menu"}
+	changes, _ := profile.PlanActivity(a, st, false)
+	if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	delete(a.Buttons, "Menu")
+	st, _ = profile.ReadActivity(ctx, c, 0x65)
+	if changes, _ := profile.PlanActivity(a, st, false); len(changes) != 0 {
+		t.Fatalf("unpruned: %v", changes)
+	}
+	changes, err = profile.PlanActivity(a, st, true)
+	if err != nil || len(changes) != 2 || changes[0].String() != "button      Menu unbound" || changes[1].Kind != profile.ActSync {
+		t.Fatalf("pruned: %v %v", changes, err)
+	}
+	if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	st, _ = profile.ReadActivity(ctx, c, 0x65)
+	if back, _ := profile.ActivityFromHub(st); len(back.Buttons) != 0 || len(back.Favorites) != 1 {
+		t.Fatalf("after: buttons %v, favorites %q", back.Buttons, back.Favorites)
+	}
+	if err := c.UnbindKey(ctx, 1, record.ButtonOK); err == nil {
+		t.Fatal("unbound a device's key")
+	}
+}

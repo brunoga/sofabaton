@@ -182,3 +182,22 @@ func (c *Client) DeleteFavorite(ctx context.Context, activity, id byte) error {
 	}
 	return nil
 }
+
+// UnbindKey clears a key of an activity (family 0x10 [activity, key], as
+// for its macros and favorites, whose ids are below the keys'); the app
+// then syncs (upstream). On a device the same frame deletes a command, so
+// it takes activities only.
+func (c *Client) UnbindKey(ctx context.Context, activity byte, key record.Button) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	if !record.IsActivityID(activity) || !key.IsHardKey() {
+		return fmt.Errorf("hub: unbinding %v of %d: only an activity's keys can be unbound", key, activity)
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamDeleteKey, Payload: []byte{activity, byte(key)}}, session.Status()); err != nil {
+		return fmt.Errorf("hub: unbinding %v of activity %d: %w", key, activity, err)
+	}
+	return nil
+}

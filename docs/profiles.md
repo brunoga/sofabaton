@@ -132,7 +132,8 @@ does), the power macros, the activity's own macros (matched by
 name; new ones get their ids from the hub and go on the remote's list in
 the profile's order), the keys, and syncs the activity. A different
 `activity:` renames it, and a different `icon:` or `color:` rewrites
-the record. Macros the profile lacks stay unless `-prune`. Leaving out
+the record. Macros and keys the profile lacks stay unless `-prune`,
+which removes the macros and unbinds the keys. Leaving out
 `power_on` or `power_off` keeps the hub's, with the devices' inputs; a new
 activity, or one whose devices change, gets the app's instead: each
 device's power macro a second apart, then each device's input.
@@ -250,6 +251,7 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Unbinding a key, the device's category, Bluetooth devices, and
+Unbinding a device's key (the frame that unbinds an activity's deletes
+a device's command), the device's category, Bluetooth devices, and
 protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).
