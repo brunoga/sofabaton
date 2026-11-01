@@ -44,6 +44,9 @@ func FromModel(m *Model) *Hub {
 		return []wire.Frame{{Family: wire.FamBanner, Payload: m.Info.AppendPayload(nil)}}
 	})
 	h.Handle(wire.FamReqDevices, func(wire.Frame) []wire.Frame {
+		if len(m.Devices) == 0 {
+			return []wire.Frame{Status(NotFound)}
+		}
 		return entityRows(wire.FamDeviceRow, m.Devices)
 	})
 	h.Handle(wire.FamReqActivities, func(wire.Frame) []wire.Frame {

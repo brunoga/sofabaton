@@ -7,6 +7,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `sbx restore -f dump.json`: makes a hub hold what a dump holds.
+  Devices and activities are matched by name, applied, and created when
+  missing (IR devices of codes and descriptors; activities, then their
+  devices' macros, then the keys that run them); `-n` shows the plan,
+  `-prune` as for `apply`. `profile.Restore` restores from any hub, and
+  package `dump` serves a dump as a simulated hub. Checked on our X2: a
+  device and an activity deleted and restored export as before.
+- `sbx dump` keeps each command's signal and the remote's lists (a
+  device's commands, an activity's macros and favorites), which restore
+  needs; older dumps are refused by restore.
+
 - `apply -prune` on an activity unbinds the keys its profile lacks
   (`0x10 [activity, key]` and the sync, upstream's flow; checked on our
   X2). A device's keys are left alone: there the frame deletes a
