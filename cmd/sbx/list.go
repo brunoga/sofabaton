@@ -265,7 +265,11 @@ func listButtons(ctx context.Context, c *hub.Client, w io.Writer, e *record.Enti
 		if !b.Long.IsZero() {
 			long = name(b.Long.Device, b.Long.Command)
 		}
-		fmt.Fprintf(w, "%v\t%s\t%s\n", b.Button, name(b.Short.Device, b.Short.Command), long)
+		key := b.Button.String()
+		if !b.Button.IsHardKey() {
+			key = fmt.Sprintf("favorite %d", b.Button)
+		}
+		fmt.Fprintf(w, "%s\t%s\t%s\n", key, name(b.Short.Device, b.Short.Command), long)
 	}
 	return nil
 }

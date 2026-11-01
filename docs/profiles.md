@@ -162,7 +162,15 @@ macros:                         # the activity's own, across its devices
       - Receiver: Movie
       - wait: 2
       - Blu-ray: Play
+favorites:                      # commands on the remote's list, after the
+  - 'Receiver: Movie'           # macros, in this order
+  - 'Blu-ray: Top Menu'
 ```
+
+Favorites the profile lacks stay unless `-prune` (`favorites: []` with
+`-prune` removes them all); leaving `favorites:` out leaves the hub's
+alone. A favorite is a device command with an id up to 199, the most
+the hub takes; deleting one takes the hub several seconds.
 
 ### Icons and colors
 
@@ -242,6 +250,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Unbinding a key, the device's category, an activity's favorites, Bluetooth devices, and
+Unbinding a key, the device's category, Bluetooth devices, and
 protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

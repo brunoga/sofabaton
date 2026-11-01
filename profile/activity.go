@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -53,6 +54,9 @@ type Activity struct {
 	PowerOn  []Step          `yaml:"power_on,omitempty"`
 	PowerOff []Step          `yaml:"power_off,omitempty"`
 	Macros   []ActivityMacro `yaml:"macros,omitempty"`
+	// Favorites are commands of its devices on the remote's list (see
+	// FavoriteList).
+	Favorites FavoriteList `yaml:"favorites,omitempty"`
 }
 
 // Member is a device of an activity and the input (a command of the
@@ -342,6 +346,9 @@ func ActivityFromHub(st *ActivityState) (*Activity, error) {
 		a.Devices = append(a.Devices, Member{Device: m.Name, Input: inputs[m.ID]})
 	}
 	for _, b := range st.Keymap {
+		if !b.Button.IsHardKey() {
+			continue // a favorite
+		}
 		k := Key{Short: press(b.Short)}
 		if !b.Long.IsZero() {
 			k.Long = press(b.Long)
@@ -363,6 +370,30 @@ func ActivityFromHub(st *ActivityState) (*Activity, error) {
 			}
 			a.Macros = append(a.Macros, ActivityMacro{Name: m.Label, Steps: steps(m)})
 		}
+	}
+	// Favorites in their places on the remote's list, the unplaced after.
+	favs := st.favorites()
+	pos := map[byte]int{}
+	for _, p := range st.Order {
+		if p.Placed() {
+			pos[p.Command] = int(p.Position)
+		}
+	}
+	slices.SortStableFunc(favs, func(x, y favorite) int {
+		px, okx := pos[x.ID]
+		py, oky := pos[y.ID]
+		switch {
+		case okx && oky:
+			return px - py
+		case okx:
+			return -1
+		case oky:
+			return 1
+		}
+		return 0
+	})
+	for _, f := range favs {
+		a.Favorites = append(a.Favorites, device(f.Press.Device)+": "+command(f.Press.Device, f.Press.Command))
 	}
 	return a, nil
 }
@@ -406,6 +437,7 @@ func (a *Activity) Validate() error {
 			}
 		}
 	}
+	errs = append(errs, a.validateFavorites(members)...)
 	checkSteps("power_on", a.PowerOn)
 	checkSteps("power_off", a.PowerOff)
 	for _, s := range a.Macros {

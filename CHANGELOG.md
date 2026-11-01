@@ -7,6 +7,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Activity favorites: `favorites:` in an activity's profile, commands
+  of its devices on the remote's list after its macros. `apply` adds
+  them, reorders them and, with `-prune`, removes them; `export` reads
+  them in their order, and `sbx list buttons` shows them. Checked on our
+  X2, after upstream's flow: a binding write on slot 0 whose ack carries
+  the favorite's id, the list (`0x61`) and the sync.
+
 - `icon:` and `color:` in device and activity profiles: `export` reads
   them, and `apply` rewrites the record (and syncs) when they differ.
   They take the X2's names (`icon: Projector`, `color: green`, from
@@ -68,6 +75,13 @@ The first prerelease: reading a hub, and creating and editing IR devices
 from YAML profiles. Verified on an X2 hub (firmware 9).
 
 ### Added
+
+- Activity favorites: `favorites:` in an activity's profile, commands
+  of its devices on the remote's list after its macros. `apply` adds
+  them, reorders them and, with `-prune`, removes them; `export` reads
+  them in their order, and `sbx list buttons` shows them. Checked on our
+  X2, after upstream's flow: a binding write on slot 0 whose ack carries
+  the favorite's id, the list (`0x61`) and the sync.
 
 - `sbx`, the command-line tool:
   - `discover`, `info`, `list` (devices, activities, a device's commands,
