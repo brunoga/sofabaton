@@ -47,6 +47,7 @@ commands:
                                        # other forms cannot express
 power: {on: Power On, off: Power Off}  # the POWER_ON and POWER_OFF sequences
 inputs: [HDMI 1, HDMI 2]               # the commands that select each input
+                                       # ([] for a device without inputs)
 buttons:                               # the remote's keys on the device's page
   OK: Other
   Back: {short: Other, long: Focus}    # a long press runs another command
@@ -79,7 +80,9 @@ commands that select each input, in order, for activities to pick from.
 `apply` writes the inputs page (keeping the hub's input labels when only
 they differ), sets the device's input mode, and syncs the device to the
 remotes; with `power` it also marks the device's power as set up, as the
-app does. Leaving `inputs` out leaves the hub's inputs as they are.
+app does. Leaving `inputs` out leaves the hub's inputs as they are;
+`inputs: []` says the device switches no inputs (an empty page and input
+mode 2, as the app writes when told the device needs none).
 
 [`profiles/`](../profiles) holds the profiles we maintain, starting with
 the AWOL Vision Aetherion, written from AWOL's published IR list, and a

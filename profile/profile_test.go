@@ -451,3 +451,53 @@ sequences:
 		}
 	}
 }
+
+// inputs: [] says the device switches no inputs: an empty page and input
+// mode 2, as the app wrote for the Ugoos; export gives it back.
+func TestNoInputs(t *testing.T) {
+	ctx := context.Background()
+	c := simulated(t)
+	d, err := profile.Load(strings.NewReader(aetherion + "inputs: []\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Inputs == nil || len(d.Inputs) != 0 {
+		t.Fatalf("inputs %#v", d.Inputs)
+	}
+	st, err := profile.Read(ctx, c, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	changes, _, err := profile.Plan(d, st, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var plan []string
+	for _, ch := range changes {
+		plan = append(plan, ch.String())
+	}
+	got := strings.Join(plan, "\n")
+	if !strings.Contains(got, "inputs      none: the device does not switch inputs") || !strings.Contains(got, "input mode 2") {
+		t.Fatalf("plan:\n%s", got)
+	}
+	if err := profile.Apply(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	if st, err = profile.Read(ctx, c, 4); err != nil {
+		t.Fatal(err)
+	}
+	if changes, _, _ := profile.Plan(d, st, false); len(changes) != 0 {
+		t.Fatalf("applied, still %v", changes)
+	}
+	if st.Inputs == nil || st.Inputs.Mode != record.InputsNone || len(st.Inputs.Entries) != 0 {
+		t.Fatalf("inputs page %+v", st.Inputs)
+	}
+	exported, err := profile.FromHub(st.Entity, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := exported.Encode(&out); err != nil || !strings.Contains(out.String(), "\ninputs: []\n") {
+		t.Fatalf("exported %v:\n%s", err, out.String())
+	}
+}

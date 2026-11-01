@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `inputs: []` in a device profile: the device switches no inputs, as
+  the app's "no input needed"; `export` writes it.
 - Activity writes in `hub`: `ConfirmMember`, `CreateActivity`,
   `UpdateActivity`, `DeleteActivity`, `CreateMacro` (the hub assigns the
   id) and `DeleteMacro`; `record.NewActivity`. All but `DeleteMacro`

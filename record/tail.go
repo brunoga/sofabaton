@@ -21,7 +21,8 @@ type DeviceTail struct {
 	HasPollTime bool
 	PollTime    uint16
 	// InputMode is how the device switches inputs: 0 not configured, 1
-	// discrete inputs, 2 a source list, 3 not yet observed.
+	// discrete inputs (InputsDirect), 2 none to switch (InputsNoSwitch:
+	// the X2 app sets it with an empty inputs page), 3 not yet observed.
 	InputMode byte
 	// PowerMode is 1 on almost every device; it does not mean power is
 	// configured (the idle-behavior byte does) but the hub relies on it.

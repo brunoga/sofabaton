@@ -117,6 +117,9 @@ func (c Change) String() string {
 	case Sequence:
 		return fmt.Sprintf("sequence    %s -> %q", c.Macro.Label, c.Name)
 	case Inputs:
+		if len(c.Names) == 0 {
+			return "inputs      none: the device does not switch inputs"
+		}
 		return fmt.Sprintf("inputs      %q", c.Names)
 	case Record:
 		t, _ := c.Entity.DeviceTail()
@@ -369,14 +372,19 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			entries = append(entries, record.InputEntry{Command: pr.Command, Code: pr.Code, Ordinal: byte(i + 1), Label: name})
 			names = append(names, name)
 		}
+		// A device without inputs gets an empty page, as the app writes.
+		mode := record.InputsDirect
+		if len(d.Inputs) == 0 {
+			mode = record.InputsNone
+		}
 		in := st.Inputs
-		if in == nil || in.Mode != record.InputsDirect || !sameInputs(in.Entries, entries) {
+		if in == nil || in.Mode != mode || !sameInputs(in.Entries, entries) {
 			var page *record.Inputs
 			if in != nil {
 				cp := *in // keeps the control keys and favorites
 				page = &cp
-				page.Mode = record.InputsDirect
-			} else if page, err = record.NewInputs(st.Variant, st.Device, record.InputsDirect); err != nil {
+				page.Mode = mode
+			} else if page, err = record.NewInputs(st.Variant, st.Device, mode); err != nil {
 				return nil, nil, err
 			}
 			page.Entries = entries
@@ -392,8 +400,11 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		if d.Power != nil {
 			want.PowerMode, want.PowerStyle = powerMode, powerStyle
 		}
-		if d.Inputs != nil {
+		switch {
+		case len(d.Inputs) > 0:
 			want.InputMode = record.InputsDirect
+		case d.Inputs != nil:
+			want.InputMode = record.InputsNoSwitch
 		}
 		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
 		if want != t || renamed {

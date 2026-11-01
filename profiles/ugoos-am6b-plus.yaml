@@ -14,7 +14,9 @@
 # partition) or /storage/.config, then a reboot.
 #
 # The box has no discrete on and off: Power puts CoreELEC to sleep or
-# wakes it. Untested on the maintainer's box yet.
+# wakes it, so it is both power sequences, and the box switches no inputs
+# (the maintainer's setup in the app, 2026-10-31). Tested on the
+# maintainer's box with this file as /storage/.config/remote.conf.
 device: Ugoos AM6B Plus
 brand: Ugoos
 ir: {protocol: NEC, system: 0x00FF}
@@ -37,6 +39,8 @@ commands:
   # Volume (the box's own, when not using the receiver's)
   - {name: Volume Up, code: 0x0B}
   - {name: Volume Down, code: 0x58}
+power: {on: Power, off: Power}
+inputs: []
 buttons:
   Power: Power
   Up: Up

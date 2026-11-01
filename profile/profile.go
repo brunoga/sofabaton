@@ -55,8 +55,30 @@ type Device struct {
 	// activities run to switch it on and off, send one command each.
 	Power *Power `yaml:"power,omitempty"`
 	// Inputs, when set, are the commands that select each of the device's
-	// inputs, in order: activities switch the device to one of them.
-	Inputs []string `yaml:"inputs,omitempty"`
+	// inputs, in order: activities switch the device to one of them. An
+	// empty list (inputs: []) says the device does not switch inputs.
+	Inputs InputList `yaml:"inputs,omitempty"`
+}
+
+// InputList is a device's input commands. nil leaves the hub's inputs as
+// they are; empty means the device has none to switch.
+type InputList []string
+
+// IsZero keeps an empty list in the YAML: only nil is left out.
+func (l InputList) IsZero() bool { return l == nil }
+
+// UnmarshalYAML reads a list of command names; [] is an empty list, not
+// nil.
+func (l *InputList) UnmarshalYAML(n *yaml.Node) error {
+	var names []string
+	if err := n.Decode(&names); err != nil {
+		return err
+	}
+	if names == nil {
+		names = []string{}
+	}
+	*l = names
+	return nil
 }
 
 // Power names the commands of a device's POWER_ON and POWER_OFF
@@ -341,6 +363,9 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 	}
 	if power.On != "" && power.Off != "" {
 		d.Power = &power
+	}
+	if t, err := dev.DeviceTail(); err == nil && t.InputMode == record.InputsNoSwitch {
+		d.Inputs = InputList{}
 	}
 	if in := st.Inputs; in != nil && in.Mode == record.InputsDirect {
 		for _, e := range in.Entries {

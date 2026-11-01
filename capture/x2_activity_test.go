@@ -55,7 +55,8 @@ func TestX2Activity(t *testing.T) {
 	created, _ := record.NewActivity(wire.X2, "ZZ Actuvity", 4)
 	createBody, _ := created.WritePayload()
 
-	var row *record.Entity // the hub's record of the new activity
+	var row *record.Entity   // the hub's record of the new activity
+	var ugoos *record.Entity // the hub's record of the Ugoos (5)
 	var macros []*record.Macro
 	seen := map[string]int{}
 	for _, e := range entries {
@@ -69,6 +70,10 @@ func TestX2Activity(t *testing.T) {
 		p := fr.Payload
 		if e.Dir == wire.FromHub {
 			switch fr.Family {
+			case wire.FamDeviceRow:
+				if r, err := record.ParseEntity(wire.X2, p[3:]); err == nil && r.ID == 5 && ugoos == nil {
+					ugoos = r
+				}
 			case wire.FamActivityRow:
 				if r, err := record.ParseEntity(wire.X2, p[3:]); err == nil && r.ID == act {
 					row = r
@@ -137,6 +142,24 @@ func TestX2Activity(t *testing.T) {
 			}
 			b, _ := r.WritePayload()
 			check("update", b)
+		case wire.FamWriteInputs:
+			// The Ugoos set up as switching no inputs: an empty page.
+			in, _ := record.NewInputs(wire.X2, 5, record.InputsNone)
+			pages, _ := in.WritePages()
+			check("no inputs", pages[0])
+		case wire.FamUpdateDevice:
+			// Its power set up, then its inputs: the record as read with the
+			// tail's power and input modes.
+			u := *ugoos
+			u.Tail = append([]byte(nil), ugoos.Tail...)
+			tail, _ := u.DeviceTail()
+			tail.PowerMode, tail.PowerStyle = 1, 3
+			if seen["device update"] > 0 {
+				tail.InputMode = record.InputsNoSwitch
+			}
+			_ = u.SetDeviceTail(tail)
+			b, _ := u.WritePayload()
+			check("device update", b)
 		case wire.FamDeleteActivity:
 			check("delete", []byte{act})
 		}
@@ -144,7 +167,7 @@ func TestX2Activity(t *testing.T) {
 	for what, n := range map[string]int{
 		"confirm": 3, "create": 1, "power on": 1, "power off": 1, "new sequence": 1, "sequence order": 1,
 		"key": 1, "edited sequence": 1, "member removed, power on": 1, "member removed, power off": 1,
-		"update": 2, "delete": 1,
+		"update": 2, "delete": 1, "no inputs": 1, "device update": 2,
 	} {
 		if seen[what] != n {
 			t.Errorf("%s: %d frames, want %d", what, seen[what], n)
