@@ -12,7 +12,7 @@ commands:
   - {name: Power Toggle, code: 0x1A, comment: 'sheet "POWER"'}
   - {name: Power On, code: 0xE5}
   - {name: Power Off, code: 0xE6}
-  - {name: Low Power, code: 0xE4, comment: 'sheet "LOW POWER"; not in Sofabaton''s profile; what it does is to be tested'}
+  - {name: Low Power, code: 0xE4, comment: 'sheet "LOW POWER"; not in Sofabaton''s profile. Tested: the projector showed "The remote has low power" once, nothing on later presses: the remote''s low-battery signal, not a power mode'}
 
   # Navigation
   - {name: Up, code: 0x26}
