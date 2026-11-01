@@ -23,6 +23,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"net/netip"
 	"os"
 	"os/signal"
@@ -40,6 +41,18 @@ var version = "dev"
 
 // dialHub opens a client; tests replace it with a simulated hub.
 var dialHub = hub.Dial
+
+// localAddrs returns this machine's addresses; tests replace it.
+var localAddrs = func() map[netip.Addr]bool {
+	m := map[netip.Addr]bool{}
+	addrs, _ := net.InterfaceAddrs()
+	for _, a := range addrs {
+		if p, err := netip.ParsePrefix(a.String()); err == nil {
+			m[p.Addr().Unmap()] = true
+		}
+	}
+	return m
+}
 
 // discoverHubs finds the hubs on the network; tests replace it.
 var discoverHubs = func(ctx context.Context) ([]transport.Announcement, error) {
@@ -186,12 +199,24 @@ func hubAddr(ctx context.Context, flag string, stderr io.Writer) (netip.Addr, er
 	}
 	ctx, cancel := context.WithTimeout(ctx, discoverWait)
 	defer cancel()
-	found, err := discoverHubs(ctx)
+	all, err := discoverHubs(ctx)
 	if err != nil {
 		return netip.Addr{}, fmt.Errorf("finding a hub (or give -hub): %w", err)
 	}
+	// An sbx proxy on this machine answers discovery as the hub it holds;
+	// connecting to it would get in the way of the app it serves.
+	local := localAddrs()
+	var found []transport.Announcement
+	for _, a := range all {
+		if !local[a.Addr] {
+			found = append(found, a)
+		}
+	}
 	switch len(found) {
 	case 0:
+		if len(all) > 0 {
+			return netip.Addr{}, errors.New("only an sbx proxy on this machine answered discovery; stop it, or give -hub")
+		}
 		return netip.Addr{}, errors.New("no hub answered discovery; give -hub (a hub connected to the app does not answer)")
 	case 1:
 		a := found[0]

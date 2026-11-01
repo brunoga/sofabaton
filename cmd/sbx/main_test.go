@@ -147,6 +147,17 @@ func TestHubDiscovery(t *testing.T) {
 	if _, err := info(); err == nil || !strings.Contains(err.Error(), "192.0.2.8") {
 		t.Fatalf("two hubs: %v", err)
 	}
+	// A proxy on this machine is not a hub to connect to.
+	prev := localAddrs
+	localAddrs = func() map[netip.Addr]bool { return map[netip.Addr]bool{netip.MustParseAddr("192.0.2.8"): true} }
+	t.Cleanup(func() { localAddrs = prev })
+	if _, err := info(); err != nil || dialed != netip.MustParseAddr("192.0.2.7") {
+		t.Fatalf("hub and local proxy: dialed %v, %v", dialed, err)
+	}
+	discovering(t, "192.0.2.8")
+	if _, err := info(); err == nil || !strings.Contains(err.Error(), "proxy") {
+		t.Fatalf("only the proxy: %v", err)
+	}
 }
 
 func TestExportActivity(t *testing.T) {
