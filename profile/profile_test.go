@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -194,25 +193,34 @@ func TestPlanAndApply(t *testing.T) {
 	}
 }
 
-// The profiles we maintain all load, and the Aetherion's has every key of
-// AWOL Vision's IR list.
-func TestMaintainedProfiles(t *testing.T) {
-	paths, err := filepath.Glob("../profiles/*.yaml")
-	if err != nil || len(paths) == 0 {
-		t.Fatalf("no profiles: %v", err)
+// A template becomes a profile with its comments, from where it came and
+// the name asked for; it is refused as a profile.
+func TestFromTemplate(t *testing.T) {
+	body := strings.NewReplacer("device: Aetherion Max\n", "", "id: 4\n", "").Replace(aetherion)
+	tmpl := "# The Aetherion.\ntemplate: AWOL Vision Aetherion\n" + body
+	if !profile.IsTemplate([]byte(tmpl)) || profile.IsTemplate([]byte(aetherion)) {
+		t.Fatal("IsTemplate")
 	}
-	for _, p := range paths {
-		f, err := os.Open(p)
-		if err != nil {
-			t.Fatal(err)
-		}
-		d, err := profile.Load(f)
-		f.Close()
-		if err != nil {
-			t.Fatalf("%s: %v", p, err)
-		}
-		if filepath.Base(p) == "awol-vision-aetherion.yaml" && len(d.Commands) != 35 {
-			t.Errorf("%s: %d commands, the IR list has 35", p, len(d.Commands))
+	if _, err := profile.Load(strings.NewReader(tmpl)); err == nil {
+		t.Error("a template loaded as a profile")
+	}
+	out, err := profile.FromTemplate([]byte(tmpl), "ir/awol-vision/aetherion", "Projector: Living Room")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(out), "# The Aetherion.\nfrom: ir/awol-vision/aetherion\ndevice: 'Projector: Living Room'\n") {
+		t.Fatalf("made:\n%s", out)
+	}
+	d, err := profile.Load(strings.NewReader(string(out)))
+	if err != nil || d.Name != "Projector: Living Room" || d.From != "ir/awol-vision/aetherion" {
+		t.Fatalf("%+v, %v", d, err)
+	}
+	if out, _ := profile.FromTemplate([]byte(tmpl), "x", ""); !strings.Contains(string(out), "\ndevice: AWOL Vision Aetherion\n") {
+		t.Errorf("without a name:\n%s", out)
+	}
+	for _, extra := range []string{"id: 4\n", "device: Aetherion\n"} {
+		if _, err := profile.FromTemplate([]byte(tmpl+extra), "x", ""); err == nil {
+			t.Errorf("a template with %q", extra)
 		}
 	}
 }

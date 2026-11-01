@@ -116,6 +116,9 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	if err != nil {
 		return err
 	}
+	if profile.IsTemplate(data) {
+		return fmt.Errorf("%s is a template: make a profile of it with sbx new -template", *file)
+	}
 	if isActivityProfile(data) {
 		if *device != "" {
 			return errors.New("an activity's profile takes -activity, not -device")

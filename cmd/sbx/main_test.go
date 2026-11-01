@@ -413,3 +413,37 @@ buttons:
 		t.Fatalf("remove: %v\n%s", err, out.String())
 	}
 }
+
+// templates lists what sbx carries; new makes a profile of one, which
+// apply takes and a template is refused by.
+func TestTemplates(t *testing.T) {
+	var out, errs bytes.Buffer
+	sbx := func(args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(""), args, &out, &errs)
+	}
+	if err := sbx("templates"); err != nil || !strings.Contains(out.String(), "ir/denon/avr-x8500h") {
+		t.Fatalf("templates: %q %v", out.String(), err)
+	}
+	dir := t.TempDir()
+	file := dir + "/receiver.yaml"
+	if err := sbx("new", "-template", "ir/denon/avr-x8500h", "-name", "Receiver", "-o", file); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(file)
+	if err != nil || !strings.Contains(string(data), "\nfrom: ir/denon/avr-x8500h\ndevice: Receiver\n") || !strings.HasPrefix(string(data), "# Denon") {
+		t.Fatalf("new: %s %v", data, err)
+	}
+	if err := sbx("new", "-template", "ir/denon/avr-x8500h", "-o", file); err == nil {
+		t.Error("new overwrote a file")
+	}
+	if err := sbx("new", "-template", "ir/nobody/nothing"); err == nil {
+		t.Error("new made a profile of no template")
+	}
+	if err := sbx("new", "-template", "../../templates/ir/ugoos/am6b-plus.yaml"); err != nil || !strings.Contains(out.String(), "\ndevice: Ugoos AM6B Plus\n") {
+		t.Errorf("new from a file: %v\n%s", err, out.String())
+	}
+	if err := sbx("apply", "-f", "../../templates/ir/ugoos/am6b-plus.yaml", "-n"); err == nil || !strings.Contains(err.Error(), "is a template") {
+		t.Errorf("applied a template: %v", err)
+	}
+}

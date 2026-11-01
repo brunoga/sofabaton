@@ -7,6 +7,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Device templates: read-only profiles of the devices we maintain, in
+  `templates/` by transport and maker (`ir/denon/avr-x8500h`), carried by
+  `sbx`. `sbx templates` lists them; `sbx new -template NAME -name NAME`
+  makes a profile of one (its comments kept, `from:` naming the template)
+  to edit and apply. `apply` refuses a template. `make check` runs the
+  quick pre-push checks.
+
 - `sbx apply` takes activity profiles: members and their inputs, power
   macros, the activity's own macros across its devices, keys and
   the name; `-create` makes a new activity, and `sbx remove-activity`
@@ -26,8 +33,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `hub.ErrUnsupported` and `Client.Writable`: the client refuses to write
   to an X1 or X1S, whose writes we have not tested; reads work. `sbx`
   says so before asking to apply.
-- A profile for the Ugoos AM6B Plus running CoreELEC (NEC, from CoreELEC's
+- A template for the Ugoos AM6B Plus running CoreELEC (NEC, from CoreELEC's
   remote configuration).
+
+### Changed
+
+- `profiles/` is now `templates/`, its files templates: `template:` names
+  the model, and the maintainer's hub ids and device names are gone (`sbx
+  new` sets the name).
 
 ### Fixed
 

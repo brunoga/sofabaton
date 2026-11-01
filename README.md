@@ -59,10 +59,13 @@ lossless backup. `-v` on any command logs every frame to stderr.
 
 A profile is a YAML file describing one device: its commands (as IR codes),
 their order on the remote, the keys, the power-on/off commands and the
-inputs. Export a device, edit the file, and apply it back; `apply` changes
-only what differs.
+inputs. Start one from a template (a device we maintain, read-only) or
+export a device, edit the file, and apply it; `apply` changes only what
+differs.
 
 ```sh
+sbx templates                                  # the device templates sbx carries
+sbx new -template ir/denon/avr-x8500h -name Receiver -o receiver.yaml
 sbx export -device Receiver -o receiver.yaml   # write a device's profile
 sbx apply -f receiver.yaml -n                  # show what would change
 sbx apply -f receiver.yaml                     # change it (asks first)
@@ -88,9 +91,9 @@ Renaming a device or a command keeps the activities and keys that use it.
 After any change `apply` syncs the device to the remote. IR codes can be
 given as NEC, Denon-K or Denon (Sharp) codes, or as the hub's own
 descriptors. [docs/profiles.md](docs/profiles.md) has the whole format;
-[profiles/](profiles) holds the profiles we maintain (the AWOL Vision
-Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos AM6B Plus
-media player).
+[templates/](templates) holds the templates, by transport and maker (the
+AWOL Vision Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos
+AM6B Plus media player).
 
 ### Single commands
 
@@ -125,7 +128,7 @@ is how the protocol behind every write above was learned.
 | `proxy/`, `capture/`, `hubsim/` | Official-app proxy, traffic captures, a simulated hub for tests |
 | `cmd/sbx/` | Command-line tool |
 | `docs/` | The protocol as we understand it, with a confidence level per fact |
-| `profiles/` | Device profiles we maintain |
+| `templates/` | Device templates we maintain, by transport and maker |
 | `testdata/` | Captured frames, hub dumps and generated test vectors |
 
 ## Building and testing
