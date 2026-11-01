@@ -105,7 +105,7 @@ func (c *Client) Order(ctx context.Context, device byte) ([]record.Place, error)
 	return order, err
 }
 
-// Macros reads the macros of an activity or device, power sequences
+// Macros reads the macros of an activity or device, power macros
 // included.
 func (c *Client) Macros(ctx context.Context, entity byte) ([]*record.Macro, error) {
 	bodies, err := c.Records(ctx, reqMacros(entity), wire.FamMacroPage)

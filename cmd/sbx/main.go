@@ -2,7 +2,7 @@
 //
 //	sbx discover          find hubs on the local network
 //	sbx info              show a hub's identity
-//	sbx list              list devices, activities, commands, sequences
+//	sbx list              list devices, activities, commands, macros
 //	sbx dump              dump a hub's configuration as JSON
 //	sbx proxy             stand between the app and the hub, recording
 //	sbx add-ir ...        add an IR command to a device
@@ -74,7 +74,7 @@ commands:
   info       show a hub's identity
   list       list devices and activities, a device's commands
              (list commands NAME), what keys run (list buttons NAME) or
-             sequences (list sequences [NAME])
+             macros (list macros [NAME])
   dump       dump a hub's configuration as JSON (a lossless backup: raw
              record bytes are kept next to the decoded view)
   proxy      stand between the Sofabaton app and the hub, relaying and
@@ -84,11 +84,11 @@ commands:
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
   send       send a device's command now (-device ID, -command NAME or -id N)
   export     write a device's profile: commands in the remote's order,
-             keys and power sequences (YAML: -device ID [-o file]); or
-             an activity's: devices and inputs, keys, sequences (-activity)
+             keys and power macros (YAML: -device ID [-o file]); or
+             an activity's: devices and inputs, keys, macros (-activity)
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
-             commands or sequences the profile lacks; -create makes a new
+             commands or macros the profile lacks; -create makes a new
              IR device or activity)
   remove-device    delete a device (-device ID)
   remove-activity  delete an activity (-activity ID)

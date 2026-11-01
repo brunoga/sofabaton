@@ -17,7 +17,7 @@ const (
 
 // Create makes a new IR device on the hub from a profile, in the app's
 // order: the device record, its commands, their order, its keys, its idle
-// behavior and power sequences, the update that commits it, then its
+// behavior and power macros, the update that commits it, then its
 // inputs, the record's input mode and a sync to the remotes. done is
 // called after each step. It returns the new device's id; if a step after
 // the create fails, the device is left on the hub with that id for the
@@ -51,7 +51,7 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 	report(fmt.Sprintf("created device %d %q", id, d.Name))
 
 	// The commit: the record with its id, the marker and, with power
-	// sequences, the power fields the app sets once power is set up.
+	// macros, the power fields the app sets once power is set up.
 	committed := *e
 	committed.ID = id
 	committed.Tail = append([]byte(nil), e.Tail...)
@@ -74,7 +74,7 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 	var before, seqs, after []Change
 	for _, ch := range changes {
 		switch ch.Kind {
-		case Sequence:
+		case PowerMacro:
 			seqs = append(seqs, ch)
 		case Inputs, Record, Sync:
 			after = append(after, ch)

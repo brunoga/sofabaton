@@ -137,7 +137,7 @@ func (c *Client) WriteOrder(ctx context.Context, device byte, order []record.Pla
 // CreateDevice creates a device from e (family 0x07; e's id is
 // record.NewID) and returns the id the hub gives it. The device is not
 // committed until UpdateDevice writes it with its tail's Marker set; the
-// app writes its commands, keys and power sequences in between.
+// app writes its commands, keys and power macros in between.
 func (c *Client) CreateDevice(ctx context.Context, e *record.Entity) (byte, error) {
 	if err := c.Writable(); err != nil {
 		return 0, err
@@ -207,7 +207,7 @@ func (c *Client) SetIdleBehavior(ctx context.Context, device, behavior byte) err
 }
 
 // WriteMacro writes a macro of a device or activity (family 0x12), such
-// as a device's POWER_ON sequence, replacing the one with its id. The hub
+// as a device's POWER_ON macro, replacing the one with its id. The hub
 // acks the last page with family 0x12 and the others with a status ack.
 func (c *Client) WriteMacro(ctx context.Context, m *record.Macro) error {
 	if err := c.Writable(); err != nil {

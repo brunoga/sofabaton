@@ -245,7 +245,7 @@ func applyActivity(ctx context.Context, data []byte, h *hubFlags, which string, 
 		if _, err := pick("activity", a.Name, acts); err == nil {
 			return fmt.Errorf("an activity named %q exists; rename the profile's activity or apply to it", a.Name)
 		}
-		fmt.Fprintf(stdout, "create activity %q with %d devices, %d buttons, %d sequences\n", a.Name, len(a.Devices), len(a.Buttons), len(a.Sequences))
+		fmt.Fprintf(stdout, "create activity %q with %d devices, %d buttons, %d macros\n", a.Name, len(a.Devices), len(a.Buttons), len(a.Macros))
 		if dry {
 			return nil
 		}
@@ -323,7 +323,7 @@ func removeActivity(ctx context.Context, args []string, stdin io.Reader, stdout,
 	if err != nil {
 		return err
 	}
-	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("delete activity %d %q, its keys and sequences?", act.ID, act.Name)) {
+	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("delete activity %d %q, its keys and macros?", act.ID, act.Name)) {
 		return errors.New("not deleted")
 	}
 	if err := c.DeleteActivity(ctx, act.ID); err != nil {

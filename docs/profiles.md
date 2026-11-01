@@ -14,13 +14,13 @@ sbx remove-device -hub IP -device "ZZ Test"      # delete a device
 
 `apply` compares the file with the hub and changes only what differs:
 renames and new signals rewrite a command in place (same id, same code, so
-buttons and sequences that use it keep working), missing commands are
+buttons and macros that use it keep working), missing commands are
 added, and commands the file lacks are kept unless `-prune` is given.
 Commands are matched by name, then by name regardless of case, then by
 signal (so a renamed command is recognized; names go first because
 catalog profiles often give several commands one code). The order of the commands
 in the file is the order of the device's page on the remote; `apply`
-rewrites it when it differs. Keys and power sequences are written when
+rewrites it when it differs. Keys and power macros are written when
 they differ; keys the file does not bind are left as they are.
 
 A `device:` (or `brand:`) different from the hub's renames the device in
@@ -29,7 +29,7 @@ place: activities refer to devices by id, so they keep it. (On our X2,
 
 `-create` makes the profile's device as a new IR device instead, in the
 order the app uses: the device, its commands, keys, idle behavior and
-power sequences, the commit, then its inputs. It refuses a name the hub
+power macros, the commit, then its inputs. It refuses a name the hub
 already has.
 
 ## Format
@@ -45,7 +45,7 @@ commands:
   - {name: Other, descriptor: "P:NEC R:38400 D:4 S:251 F:114"}
   - {name: Learned, data: "00a4..."}  # the hub's bytes, for codes the
                                        # other forms cannot express
-power: {on: Power On, off: Power Off}  # the POWER_ON and POWER_OFF sequences
+power: {on: Power On, off: Power Off}  # the POWER_ON and POWER_OFF macros
 inputs: [HDMI 1, HDMI 2]               # the commands that select each input
                                        # ([] for a device without inputs)
 buttons:                               # the remote's keys on the device's page
@@ -73,7 +73,7 @@ Unknown fields are errors.
 `Green`, `Yellow`, `Blue`, `A`, `B`, `C`, `0`-`9`, `-`, `Enter`, and `Power
 On`/`Power Off` (rows the app binds to the device's on and off commands;
 not keys). Case does not matter. `power` takes effect only when both
-sequences are a single command; `export` writes it then.
+macros are a single command; `export` writes it then.
 
 `inputs` answers the app's "does this device switch inputs?": the
 commands that select each input, in order, for activities to pick from.
@@ -92,8 +92,8 @@ from CoreELEC's remote configuration.
 ## Activities
 
 `sbx export -activity NAME` writes an activity's profile: its devices and
-the input each is switched to, its keys, its power sequences and its
-other sequences. `sbx apply -f` takes it back, as for devices (it tells
+the input each is switched to, its keys, its power macros and its
+other macros. `sbx apply -f` takes it back, as for devices (it tells
 them apart by the first key), and `-create` makes a new activity:
 
 ```
@@ -104,15 +104,15 @@ sbx remove-activity -activity "Movie Night"
 ```
 
 `apply` writes the members (confirmed to the hub, then the power
-sequences, from which the hub takes them, then the record, as the app
-does), the power sequences, the activity's own sequences (matched by
+macros, from which the hub takes them, then the record, as the app
+does), the power macros, the activity's own macros (matched by
 name; new ones get their ids from the hub and go on the remote's list in
 the profile's order), the keys, and syncs the activity. A different
-`activity:` renames it. Sequences the profile lacks stay unless `-prune`
+`activity:` renames it. Macros the profile lacks stay unless `-prune`
 (the delete is upstream's flow, not yet seen on the X2). Leaving out
 `power_on` or `power_off` keeps the hub's, with the devices' inputs; a new
 activity, or one whose devices change, gets the app's instead: each
-device's power sequence a second apart, then each device's input.
+device's power macro a second apart, then each device's input.
 
 ```yaml
 activity: Watch Blu-ray
@@ -120,18 +120,18 @@ id: 103
 devices:                        # in the hub's member order
   - {device: Receiver, input: Input Blu-ray}   # a command of its inputs
   - {device: Blu-ray}           # not switched
-buttons:                        # "Device: Command", or a sequence's name
+buttons:                        # "Device: Command", or a macro's name
   Vol+: 'Receiver: Volume Up'
   Play: 'Blu-ray: Play'
   Menu: {short: 'Blu-ray: Menu', long: Movie Mode}
 power_on:
-  - power on: Receiver          # runs the device's POWER_ON sequence
+  - power on: Receiver          # runs the device's POWER_ON macro
   - wait: 1                     # seconds
   - input: Receiver             # switches it to its input above
   - Blu-ray: Home               # any device's command
 power_off:
   - power off: Receiver
-sequences:                      # the activity's own, across its devices
+macros:                         # the activity's own, across its devices
   - name: Movie Mode
     steps:
       - Receiver: Movie
@@ -142,11 +142,11 @@ sequences:                      # the activity's own, across its devices
 A command step may add `hold: N`, the step's duration byte as the hub
 keeps it; what it does is not known. `export` drops the duration bytes of
 `power on` steps (the hub has 1 for IR devices and 0 for Bluetooth ones),
-so an exported power sequence is not yet a byte-exact copy.
+so an exported power macro is not yet a byte-exact copy.
 
 ## Not yet
 
-Applying activity profiles, unbinding a key, device sequences of more
+Applying activity profiles, unbinding a key, device macros of more
 than one command (per-device ones, which `sbx` will copy into every
 activity with the device), the device's category and icon, activities, Bluetooth
 devices, and protocols other than NEC, Denon-K and Denon for `code`. See

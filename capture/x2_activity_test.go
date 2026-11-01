@@ -9,7 +9,7 @@ import (
 	"github.com/brunoga/sofabaton/wire"
 )
 
-// The app creating an activity, adding and editing a sequence, rebinding
+// The app creating an activity, adding and editing a macro, rebinding
 // a key, removing a member, renaming and deleting the activity rebuilds
 // byte for byte from records made from scratch, or from the hub's records
 // with the app's change.
@@ -107,9 +107,9 @@ func TestX2Activity(t *testing.T) {
 			case p[6] == act && p[7] == record.MacroPowerOff && len(macros) == 0:
 				check("power off", powerOff)
 			case p[6] == act && p[7] == 0:
-				check("new sequence", macro(0, "ZZ Seq", seq...))
+				check("new macro", macro(0, "ZZ Seq", seq...))
 			case p[6] == act && p[7] == 1:
-				check("edited sequence", macro(1, "ZZ Seq", append(seq, command(4, 0x17, 0x4FAF))...))
+				check("edited macro", macro(1, "ZZ Seq", append(seq, command(4, 0x17, 0x4FAF))...))
 			case p[6] == act && p[7] == record.MacroPowerOn:
 				// Removing the Ugoos: the hub's POWER_ON without its steps.
 				m := latest(macros, record.MacroPowerOn)
@@ -124,7 +124,7 @@ func TestX2Activity(t *testing.T) {
 			}
 		case wire.FamKeySort:
 			if p[6] == act {
-				check("sequence order", record.OrderPages(act, []record.Place{{Command: 1, Position: 1}})[0])
+				check("macro order", record.OrderPages(act, []record.Place{{Command: 1, Position: 1}})[0])
 			}
 		case wire.FamWriteButton:
 			if p[6] == act && p[7] == 0xBE {
@@ -165,8 +165,8 @@ func TestX2Activity(t *testing.T) {
 		}
 	}
 	for what, n := range map[string]int{
-		"confirm": 3, "create": 1, "power on": 1, "power off": 1, "new sequence": 1, "sequence order": 1,
-		"key": 1, "edited sequence": 1, "member removed, power on": 1, "member removed, power off": 1,
+		"confirm": 3, "create": 1, "power on": 1, "power off": 1, "new macro": 1, "macro order": 1,
+		"key": 1, "edited macro": 1, "member removed, power on": 1, "member removed, power off": 1,
 		"update": 2, "delete": 1, "no inputs": 1, "device update": 2,
 	} {
 		if seen[what] != n {

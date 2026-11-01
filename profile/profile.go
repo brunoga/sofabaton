@@ -2,7 +2,7 @@
 // commands: a YAML file with comments, which can be exported from a hub,
 // edited and applied back. Applying compares the file with the hub and
 // makes only the changes needed (see Plan), so commands keep their ids and
-// the buttons and sequences that refer to them. The commands' order is
+// the buttons and macros that refer to them. The commands' order is
 // the order of the device's page on the remote, and buttons binds the
 // remote's keys to them.
 //
@@ -51,7 +51,7 @@ type Device struct {
 	// page.
 	Commands []Command `yaml:"commands"`
 	Buttons  Buttons   `yaml:"buttons,omitempty"`
-	// Power, when set, makes the device's power sequences, which
+	// Power, when set, makes the device's power macros, which
 	// activities run to switch it on and off, send one command each.
 	Power *Power `yaml:"power,omitempty"`
 	// Inputs, when set, are the commands that select each of the device's
@@ -82,7 +82,7 @@ func (l *InputList) UnmarshalYAML(n *yaml.Node) error {
 }
 
 // Power names the commands of a device's POWER_ON and POWER_OFF
-// sequences.
+// macros.
 type Power struct {
 	On  string `yaml:"on"`
 	Off string `yaml:"off"`
