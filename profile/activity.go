@@ -179,24 +179,30 @@ type ActivityState struct {
 	Macros   []*record.Macro
 	Commands map[byte][]*record.Command
 	Inputs   map[byte]*record.Inputs
+	// Order is the order of the remote's list of the activity's
+	// sequences (and favorites).
+	Order []record.Place
 	// Names are the hub's devices and activities by id.
+	//
+	// fresh marks an activity CreateActivity has just made, which gets
+	// the app's power sequences when the profile has none.
 	Names map[byte]string
+	fresh bool
 }
 
 // ReadActivity fetches an activity's state from the hub.
 func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityState, error) {
+	st, err := readDevices(ctx, c)
+	if err != nil {
+		return nil, err
+	}
 	acts, err := c.Activities(ctx)
 	if err != nil {
 		return nil, err
 	}
-	devs, err := c.Devices(ctx)
-	if err != nil {
-		return nil, err
-	}
-	st := &ActivityState{Commands: map[byte][]*record.Command{}, Inputs: map[byte]*record.Inputs{}, Names: map[byte]string{}}
-	for _, e := range append(devs, acts...) {
+	for _, e := range acts {
 		st.Names[e.ID] = e.Name
-		if e.ID == activity && e.ID >= record.MinActivityID {
+		if e.ID == activity {
 			st.Entity = e
 		}
 	}
@@ -212,32 +218,31 @@ func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityS
 	if st.Macros, err = c.Macros(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
 		return nil, err
 	}
-	// The commands of every device a key or step names, members or not.
-	used := map[byte]bool{}
-	for _, m := range st.Members {
-		used[m.ID] = true
+	if st.Order, err = c.Order(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
 	}
-	for _, b := range st.Keymap {
-		used[b.Short.Device], used[b.Long.Device] = true, true
+	return st, nil
+}
+
+// readDevices fetches the devices with their commands and inputs, which
+// an activity's keys and steps name.
+func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, error) {
+	devs, err := c.Devices(ctx)
+	if err != nil {
+		return nil, err
 	}
-	for _, m := range st.Macros {
-		for _, s := range m.Steps {
-			used[s.Device] = true
-		}
-	}
-	for id := range used {
-		if _, ok := st.Names[id]; !ok || id >= record.MinActivityID {
-			continue
-		}
-		if st.Commands[id], err = c.Commands(ctx, id); err != nil && !errors.Is(err, hub.ErrNotFound) {
+	st := &ActivityState{Commands: map[byte][]*record.Command{}, Inputs: map[byte]*record.Inputs{}, Names: map[byte]string{}}
+	for _, d := range devs {
+		st.Names[d.ID] = d.Name
+		if st.Commands[d.ID], err = c.Commands(ctx, d.ID); err != nil && !errors.Is(err, hub.ErrNotFound) {
 			return nil, err
 		}
-		in, err := c.Inputs(ctx, id)
+		in, err := c.Inputs(ctx, d.ID)
 		if err != nil && !errors.Is(err, hub.ErrNotFound) {
 			return nil, err
 		}
 		if in != nil {
-			st.Inputs[id] = in
+			st.Inputs[d.ID] = in
 		}
 	}
 	return st, nil

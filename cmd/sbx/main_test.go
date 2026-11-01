@@ -174,6 +174,54 @@ func TestExportActivity(t *testing.T) {
 	}
 }
 
+func TestApplyActivity(t *testing.T) {
+	simulated(t)
+	dir := t.TempDir()
+	var out, errs bytes.Buffer
+	sbx := func(stdin string, args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(stdin), append(args, "-hub", "192.0.2.1"), &out, &errs)
+	}
+	discovering(t) // every command must take the -hub after its arguments
+	file := dir + "/watch.yaml"
+	if err := sbx("", "export", "-activity", "Watch TV", "-o", file); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "apply", "-f", file); err != nil || !strings.Contains(out.String(), "already matches") {
+		t.Fatalf("apply the export: %v\n%s", err, out.String())
+	}
+	data, _ := os.ReadFile(file)
+	edited := strings.Replace(string(data), "activity: Watch TV", "activity: Watch Telly", 1)
+	if err := os.WriteFile(file, []byte(edited), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "apply", "-f", file, "-n"); err != nil || !strings.Contains(out.String(), `rename activity "Watch TV" -> "Watch Telly"`) {
+		t.Fatalf("plan: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "apply", "-f", file, "-device", "1"); err == nil {
+		t.Fatal("applied an activity's profile with -device")
+	}
+	if err := sbx("y\n", "apply", "-f", file); err != nil {
+		t.Fatal(err)
+	}
+	newer := dir + "/new.yaml"
+	if err := os.WriteFile(newer, []byte("activity: Late Show\ndevices: [{device: TV}]\nbuttons: {OK: 'TV: Power'}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "apply", "-f", newer, "-create", "-y"); err != nil || !strings.Contains(out.String(), `created activity 102 "Late Show"`) {
+		t.Fatalf("create: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "apply", "-f", newer, "-create", "-y"); err == nil {
+		t.Fatal("created the activity twice")
+	}
+	if err := sbx("", "remove-activity", "-activity", "late show", "-y"); err != nil {
+		t.Fatal(err)
+	}
+	if err := sbx("", "list", "activities"); err != nil || strings.Contains(out.String(), "Late Show") || !strings.Contains(out.String(), "Watch Telly") {
+		t.Fatalf("list: %v\n%s", err, out.String())
+	}
+}
+
 func TestAddIR(t *testing.T) {
 	simulated(t)
 	code := "P:NEC R:38400 D:0 S:206 F:217"

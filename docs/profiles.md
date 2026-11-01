@@ -93,8 +93,26 @@ from CoreELEC's remote configuration.
 
 `sbx export -activity NAME` writes an activity's profile: its devices and
 the input each is switched to, its keys, its power sequences and its
-other sequences. Applying activity profiles waits for a capture of the X2
-app writing activities; the format may still change.
+other sequences. `sbx apply -f` takes it back, as for devices (it tells
+them apart by the first key), and `-create` makes a new activity:
+
+```
+sbx export -activity "Watch Blu-ray" -o blu-ray.yaml
+sbx apply -f blu-ray.yaml -n            # what would change
+sbx apply -f movie-night.yaml -create   # a new activity
+sbx remove-activity -activity "Movie Night"
+```
+
+`apply` writes the members (confirmed to the hub, then the power
+sequences, from which the hub takes them, then the record, as the app
+does), the power sequences, the activity's own sequences (matched by
+name; new ones get their ids from the hub and go on the remote's list in
+the profile's order), the keys, and syncs the activity. A different
+`activity:` renames it. Sequences the profile lacks stay unless `-prune`
+(the delete is upstream's flow, not yet seen on the X2). Leaving out
+`power_on` or `power_off` keeps the hub's, with the devices' inputs; a new
+activity, or one whose devices change, gets the app's instead: each
+device's power sequence a second apart, then each device's input.
 
 ```yaml
 activity: Watch Blu-ray

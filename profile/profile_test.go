@@ -360,7 +360,10 @@ func TestDenon15(t *testing.T) {
 	}
 }
 
-func TestActivityExport(t *testing.T) {
+// activityHub is a simulated hub with a TV, an AVR with two inputs and
+// an activity of both, with a power sequence and a sequence of its own.
+func activityHub(t *testing.T) *hub.Client {
+	t.Helper()
 	tv, _ := record.NewEntity(wire.X2)
 	tv.ID, tv.Name, tv.Class = 1, "TV", record.ClassIR
 	avr, _ := record.NewEntity(wire.X2)
@@ -375,8 +378,8 @@ func TestActivityExport(t *testing.T) {
 	in, _ := record.NewInputs(wire.X2, 2, record.InputsDirect)
 	in.Entries = []record.InputEntry{{Command: 8, Ordinal: 1, Label: "HDMI 1"}, {Command: 9, Ordinal: 2, Label: "HDMI 2"}}
 	on, _ := record.NewMacro(wire.X2, 0x65, record.MacroPowerOn, "POWER_ON")
-	wait := record.Step{Device: 0xFF, Command: 0xFF, Duration: 0xFF, Delay: 1}
-	on.Steps = []record.Step{{Device: 2, Command: 0xC6, Duration: 1, Delay: 0xFF}, wait, {Device: 2, Command: 0xC5, Duration: 2, Delay: 0xFF}, {Device: 1, Command: 0xC5, Delay: 0xFF}}
+	wait := record.Step{Device: 0xFF, Command: 0xFF, Code: [6]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, Duration: 0xFF, Delay: 1}
+	on.Steps = []record.Step{{Device: 2, Command: 0xC6, Duration: 1, Delay: 0xFF}, wait, {Device: 1, Command: 0xC6, Duration: 1, Delay: 0xFF}, {Device: 2, Command: 0xC5, Duration: 2, Delay: 0xFF}, {Device: 1, Command: 0xC5, Delay: 0xFF}}
 	seq, _ := record.NewMacro(wire.X2, 0x65, 1, "Movie")
 	seq.Steps = []record.Step{{Device: 1, Command: 3, Delay: 0xFF}, wait, {Device: 2, Command: 9, Delay: 0xFF}}
 	m := &hubsim.Model{
@@ -396,7 +399,13 @@ func TestActivityExport(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = c.Close() }()
+	t.Cleanup(func() { _ = c.Close() })
+	return c
+}
+
+func TestActivityExport(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
 	st, err := profile.ReadActivity(ctx, c, 0x65)
 	if err != nil {
 		t.Fatal(err)
@@ -420,6 +429,7 @@ buttons:
 power_on:
   - power on: AVR
   - wait: 1
+  - power on: TV
   - input: AVR
   - input: TV
 sequences:
@@ -499,5 +509,145 @@ func TestNoInputs(t *testing.T) {
 	var out bytes.Buffer
 	if err := exported.Encode(&out); err != nil || !strings.Contains(out.String(), "\ninputs: []\n") {
 		t.Fatalf("exported %v:\n%s", err, out.String())
+	}
+}
+
+// An exported activity plans no changes; edits plan and apply, and plan
+// nothing once applied; a profile creates a new activity.
+func TestActivityApply(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
+	plan := func(a *profile.Activity, id byte, prune bool) []profile.ActivityChange {
+		t.Helper()
+		st, err := profile.ReadActivity(ctx, c, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		changes, err := profile.PlanActivity(a, st, prune)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return changes
+	}
+	st, err := profile.ReadActivity(ctx, c, 0x65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.ActivityFromHub(st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if changes := plan(a, 0x65, false); len(changes) != 0 {
+		t.Fatalf("exported, plans %v", changes)
+	}
+
+	edited := `activity: Watch Films
+id: 101
+devices:
+  - {device: AVR, input: HDMI 1}
+  - {device: TV}
+buttons:
+  Menu: {short: 'TV: Menu', long: Movie}
+  OK: Lights
+  Vol+: 'AVR: Volume Up'
+sequences:
+  - name: Lights
+    steps:
+      - AVR: HDMI 2
+      - wait: 2
+      - TV: Menu
+  - name: Movie
+    steps:
+      - TV: Menu
+`
+	a, err = profile.LoadActivity(strings.NewReader(edited))
+	if err != nil {
+		t.Fatal(err)
+	}
+	changes := plan(a, 0x65, false)
+	var got []string
+	for _, ch := range changes {
+		got = append(got, ch.String())
+	}
+	want := []string{
+		"sequence    rewrite POWER_ON, 5 steps", // the AVR's input
+		`sequence    add "Lights", 3 steps`,
+		"sequence    rewrite Movie, 1 steps",
+		"order       2 sequences and favorites",
+		`button      OK -> "Lights"`,
+		`button      Vol+ -> "AVR: Volume Up"`,
+		"sync        activity 101 to the remotes",
+		`record      rename activity "Watch TV" -> "Watch Films"`,
+	}
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("plan:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+	}
+	if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	if changes := plan(a, 0x65, false); len(changes) != 0 {
+		t.Fatalf("applied, still %v", changes)
+	}
+	st, _ = profile.ReadActivity(ctx, c, 0x65)
+	for _, b := range st.Keymap {
+		if b.Button == record.ButtonOK && (b.Short.Device != 0x65 || b.Short.Command != 2) {
+			t.Fatalf("OK runs %+v, not the new sequence", b.Short)
+		}
+	}
+	if len(st.Order) != 2 || st.Order[0] != (record.Place{Command: 2, Position: 1}) {
+		t.Fatalf("order %v", st.Order)
+	}
+
+	// Dropping a sequence keeps it, unless pruned.
+	a.Sequences = a.Sequences[:1]
+	a.Buttons["Menu"] = profile.Key{Short: "TV: Menu"}
+	if changes := plan(a, 0x65, false); len(changes) != 2 || changes[0].Kind != profile.ActBind {
+		t.Fatalf("plan without Movie: %v", changes)
+	}
+	if changes := plan(a, 0x65, true); len(changes) != 4 || changes[0].Kind != profile.ActRemoveSequence || changes[1].Kind != profile.ActOrder {
+		t.Fatalf("pruned: %v", changes)
+	}
+
+	// A new activity, with the app's power sequences.
+	created := `activity: Games
+devices:
+  - {device: TV}
+  - {device: AVR, input: HDMI 2}
+buttons:
+  Vol+: 'AVR: Volume Up'
+sequences:
+  - name: Loud
+    steps: [{AVR: Volume Up}, {wait: 1}, {AVR: Volume Up}]
+`
+	g, err := profile.LoadActivity(strings.NewReader(created))
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := profile.CreateActivity(ctx, c, g, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if changes := plan(g, id, false); len(changes) != 0 {
+		t.Fatalf("created, still %v", changes)
+	}
+	st, _ = profile.ReadActivity(ctx, c, id)
+	if len(st.Members) != 2 || st.Members[0].ID != 1 {
+		t.Fatalf("members %v", st.Members)
+	}
+	for _, m := range st.Macros {
+		if m.ID == record.MacroPowerOn && (len(m.Steps) != 8 || m.Steps[6].Command != 0xC5 || m.Steps[6].Duration != 2) {
+			t.Fatalf("POWER_ON %+v", m.Steps)
+		}
+	}
+
+	bad := `activity: Bad
+devices: [{device: TV, input: Nope}]
+`
+	b, _ := profile.LoadActivity(strings.NewReader(bad))
+	if _, err := profile.CreateActivity(ctx, c, b, nil); err == nil {
+		t.Fatal("created with an unknown input")
+	}
+	if acts, _ := c.Activities(ctx); len(acts) != 2 {
+		t.Fatalf("%d activities: a failed create left one", len(acts))
 	}
 }

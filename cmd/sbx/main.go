@@ -11,6 +11,7 @@
 //	sbx export ...        write a device's profile (YAML)
 //	sbx apply ...         make a device match a profile, or create it
 //	sbx remove-device ... delete a device
+//	sbx remove-activity . delete an activity
 //	sbx sync ...          update the remotes' copy of a device
 //
 // Commands that talk to a hub take -hub IP, defaulting to $SBX_HUB, else
@@ -85,10 +86,12 @@ commands:
   export     write a device's profile: commands in the remote's order,
              keys and power sequences (YAML: -device ID [-o file]); or
              an activity's: devices and inputs, keys, sequences (-activity)
-  apply      make a device match a profile, changing only what differs
-             (-f file; -n shows the plan, -prune removes commands the
-             profile lacks; -create makes it a new IR device)
-  remove-device  delete a device (-device ID)
+  apply      make a device or activity match a profile, changing only
+             what differs (-f file; -n shows the plan, -prune removes
+             commands or sequences the profile lacks; -create makes a new
+             IR device or activity)
+  remove-device    delete a device (-device ID)
+  remove-activity  delete an activity (-activity ID)
   sync       update the remotes' copy of a device or activity (-device ID);
              apply does it after changing anything
   version    print the version
@@ -136,6 +139,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return apply(ctx, args, stdin, stdout, stderr)
 	case "sync":
 		return syncCmd(ctx, args, stdout, stderr)
+	case "remove-activity":
+		return removeActivity(ctx, args, stdin, stdout, stderr)
 	case "remove-device":
 		return removeDevice(ctx, args, stdin, stdout, stderr)
 	case "proxy":
