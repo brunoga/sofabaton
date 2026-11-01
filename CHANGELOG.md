@@ -7,6 +7,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `sbx apply` takes activity profiles: members and their inputs, power
+  sequences, the activity's own sequences across its devices, keys and
+  the name; `-create` makes a new activity, and `sbx remove-activity`
+  deletes one (`profile.PlanActivity`, `ApplyActivity`,
+  `CreateActivity`).
+- `sbx list` takes its flags after its arguments too.
 - `inputs: []` in a device profile: the device switches no inputs, as
   the app's "no input needed"; `export` writes it.
 - Activity writes in `hub`: `ConfirmMember`, `CreateActivity`,

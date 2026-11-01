@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"flag"
@@ -10,6 +11,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"go.yaml.in/yaml/v3"
 
 	"github.com/brunoga/sofabaton/profile"
 )
@@ -91,7 +94,7 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 	}
 }
 
-// apply makes a device on the hub match a profile.
+// apply makes a device or an activity on the hub match a profile.
 func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	var h hubFlags
@@ -101,19 +104,28 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	prune := fs.Bool("prune", false, "also remove the hub's commands the profile lacks")
 	dry := fs.Bool("n", false, "show the plan only")
 	yes := fs.Bool("y", false, "apply without asking")
-	create := fs.Bool("create", false, "create the profile's device as a new IR device")
+	create := fs.Bool("create", false, "create the profile's device (a new IR device) or activity")
+	activity := fs.String("activity", "", "activity name or id, for an activity's profile (default: the profile's id, else its name)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *file == "" {
 		return errors.New("-f is required")
 	}
-	f, err := os.Open(*file)
+	data, err := os.ReadFile(*file)
 	if err != nil {
 		return err
 	}
-	p, err := profile.Load(f)
-	_ = f.Close()
+	if isActivityProfile(data) {
+		if *device != "" {
+			return errors.New("an activity's profile takes -activity, not -device")
+		}
+		return applyActivity(ctx, data, &h, *activity, *prune, *dry, *yes, *create, stdin, stdout, stderr)
+	}
+	if *activity != "" {
+		return errors.New("a device's profile takes -device, not -activity")
+	}
+	p, err := profile.Load(bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
@@ -193,6 +205,132 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	return profile.Apply(ctx, c, changes, func(ch profile.Change) {
 		fmt.Fprintln(stdout, "done:", ch)
 	})
+}
+
+// isActivityProfile reports whether a profile describes an activity (its
+// first key is activity:) rather than a device.
+func isActivityProfile(data []byte) bool {
+	var top map[string]any
+	if err := yaml.Unmarshal(data, &top); err != nil {
+		return false
+	}
+	_, ok := top["activity"]
+	return ok
+}
+
+// applyActivity makes an activity on the hub match a profile, or creates
+// it.
+func applyActivity(ctx context.Context, data []byte, h *hubFlags, which string, prune, dry, yes, create bool, stdin io.Reader, stdout, stderr io.Writer) error {
+	a, err := profile.LoadActivity(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	switch {
+	case which != "":
+	case a.ID != 0:
+		which = strconv.Itoa(int(a.ID))
+	default:
+		which = a.Name
+	}
+	c, err := h.connect(ctx, stderr)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = c.Close() }()
+	acts, err := c.Activities(ctx)
+	if err != nil {
+		return err
+	}
+	if create {
+		if _, err := pick("activity", a.Name, acts); err == nil {
+			return fmt.Errorf("an activity named %q exists; rename the profile's activity or apply to it", a.Name)
+		}
+		fmt.Fprintf(stdout, "create activity %q with %d devices, %d buttons, %d sequences\n", a.Name, len(a.Devices), len(a.Buttons), len(a.Sequences))
+		if dry {
+			return nil
+		}
+		if err := c.Writable(); err != nil {
+			return err
+		}
+		if !yes && !confirm(stdin, stdout, "create it?") {
+			return errors.New("not created")
+		}
+		id, err := profile.CreateActivity(ctx, c, a, func(s string) { fmt.Fprintln(stdout, "done:", s) })
+		if err != nil && id != 0 {
+			return fmt.Errorf("%w (activity %d is on the hub: sbx remove-activity -activity %d)", err, id, id)
+		}
+		return err
+	}
+	act, err := pick("activity", which, acts)
+	if err != nil {
+		return err
+	}
+	st, err := profile.ReadActivity(ctx, c, act.ID)
+	if err != nil {
+		return err
+	}
+	changes, err := profile.PlanActivity(a, st, prune)
+	if err != nil {
+		return err
+	}
+	for _, ch := range changes {
+		fmt.Fprintln(stdout, ch)
+	}
+	if len(changes) == 0 {
+		fmt.Fprintln(stdout, "the hub already matches the profile")
+		return nil
+	}
+	if dry {
+		return nil
+	}
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	if !yes && !confirm(stdin, stdout, fmt.Sprintf("apply %d changes to activity %d?", len(changes), act.ID)) {
+		return errors.New("not applied")
+	}
+	return profile.ApplyActivity(ctx, c, changes, func(ch profile.ActivityChange) {
+		fmt.Fprintln(stdout, "done:", ch)
+	})
+}
+
+// removeActivity deletes an activity from the hub.
+func removeActivity(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	fs := flag.NewFlagSet("remove-activity", flag.ContinueOnError)
+	var h hubFlags
+	h.register(fs)
+	which := fs.String("activity", "", "activity name or id (required)")
+	yes := fs.Bool("y", false, "delete without asking")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *which == "" {
+		return errors.New("-activity is required")
+	}
+	c, err := h.connect(ctx, stderr)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = c.Close() }()
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	acts, err := c.Activities(ctx)
+	if err != nil {
+		return err
+	}
+	act, err := pick("activity", *which, acts)
+	if err != nil {
+		return err
+	}
+	if !*yes && !confirm(stdin, stdout, fmt.Sprintf("delete activity %d %q, its keys and sequences?", act.ID, act.Name)) {
+		return errors.New("not deleted")
+	}
+	if err := c.DeleteActivity(ctx, act.ID); err != nil {
+		return err
+	}
+	fmt.Fprintf(stdout, "deleted activity %d %q\n", act.ID, act.Name)
+	return nil
 }
 
 // confirm asks a yes or no question.

@@ -65,6 +65,24 @@ func pick(what, which string, entities []*record.Entity) (*record.Entity, error)
 	return nil, fmt.Errorf("%d entities are named %q; use the id", len(found), which)
 }
 
+// parseInterspersed parses flags wherever they are among the arguments
+// ("list commands TV -hub IP" as well as "list -hub IP commands TV") and
+// returns the others in order.
+func parseInterspersed(fs *flag.FlagSet, args []string) ([]string, error) {
+	var positional []string
+	for {
+		if err := fs.Parse(args); err != nil {
+			return nil, err
+		}
+		args = fs.Args()
+		if len(args) == 0 {
+			return positional, nil
+		}
+		positional = append(positional, args[0])
+		args = args[1:]
+	}
+}
+
 // list shows what the hub holds.
 func list(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("list", flag.ContinueOnError)
@@ -83,7 +101,8 @@ DEVICE and ENTITY are names or ids.
 `)
 		fs.PrintDefaults()
 	}
-	if err := fs.Parse(args); err != nil {
+	positional, err := parseInterspersed(fs, args)
+	if err != nil {
 		return err
 	}
 	c, err := h.connect(ctx, stderr)
@@ -94,7 +113,7 @@ DEVICE and ENTITY are names or ids.
 	tw := tabwriter.NewWriter(stdout, 0, 4, 2, ' ', 0)
 	defer func() { _ = tw.Flush() }()
 
-	what, rest := "", fs.Args()
+	what, rest := "", positional
 	if len(rest) > 0 {
 		what, rest = rest[0], rest[1:]
 	}
