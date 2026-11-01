@@ -149,6 +149,20 @@ func TestHubDiscovery(t *testing.T) {
 	}
 }
 
+func TestExportActivity(t *testing.T) {
+	simulated(t)
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"export", "-hub", "192.0.2.1", "-activity", "watch tv"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if got := out.String(); !strings.Contains(got, "activity: Watch TV") || !strings.Contains(got, "- device: TV") || !strings.Contains(got, "OK: 'TV: Power'") {
+		t.Fatalf("exported %s", got)
+	}
+	if err := run(context.Background(), strings.NewReader(""), []string{"export", "-hub", "192.0.2.1", "-activity", "x", "-device", "1"}, &out, &errs); err == nil {
+		t.Fatal("exported with -device and -activity")
+	}
+}
+
 func TestAddIR(t *testing.T) {
 	simulated(t)
 	code := "P:NEC R:38400 D:0 S:206 F:217"

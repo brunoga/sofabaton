@@ -20,17 +20,19 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Next
 
-1. **Bluetooth devices.** Read their commands (HID usages) into profiles,
+1. **Activities.** Exported as profiles (`sbx export -activity`); next,
+   applying and creating them (members, the inputs each device switches
+   to, keys, power on/off sequences), from a capture of the X2 app.
+2. **Sequences.** An activity's own sequences, across its devices, in
+   activity profiles; and device sequences ("3D on" on the projector) in
+   device profiles, which `sbx` copies into every activity with the device
+   and keeps in sync, since the hub only has activity sequences (PLAN R6).
+3. **Bluetooth devices.** Read their commands (HID usages) into profiles,
    then create them: capture the app pairing a Bluetooth device (the UGOOS
    AM6B+, the Aetherion's Bluetooth remote) through the proxy, and work out
    the record's profile id (`code_id`). Upstream never managed it (PLAN L1,
    R1).
-2. **Activities.** Create and edit them: members, the inputs each device
-   switches to, keys, power on/off sequences.
-3. **Sequences.** Sequences of several steps with delays, for activities
-   and per device ("3D on" on the projector, usable from every activity
-   with it; PLAN R6).
-4. **Keys.** Unbinding a key; activity keys in profiles.
+4. **Keys.** Unbinding a key.
 5. **Restore.** Write a `dump` back to a hub.
 
 ## Later

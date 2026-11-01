@@ -205,9 +205,40 @@ current: its two power sequences first, as "Turn On" and "Turn Off", then
 its 10 commands in order. `apply` now ends every change with that sync;
 `sbx sync -device X` sends it alone.
 
-## Activity create `[ref:X1/X1S]`
+## Activities `[ref:X1/X1S]`
 
-`0x37` header → `0x3E` bindings → `0x12` macros → remote sync.
+Upstream's flows, validated on X1 and X1S, none yet on the X2; ours wait
+for a capture of the X2 app.
+
+- **Create:** family `0x37` with a device-shaped record (id `FF`), acked
+  by `0x37` with the new id; no commit record. Then key bindings (`0x3E`,
+  entity = the activity), macros (`0x12`) and a remote sync. The hub
+  appends the activity to the end of the list.
+- **Members:** each member is written with `0x4F [device, 00]` (the full
+  list, in order, each status-acked). The activity's POWER_ON then gets
+  the device's `C6` step (its POWER_ON sequence) and `C5` step (its input:
+  the step's duration byte is the input's ordinal in the device's inputs
+  page, 0 for none), POWER_OFF its `C7` step. The macros' label slots must
+  be rewritten as read: a rebuilt slot is refused (status `0C`).
+- **Removing a member:** no frame of its own. Rewriting POWER_ON without
+  the device's steps makes the hub drop it from POWER_OFF, the members,
+  the keys and the favorites.
+- **Keys:** `0x3E` as for devices; a key that runs one of the activity's
+  macros names the activity as its device and the macro's id as its
+  command.
+- **Sequences (user macros):** `0x12` at a free id (1-197, shared with
+  favorites; `C6`/`C7` are the power sequences). The app writes id `00`
+  and the hub answers with the id it gave. Steps are 10 bytes (device,
+  command, code, duration, delay); a pause is all `FF` but its delay
+  (seconds). The remote lists them with the favorites, in the order of
+  the activity's `0x61` table. Delete: `0x10 [activity, id]`.
+- **Delete:** `0x09 [activity]`.
+- **Rename:** a rewrite of the activity's record.
+
+Read on our X2 `[X2✓]`: activities' POWER_ON sequences are, per member,
+a `C6` step and a 1-second pause, then per member a `C5` step and a pause
+(the `C5` duration is the ordinal, 0 for members not switched); `C6`
+steps carry duration 1 for IR devices and 0 for Bluetooth ones.
 
 ## TODO
 
