@@ -68,7 +68,7 @@ func newProfile(args []string, stdout io.Writer) error {
 		_, err = stdout.Write(p)
 		return err
 	}
-	f, err := os.OpenFile(*out, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	f, err := os.OpenFile(*out, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o666)
 	if err != nil {
 		return err
 	}
