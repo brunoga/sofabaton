@@ -14,7 +14,7 @@
 # partition) or /storage/.config, then a reboot.
 #
 # The box has no discrete on and off: Power puts CoreELEC to sleep or
-# wakes it, so it is both power sequences, and the box switches no inputs
+# wakes it, so it is both power macros, and the box switches no inputs
 # (the maintainer's setup in the app, 2026-10-31). Tested on the
 # maintainer's box with this file as /storage/.config/remote.conf.
 template: Ugoos AM6B Plus
