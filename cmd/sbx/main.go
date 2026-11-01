@@ -70,7 +70,8 @@ commands:
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
   send       send a device's command now (-device ID, -command NAME or -id N)
   export     write a device's profile: commands in the remote's order,
-             keys and power sequences (YAML: -device ID [-o file])
+             keys and power sequences (YAML: -device ID [-o file]); or
+             an activity's: devices and inputs, keys, sequences (-activity)
   apply      make a device match a profile, changing only what differs
              (-f file; -n shows the plan, -prune removes commands the
              profile lacks; -create makes it a new IR device)

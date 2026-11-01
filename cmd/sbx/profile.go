@@ -14,26 +14,59 @@ import (
 	"github.com/brunoga/sofabaton/profile"
 )
 
-// export writes a device's profile from the hub.
+// export writes a device's or an activity's profile from the hub.
 func export(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("export", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	device := fs.String("device", "", "device name or id (required; see sbx list)")
+	device := fs.String("device", "", "device name or id (see sbx list)")
+	activity := fs.String("activity", "", "activity name or id, instead of -device")
 	out := fs.String("o", "", "write to this file instead of stdout")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if *device == "" {
-		return errors.New("-device is required")
+	if (*device == "") == (*activity == "") {
+		return errors.New("one of -device and -activity is required")
 	}
 	c, err := h.connect(ctx, stderr)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	if err := c.Writable(); err != nil {
-		return err
+	output := func() (io.Writer, func(), error) {
+		if *out == "" {
+			return stdout, func() {}, nil
+		}
+		f, err := os.Create(*out)
+		if err != nil {
+			return nil, nil, err
+		}
+		return f, func() { _ = f.Close() }, nil
+	}
+	if *activity != "" {
+		acts, err := c.Activities(ctx)
+		if err != nil {
+			return err
+		}
+		act, err := pick("activity", *activity, acts)
+		if err != nil {
+			return err
+		}
+		st, err := profile.ReadActivity(ctx, c, act.ID)
+		if err != nil {
+			return err
+		}
+		p, err := profile.ActivityFromHub(st)
+		if err != nil {
+			return err
+		}
+		w, done, err := output()
+		if err != nil {
+			return err
+		}
+		defer done()
+		fmt.Fprintf(w, "# %s, exported from %s\n", p.Name, c.Info().Name)
+		return p.Encode(w)
 	}
 	dev, err := findDevice(ctx, c, *device)
 	if err != nil {
@@ -48,15 +81,11 @@ func export(ctx context.Context, args []string, stdout, stderr io.Writer) error 
 		if err != nil {
 			return err
 		}
-		w := stdout
-		if *out != "" {
-			f, err := os.Create(*out)
-			if err != nil {
-				return err
-			}
-			defer func() { _ = f.Close() }()
-			w = f
+		w, done, err := output()
+		if err != nil {
+			return err
 		}
+		defer done()
 		fmt.Fprintf(w, "# %s (%s), exported from %s\n", p.Name, p.Brand, c.Info().Name)
 		return p.Encode(w)
 	}

@@ -359,3 +359,95 @@ func TestDenon15(t *testing.T) {
 		t.Fatalf("%v %+v", err, back)
 	}
 }
+
+func TestActivityExport(t *testing.T) {
+	tv, _ := record.NewEntity(wire.X2)
+	tv.ID, tv.Name, tv.Class = 1, "TV", record.ClassIR
+	avr, _ := record.NewEntity(wire.X2)
+	avr.ID, avr.Name, avr.Class = 2, "AVR", record.ClassIR
+	act, _ := record.NewEntity(wire.X2)
+	act.ID, act.Name = 0x65, "Watch TV"
+	command := func(dev, id byte, label string) *record.Command {
+		c, _ := record.ParseCommand(wire.X2, make([]byte, 70))
+		c.Device, c.ID, c.Label = dev, id, label
+		return c
+	}
+	in, _ := record.NewInputs(wire.X2, 2, record.InputsDirect)
+	in.Entries = []record.InputEntry{{Command: 8, Ordinal: 1, Label: "HDMI 1"}, {Command: 9, Ordinal: 2, Label: "HDMI 2"}}
+	on, _ := record.NewMacro(wire.X2, 0x65, record.MacroPowerOn, "POWER_ON")
+	wait := record.Step{Device: 0xFF, Command: 0xFF, Duration: 0xFF, Delay: 1}
+	on.Steps = []record.Step{{Device: 2, Command: 0xC6, Duration: 1, Delay: 0xFF}, wait, {Device: 2, Command: 0xC5, Duration: 2, Delay: 0xFF}, {Device: 1, Command: 0xC5, Delay: 0xFF}}
+	seq, _ := record.NewMacro(wire.X2, 0x65, 1, "Movie")
+	seq.Steps = []record.Step{{Device: 1, Command: 3, Delay: 0xFF}, wait, {Device: 2, Command: 9, Delay: 0xFF}}
+	m := &hubsim.Model{
+		Info:       &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 8, Name: "X2 HUB"},
+		Devices:    []*record.Entity{tv, avr},
+		Activities: []*record.Entity{act},
+		Commands:   map[byte][]*record.Command{1: {command(1, 3, "Menu")}, 2: {command(2, 5, "Volume Up"), command(2, 8, "HDMI 1"), command(2, 9, "HDMI 2")}},
+		Keymaps: map[byte][]record.Binding{0x65: {
+			{Entity: 0x65, Button: record.ButtonMenu, Short: record.Press{Device: 1, Command: 3}, Long: record.Press{Device: 0x65, Command: 1}},
+		}},
+		Macros:  map[byte][]*record.Macro{0x65: {on, seq}},
+		Inputs:  map[byte]*record.Inputs{2: in},
+		Members: map[byte][]byte{0x65: {2, 1}},
+	}
+	ctx := context.Background()
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = c.Close() }()
+	st, err := profile.ReadActivity(ctx, c, 0x65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.ActivityFromHub(st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	if err := a.Encode(&buf); err != nil {
+		t.Fatal(err)
+	}
+	const want = `activity: Watch TV
+id: 101
+devices:
+  - device: AVR
+    input: HDMI 2
+  - device: TV
+buttons:
+  Menu: {short: 'TV: Menu', long: Movie}
+power_on:
+  - power on: AVR
+  - wait: 1
+  - input: AVR
+  - input: TV
+sequences:
+  - name: Movie
+    steps:
+      - TV: Menu
+      - wait: 1
+      - AVR: HDMI 2
+`
+	if buf.String() != want {
+		t.Fatalf("exported\n%s\nwant\n%s", buf.String(), want)
+	}
+	back, err := profile.LoadActivity(strings.NewReader(want))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(back) != fmt.Sprint(a) {
+		t.Fatalf("loaded %+v\nwant %+v", back, a)
+	}
+	for _, bad := range []string{
+		"activity: A\ndevices: []\n",
+		"activity: A\ndevices: [{device: TV}]\npower_on: [{power on: AVR}]\n",
+		"activity: A\ndevices: [{device: TV}]\nbuttons: {OK: 'AVR: Menu'}\n",
+		"activity: A\ndevices: [{device: TV}]\npower_on: [{wait: 0}]\n",
+		"activity: A\ndevices: [{device: TV}]\npower_on: [{TV: Menu, wait: 1}]\n",
+	} {
+		if _, err := profile.LoadActivity(strings.NewReader(bad)); err == nil {
+			t.Errorf("loaded %q", bad)
+		}
+	}
+}

@@ -7,12 +7,19 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `sbx export -activity`: an activity's profile (devices and their
+  inputs, keys, power sequences and sequences across its devices), and
+  `profile.Activity`, `ReadActivity` and `ActivityFromHub`.
 - `sbx --help` starts with a banner: name, version and what sbx is.
 - `hub.ErrUnsupported` and `Client.Writable`: the client refuses to write
   to an X1 or X1S, whose writes we have not tested; reads work. `sbx`
   says so before asking to apply.
 - A profile for the Ugoos AM6B Plus running CoreELEC (NEC, from CoreELEC's
   remote configuration).
+
+### Fixed
+
+- `sbx export` works on X1 and X1S hubs again: it only reads.
 
 ## [0.1.0] - 2026-10-31
 

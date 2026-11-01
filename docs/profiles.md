@@ -86,9 +86,47 @@ the AWOL Vision Aetherion, written from AWOL's published IR list, and a
 Denon AVR-X8500H from Denon's IR command chart, and the Ugoos AM6B Plus
 from CoreELEC's remote configuration.
 
+## Activities
+
+`sbx export -activity NAME` writes an activity's profile: its devices and
+the input each is switched to, its keys, its power sequences and its
+other sequences. Applying activity profiles waits for a capture of the X2
+app writing activities; the format may still change.
+
+```yaml
+activity: Watch Blu-ray
+id: 103
+devices:                        # in the hub's member order
+  - {device: Receiver, input: Input Blu-ray}   # a command of its inputs
+  - {device: Blu-ray}           # not switched
+buttons:                        # "Device: Command", or a sequence's name
+  Vol+: 'Receiver: Volume Up'
+  Play: 'Blu-ray: Play'
+  Menu: {short: 'Blu-ray: Menu', long: Movie Mode}
+power_on:
+  - power on: Receiver          # runs the device's POWER_ON sequence
+  - wait: 1                     # seconds
+  - input: Receiver             # switches it to its input above
+  - Blu-ray: Home               # any device's command
+power_off:
+  - power off: Receiver
+sequences:                      # the activity's own, across its devices
+  - name: Movie Mode
+    steps:
+      - Receiver: Movie
+      - wait: 2
+      - Blu-ray: Play
+```
+
+A command step may add `hold: N`, the step's duration byte as the hub
+keeps it; what it does is not known. `export` drops the duration bytes of
+`power on` steps (the hub has 1 for IR devices and 0 for Bluetooth ones),
+so an exported power sequence is not yet a byte-exact copy.
+
 ## Not yet
 
-Unbinding a key, sequences of more than one command (including
-per-device ones), the device's category and icon, activities, Bluetooth
+Applying activity profiles, unbinding a key, device sequences of more
+than one command (per-device ones, which `sbx` will copy into every
+activity with the device), the device's category and icon, activities, Bluetooth
 devices, and protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).
