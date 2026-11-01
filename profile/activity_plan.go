@@ -526,12 +526,12 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	renamed := st.Entity.Name != a.Name
 	icon, color := st.Entity.Icon, st.Entity.ActivityColor()
 	if a.Icon != 0 {
-		icon = a.Icon
+		icon = byte(a.Icon)
 	}
 	if a.Color != 0 {
-		color = a.Color
+		color = byte(a.Color)
 	}
-	look := lookChange(st.Entity.Icon, icon, st.Entity.ActivityColor(), color)
+	look := lookChange(Icon(st.Entity.Icon), Icon(icon), Color(st.Entity.ActivityColor()), Color(color))
 	if len(changes) > 0 {
 		changes = append(changes, ActivityChange{Kind: ActSync, Activity: act})
 	}
@@ -716,14 +716,14 @@ func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(s
 	}
 	color := byte(newActivityColor)
 	if a.Color != 0 {
-		color = a.Color
+		color = byte(a.Color)
 	}
 	e, err := record.NewActivity(c.Variant(), a.Name, color)
 	if err != nil {
 		return 0, err
 	}
 	if a.Icon != 0 {
-		e.Icon = a.Icon
+		e.Icon = byte(a.Icon)
 	}
 	st.Entity = e
 	plan, err := PlanActivity(a, st, false)

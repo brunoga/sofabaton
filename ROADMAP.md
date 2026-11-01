@@ -21,7 +21,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
   device (the remote cannot show a device's own), kept in step, and run
   from activity keys as "Device: Macro".
 - Device templates, by transport and maker, carried by `sbx` (`sbx new`).
-- Icons and colors of devices and activities, by the hub's numbers.
+- Icons and colors of devices and activities, by name.
 
 ## Next
 
@@ -42,8 +42,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 - More IR protocols for profile codes (NECx, Sony, RC5/RC6, Samsung,
   Panasonic …) and import from open IR databases (PLAN P7, R3).
-- Device category (PLAN L5, R5), and names for the icon and color
-  numbers.
+- Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).
 - The Denon receiver's Zone 2 and Zone 3 codes.
