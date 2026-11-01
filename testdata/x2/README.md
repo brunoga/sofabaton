@@ -11,6 +11,8 @@ owner's consent.
 | `app-add-aetherion.jsonl` | `sbx proxy`, with notes: adding "Aetherion Max" (a profile Sofabaton built from AWOL Vision's IR list), testing power, setting up inputs | `capture.TestX2Aetherion` |
 | `aetherion-ir-list.json` | AWOL Vision's published IR list for the Aetherion | `capture.TestX2Aetherion` |
 | `app-activity.jsonl` | `sbx proxy`, with notes: setting up the Ugoos's power (Power for both) and no inputs, creating ZZ Activity (receiver, Aetherion, Ugoos), adding and editing a sequence, rebinding a key, removing the Ugoos, renaming and deleting the activity | `capture.TestX2Activity` |
+| `dump-2026-11-01.json` | `sbx dump` before Projector/Google TV (id 1), the Aetherion paired over Bluetooth, was deleted: the Bluetooth device's records, commands (HID usages, and one IR command, "Power (IR)") and keys, for Bluetooth support | `cmd/sbx.TestDumpRoundTrip` |
+| `bluetooth-projector.yaml` | `sbx export` of that Bluetooth device: its commands' data as the hub holds them | — |
 | `app-firmware-update.jsonl` | `sbx proxy`: the Android app updating the hub from 8 to 9; image bytes removed | `capture.TestX2FirmwareUpdate` |
 
 The configuration: devices Receiver, Blu-ray and Projector/Google TV (a

@@ -29,7 +29,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 2. **Bluetooth devices.** Read their commands (HID usages) into profiles,
    then create them: capture the app pairing a Bluetooth device (the UGOOS
    AM6B+, the Aetherion's Bluetooth remote) through the proxy, and work out
-   the record's profile id (`code_id`). Upstream never managed it (PLAN L1,
+   the record's profile id (`code_id`). The Aetherion's Bluetooth device,
+   since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
+   `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
 3. **Keys.** Unbinding a key.
 4. **Restore.** Write a `dump` back to a hub.
