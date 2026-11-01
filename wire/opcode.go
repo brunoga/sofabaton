@@ -96,6 +96,7 @@ const (
 	FamReqHubName         Family = 0x32
 	FamCreateActivity     Family = 0x37
 	FamWriteActivity      Family = 0x38
+	FamDeleteActivity     Family = 0x39 // [activity]; X2 app (devices: 0x09)
 	FamReqActivities      Family = 0x3A
 	FamReqButtons         Family = 0x3C
 	FamWriteButton        Family = 0x3E
@@ -185,6 +186,7 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamReqHubName}:         "ReqHubName",
 	{ToHub, FamCreateActivity}:     "CreateActivity",
 	{ToHub, FamWriteActivity}:      "WriteActivity",
+	{ToHub, FamDeleteActivity}:     "DeleteActivity",
 	{ToHub, FamReqActivities}:      "ReqActivities",
 	{ToHub, FamReqButtons}:         "ReqButtons",
 	{ToHub, FamWriteButton}:        "WriteButton",

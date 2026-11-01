@@ -1,6 +1,8 @@
 package hubsim
 
 import (
+	"slices"
+
 	"github.com/brunoga/sofabaton/record"
 	"github.com/brunoga/sofabaton/wire"
 )
@@ -152,6 +154,16 @@ func FromModel(m *Model) *Hub {
 			return []wire.Frame{Status(Rejected)}
 		}
 		dev, id := req.Payload[0], req.Payload[1]
+		if record.IsActivityID(dev) { // a sequence of the activity
+			macros := m.Macros[dev]
+			for i, mac := range macros {
+				if mac.ID == id {
+					m.Macros[dev] = append(macros[:i:i], macros[i+1:]...)
+					return []wire.Frame{Status(0)}
+				}
+			}
+			return []wire.Frame{Status(NotFound)}
+		}
 		cmds := m.Commands[dev]
 		for i, c := range cmds {
 			if c.ID == id {
@@ -352,6 +364,30 @@ func FromModel(m *Model) *Hub {
 			m.Macros = map[byte][]*record.Macro{}
 		}
 		macros := m.Macros[mac.Entity]
+		if mac.ID == 0 { // a new sequence: the hub gives it a free id
+			used := map[byte]bool{}
+			for _, o := range macros {
+				used[o.ID] = true
+			}
+			mac.ID = 1
+			for used[mac.ID] {
+				mac.ID++
+			}
+		}
+		if record.IsActivityID(mac.Entity) && mac.ID == record.MacroPowerOn {
+			// The hub takes an activity's members from its POWER_ON
+			// sequence, in order.
+			var members []byte
+			for _, st := range mac.Steps {
+				if st.Command == record.MacroPowerOn && !slices.Contains(members, st.Device) {
+					members = append(members, st.Device)
+				}
+			}
+			if m.Members == nil {
+				m.Members = map[byte][]byte{}
+			}
+			m.Members[mac.Entity] = members
+		}
 		i := 0
 		for i < len(macros) && macros[i].ID != mac.ID {
 			i++
@@ -363,6 +399,60 @@ func FromModel(m *Model) *Hub {
 		}
 		m.Macros[mac.Entity] = macros
 		return []wire.Frame{{Family: wire.FamMacroAck, Payload: []byte{mac.ID}}}
+	})
+	var confirmed []byte
+	h.Handle(wire.FamConfirmMember, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) != 2 || req.Payload[1] != 0 {
+			return []wire.Frame{Status(Rejected)}
+		}
+		confirmed = append(confirmed, req.Payload[0])
+		return []wire.Frame{Status(0)}
+	})
+	h.Handle(wire.FamCreateActivity, func(req wire.Frame) []wire.Frame {
+		e, err := m.entity(req.Payload)
+		if err != nil || e.ID != record.NewID {
+			return []wire.Frame{Status(Rejected)}
+		}
+		e.ID = record.MinActivityID
+		for _, a := range m.Activities {
+			if a.ID >= e.ID {
+				e.ID = a.ID + 1
+			}
+		}
+		e.Sort = byte(len(m.Activities) + 1)
+		m.Activities = append(m.Activities, e)
+		if m.Members == nil {
+			m.Members = map[byte][]byte{}
+		}
+		m.Members[e.ID], confirmed = confirmed, nil
+		return []wire.Frame{{Family: wire.FamCreateActAck, Payload: []byte{e.ID}}}
+	})
+	h.Handle(wire.FamWriteActivity, func(req wire.Frame) []wire.Frame {
+		e, err := m.entity(req.Payload)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		for i, a := range m.Activities {
+			if a.ID == e.ID {
+				m.Activities[i] = e
+				return []wire.Frame{Status(0)}
+			}
+		}
+		return []wire.Frame{Status(NotFound)}
+	})
+	h.Handle(wire.FamDeleteActivity, func(req wire.Frame) []wire.Frame {
+		id := req.Payload[0]
+		for i, a := range m.Activities {
+			if a.ID == id {
+				m.Activities = append(m.Activities[:i:i], m.Activities[i+1:]...)
+				delete(m.Keymaps, id)
+				delete(m.Macros, id)
+				delete(m.Members, id)
+				delete(m.Orders, id)
+				return []wire.Frame{Status(0)}
+			}
+		}
+		return []wire.Frame{Status(NotFound)}
 	})
 	h.Handle(wire.FamReqMacros, func(req wire.Frame) []wire.Frame {
 		macros, ok := m.Macros[req.Payload[0]]
