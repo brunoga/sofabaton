@@ -23,6 +23,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - Device templates, by transport and maker, carried by `sbx` (`sbx new`).
 - Icons and colors of devices and activities, by name.
 - Activity favorites: added, ordered and removed.
+- Unbinding an activity's key (`apply -prune`).
 
 ## Next
 
@@ -35,7 +36,8 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
    `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
-3. **Keys.** Unbinding a key.
+3. **Keys.** Unbinding a device's key: the activities' frame deletes a
+   device's command, so another is needed (a capture of the app).
 4. **Restore.** Write a `dump` back to a hub.
 
 ## Later

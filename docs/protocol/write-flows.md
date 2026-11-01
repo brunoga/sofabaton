@@ -253,6 +253,14 @@ Upstream's notes (X1, X1S) agree where they overlap.
 activity's list, and left the keys as they were. (On a device the same
 frame deletes a command.)
 
+## Unbinding an activity's key `[X2✓]`
+
+`0x10 [activity, key]`, status-acked, then the sync (upstream's flow;
+our X2 took it on 2026-11-01 and the keymap read back without the
+key). The frame that deletes a macro or favorite: their ids are below
+the keys'. On a device it deletes the command with that id, so it
+cannot unbind a device's key.
+
 ## Favorites `[X2✓]`
 
 Upstream's flow (X1, X1S), checked on our X2 (2026-11-01):

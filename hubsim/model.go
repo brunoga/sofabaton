@@ -157,7 +157,7 @@ func FromModel(m *Model) *Hub {
 			return []wire.Frame{Status(Rejected)}
 		}
 		dev, id := req.Payload[0], req.Payload[1]
-		if record.IsActivityID(dev) { // a macro or favorite of the activity
+		if record.IsActivityID(dev) { // a macro, favorite or key of the activity
 			macros := m.Macros[dev]
 			for i, mac := range macros {
 				if mac.ID == id {
@@ -167,7 +167,7 @@ func FromModel(m *Model) *Hub {
 			}
 			rows := m.Keymaps[dev]
 			for i, b := range rows {
-				if byte(b.Button) == id && !b.Button.IsHardKey() {
+				if byte(b.Button) == id { // a favorite or a key
 					m.Keymaps[dev] = append(rows[:i:i], rows[i+1:]...)
 					return []wire.Frame{Status(0)}
 				}

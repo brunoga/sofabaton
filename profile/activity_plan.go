@@ -40,6 +40,8 @@ const (
 	ActNewFavorite
 	// ActRemoveFavorite deletes the favorite Favorite.
 	ActRemoveFavorite
+	// ActUnbind clears the key of Binding, which the profile lacks.
+	ActUnbind
 )
 
 // ActivityChange is one step of an activity's plan.
@@ -111,6 +113,8 @@ func (c ActivityChange) String() string {
 		return fmt.Sprintf("favorite    add %q", c.Name)
 	case ActRemoveFavorite:
 		return fmt.Sprintf("favorite    remove %q", c.Name)
+	case ActUnbind:
+		return fmt.Sprintf("button      %v unbound", c.Binding.Button)
 	case ActRecord:
 		if c.Renamed {
 			return fmt.Sprintf("record      rename activity %q -> %q%s", c.Name, c.Entity.Name, c.Look)
@@ -563,6 +567,13 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		changes = append(changes, ActivityChange{Kind: ActBind, Activity: act, Key: k,
 			Binding: record.Binding{Entity: act, Button: b, Short: short, Long: long}, shortSeq: shortSeq, longSeq: longSeq})
 	}
+	if prune {
+		for _, b := range st.Keymap {
+			if _, ok := keys[b.Button]; !ok && b.Button.IsHardKey() {
+				changes = append(changes, ActivityChange{Kind: ActUnbind, Activity: act, Binding: b})
+			}
+		}
+	}
 
 	renamed := st.Entity.Name != a.Name
 	icon, color := st.Entity.Icon, st.Entity.ActivityColor()
@@ -711,6 +722,8 @@ func (ap activityApplier) apply(ctx context.Context, c *hub.Client, ch ActivityC
 		return err
 	case ActRemoveFavorite:
 		return c.DeleteFavorite(ctx, ch.Activity, ch.Favorite)
+	case ActUnbind:
+		return c.UnbindKey(ctx, ch.Activity, ch.Binding.Button)
 	case ActRecord:
 		// The record as the hub holds it now (its power state moves),
 		// with the profile's name, icon and color.
