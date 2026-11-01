@@ -86,6 +86,9 @@ commands:
   export     write a device's profile: commands in the remote's order,
              keys and power macros (YAML: -device ID [-o file]); or
              an activity's: devices and inputs, keys, macros (-activity)
+  templates  list the device templates sbx carries
+  new        make a device's profile from a template, to edit and apply
+             (-template NAME [-name NAME] [-o file])
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
@@ -137,6 +140,10 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return export(ctx, args, stdout, stderr)
 	case "apply":
 		return apply(ctx, args, stdin, stdout, stderr)
+	case "templates":
+		return listTemplates(args, stdout)
+	case "new":
+		return newProfile(args, stdout)
 	case "sync":
 		return syncCmd(ctx, args, stdout, stderr)
 	case "remove-activity":

@@ -5,6 +5,7 @@ kept by us rather than on the hub (the hub has nowhere to store
 comments). `profile` reads and writes them; `sbx` uses them:
 
 ```
+sbx new -template ir/awol-vision/aetherion -o aetherion.yaml   # from a template
 sbx export -hub IP -device 4 -o aetherion.yaml   # back up a device
 sbx apply  -hub IP -f aetherion.yaml -n          # show what would change
 sbx apply  -hub IP -f aetherion.yaml             # change it (asks first)
@@ -37,6 +38,7 @@ already has.
 ```yaml
 device: AWOLVision          # the device's name on the hub
 brand: AWOL Vision
+from: ir/awol-vision/aetherion   # the template it was made from, if any
 id: 4                       # the device's id on the hub (or -device)
 ir: {protocol: NEC, system: 0x00CE}   # lets commands give just a code
 commands:
@@ -84,10 +86,29 @@ app does. Leaving `inputs` out leaves the hub's inputs as they are;
 `inputs: []` says the device switches no inputs (an empty page and input
 mode 2, as the app writes when told the device needs none).
 
-[`profiles/`](../profiles) holds the profiles we maintain, starting with
-the AWOL Vision Aetherion, written from AWOL's published IR list, and a
-Denon AVR-X8500H from Denon's IR command chart, and the Ugoos AM6B Plus
-from CoreELEC's remote configuration.
+## Templates
+
+A template is a device's profile as we maintain it, for any hub: read-only,
+without the hub's id or the device's name, headed by `template:` with the
+model. `sbx new` makes a profile of one, to edit (names, keys, macros) and
+apply; `apply` refuses a template itself.
+
+```
+sbx templates                                       # the templates sbx carries
+sbx new -template ir/denon/avr-x8500h -name Receiver -o receiver.yaml
+sbx new -template my-tv.yaml -o tv.yaml             # a template file
+```
+
+The profile keeps the template's comments; its `template:` line becomes
+`from:` (where it came from) and `device:` (the `-name`, or the model).
+A profile is a copy: a later fix to the template does not reach it.
+
+[`templates/`](../templates) holds them by transport (`ir`, later
+`bluetooth` and `network`), then maker: the AWOL Vision Aetherion
+(`ir/awol-vision/aetherion`), written from AWOL's published IR list, the
+Denon AVR-X8500H (`ir/denon/avr-x8500h`) from Denon's IR command chart, and
+the Ugoos AM6B Plus (`ir/ugoos/am6b-plus`) from CoreELEC's remote
+configuration. `sbx` carries them, so they work without the repository.
 
 ## Activities
 

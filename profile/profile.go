@@ -43,6 +43,8 @@ import (
 type Device struct {
 	Name  string `yaml:"device"`
 	Brand string `yaml:"brand,omitempty"`
+	// From is the template the profile was made from (see FromTemplate).
+	From string `yaml:"from,omitempty"`
 	// ID is the device's id on the hub the profile belongs to.
 	ID uint8 `yaml:"id,omitempty"`
 	// IR, when set, lets commands give just a code.

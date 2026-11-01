@@ -4,12 +4,8 @@
 # sheet "IR List": NEC, system code 0x00CE; each code below is the sheet's
 # key value. Sofabaton's "Aetherion Max" catalog profile has 26 of its 35
 # keys; the rest are marked "not in Sofabaton's profile".
-#
-# The id is the device's id on the maintainer's hub; pass -device to apply
-# this to another one.
-device: Aetherion
+template: AWOL Vision Aetherion
 brand: AWOL Vision
-id: 4
 ir: {protocol: NEC, system: 0x00CE}
 commands:
   # Power

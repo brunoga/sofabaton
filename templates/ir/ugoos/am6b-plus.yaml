@@ -17,7 +17,7 @@
 # wakes it, so it is both power sequences, and the box switches no inputs
 # (the maintainer's setup in the app, 2026-10-31). Tested on the
 # maintainer's box with this file as /storage/.config/remote.conf.
-device: Ugoos AM6B Plus
+template: Ugoos AM6B Plus
 brand: Ugoos
 ir: {protocol: NEC, system: 0x00FF}
 commands:

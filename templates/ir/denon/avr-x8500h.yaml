@@ -14,12 +14,8 @@
 # device: 2}); every function here has a Denon-K code, so they are not
 # needed. Sofabaton's catalog power codes were 15-bit: its Power Off is the
 # chart's Main Zone Off (2/122), and its Power On did nothing.
-#
-# The id is the device's id on the maintainer's hub; pass -device to apply
-# this to another one.
-device: Receiver
+template: Denon AVR-X8500H
 brand: Denon
-id: 2
 ir: {protocol: DenonK, device: 4, subdevice: 1}
 commands:
   # Power
