@@ -47,6 +47,9 @@ func FromModel(m *Model) *Hub {
 		return entityRows(wire.FamDeviceRow, m.Devices)
 	})
 	h.Handle(wire.FamReqActivities, func(wire.Frame) []wire.Frame {
+		if len(m.Activities) == 0 {
+			return []wire.Frame{Status(NotFound)}
+		}
 		return entityRows(wire.FamActivityRow, m.Activities)
 	})
 	h.Handle(wire.FamReqActivityMap, func(req wire.Frame) []wire.Frame {

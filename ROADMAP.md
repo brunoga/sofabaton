@@ -17,21 +17,22 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - IR codes as NEC, Denon-K and Denon (Sharp) codes, or the hub's own
   descriptors.
 - Sending a device's command.
+- Device macros: in device profiles, copied into every activity with the
+  device (the remote cannot show a device's own), kept in step, and run
+  from activity keys as "Device: Macro".
+- Device templates, by transport and maker, carried by `sbx` (`sbx new`).
 
 ## Next
 
 1. **Activities.** Exported, applied and created from profiles, with
-   their own sequences across devices; to confirm on the remote.
-2. **Device sequences.** Sequences in device profiles ("3D on" on the
-   projector), which `sbx` copies into every activity with the device and
-   keeps in sync, since the hub only has activity sequences (PLAN R6).
-3. **Bluetooth devices.** Read their commands (HID usages) into profiles,
+   their own macros across devices; to confirm on the remote.
+2. **Bluetooth devices.** Read their commands (HID usages) into profiles,
    then create them: capture the app pairing a Bluetooth device (the UGOOS
    AM6B+, the Aetherion's Bluetooth remote) through the proxy, and work out
    the record's profile id (`code_id`). Upstream never managed it (PLAN L1,
    R1).
-4. **Keys.** Unbinding a key.
-5. **Restore.** Write a `dump` back to a hub.
+3. **Keys.** Unbinding a key.
+4. **Restore.** Write a `dump` back to a hub.
 
 ## Later
 
@@ -50,7 +51,5 @@ the design and the phases behind it; [docs/](docs) has the protocol.
   Supporting them needs someone with one: proxy captures of the app and
   an `sbx dump`. Their IR is raw timings, not the X2's descriptors, so
   profile codes there also need our own IR encoders (PLAN P7).
-- Whether the hub accepts device sequences beyond power on/off, and how
-  the remote shows them.
 - What the device category and icon change on the remote, beyond the
   picture.

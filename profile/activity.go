@@ -43,7 +43,7 @@ type Activity struct {
 	// ID is the activity's id on the hub the profile belongs to.
 	ID      uint8    `yaml:"id,omitempty"`
 	Devices []Member `yaml:"devices"`
-	// Buttons bind the remote's keys to the devices' commands
+	// Buttons bind the remote's keys to the devices' commands and macros
 	// ("Device: Command") or to the activity's macros (by name).
 	Buttons  Buttons         `yaml:"buttons,omitempty"`
 	PowerOn  []Step          `yaml:"power_on,omitempty"`
@@ -182,6 +182,9 @@ type ActivityState struct {
 	// Order is the order of the remote's list of the activity's
 	// macros (and favorites).
 	Order []record.Place
+	// DeviceMacros are the copies of devices' macros in all activities,
+	// by device: an activity a device joins gets them.
+	DeviceMacros map[byte][]*record.Macro
 	// Names are the hub's devices and activities by id.
 	//
 	// fresh marks an activity CreateActivity has just made, which gets
@@ -192,16 +195,11 @@ type ActivityState struct {
 
 // ReadActivity fetches an activity's state from the hub.
 func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityState, error) {
-	st, err := readDevices(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-	acts, err := c.Activities(ctx)
+	st, acts, err := readDevices(ctx, c)
 	if err != nil {
 		return nil, err
 	}
 	for _, e := range acts {
-		st.Names[e.ID] = e.Name
 		if e.ID == activity {
 			st.Entity = e
 		}
@@ -225,27 +223,44 @@ func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityS
 }
 
 // readDevices fetches the devices with their commands and inputs, which
-// an activity's keys and steps name.
-func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, error) {
+// an activity's keys and steps name, and the activities with the copies
+// of devices' macros in them.
+func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, []*record.Entity, error) {
 	devs, err := c.Devices(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	st := &ActivityState{Commands: map[byte][]*record.Command{}, Inputs: map[byte]*record.Inputs{}, Names: map[byte]string{}}
+	st := &ActivityState{Commands: map[byte][]*record.Command{}, Inputs: map[byte]*record.Inputs{}, Names: map[byte]string{}, DeviceMacros: map[byte][]*record.Macro{}}
 	for _, d := range devs {
 		st.Names[d.ID] = d.Name
 		if st.Commands[d.ID], err = c.Commands(ctx, d.ID); err != nil && !errors.Is(err, hub.ErrNotFound) {
-			return nil, err
+			return nil, nil, err
 		}
 		in, err := c.Inputs(ctx, d.ID)
 		if err != nil && !errors.Is(err, hub.ErrNotFound) {
-			return nil, err
+			return nil, nil, err
 		}
 		if in != nil {
 			st.Inputs[d.ID] = in
 		}
 	}
-	return st, nil
+	acts, err := c.Activities(ctx)
+	if err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, nil, err
+	}
+	for _, e := range acts {
+		st.Names[e.ID] = e.Name
+		macros, err := c.Macros(ctx, e.ID)
+		if err != nil && !errors.Is(err, hub.ErrNotFound) {
+			return nil, nil, err
+		}
+		for _, m := range macros {
+			if m.Origin != 0 {
+				st.DeviceMacros[m.Origin] = append(st.DeviceMacros[m.Origin], m)
+			}
+		}
+	}
+	return st, acts, nil
 }
 
 // ActivityFromHub builds an activity's profile from its state (see
@@ -272,7 +287,9 @@ func ActivityFromHub(st *ActivityState) (*Activity, error) {
 	}
 	press := func(p record.Press) string {
 		if p.Device == a.ID {
-			if m, ok := macros[p.Command]; ok {
+			if m, ok := macros[p.Command]; ok && m.Origin != 0 {
+				return device(m.Origin) + ": " + m.Label // a device's macro
+			} else if ok {
 				return m.Label
 			}
 			return fmt.Sprintf("#%d", p.Command)
@@ -337,6 +354,9 @@ func ActivityFromHub(st *ActivityState) (*Activity, error) {
 		case record.MacroPowerOff:
 			a.PowerOff = steps(m)
 		default:
+			if m.Origin != 0 {
+				continue // the device's, in its profile
+			}
 			a.Macros = append(a.Macros, ActivityMacro{Name: m.Label, Steps: steps(m)})
 		}
 	}

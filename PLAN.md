@@ -141,7 +141,7 @@ Design rules:
 | P7 | `codec/ir` generators + open IR DB import (raw and X2 `P:`) | generated codes operate real equipment | — |
 | P8 | Research tracks R1–R5 → close L1, L2, L5 | BT and RF device create work on X2 | — |
 | P9 | Wifi classes (ip/roku/hue/sonos/mqtt), restore from backup | — | — |
-| P9b | Beyond the app: per-device sequences (R6) | a "3D on" sequence on the Aetherion, usable from every activity that includes it | — |
+| P9b | Beyond the app: per-device macros (R6) | a "3D on" macro on the Aetherion, usable from every activity that includes it | done: device profiles' macros, copied into the activities with the device and tagged with it (the remote cannot name a device's own macros); keys run them as "Device: Macro" |
 | P10 | Web UI (separate plan): HTTP/WS API over `hub`, device/command/sequence editor | — | — |
 
 P5 is intentionally early: the proxy is our main research instrument.
@@ -175,6 +175,10 @@ app's own backup are the safety net for live write testing.
   device's macro, so one definition serves every activity. Fallback if the
   hub cannot: our tool keeps the sequence per device and writes the copies
   into each activity that includes the device, keeping them in sync.
+  **Found (2026-11-01):** the hub takes device macros and activity keys run
+  them, but the remote shows every one as the same blank entry, so we
+  took the fallback, each copy tagged with its device in its label slot
+  (docs/protocol/write-flows.md, "Device macros").
 - Every finding → `docs/` with confidence level + a capture in `testdata/`.
 
 ## 8. Open questions

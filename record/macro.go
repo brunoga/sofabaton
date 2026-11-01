@@ -39,9 +39,52 @@ type Macro struct {
 	ID     byte
 	Steps  []Step
 	Label  string
+	// Origin is the device a copy of a device's macro in an activity
+	// belongs to, 0 for none. The remote names a device's own macros
+	// none of its own way (it shows every one as one blank entry), so
+	// device macros live as copies in the activities with the device.
+	// The id is kept in the label slot after the label's terminator, as
+	// "SB" and the id: the hub keeps the slot's bytes and the remote
+	// shows only the label.
+	Origin byte
 
 	variant wire.Variant
 	slot    []byte // the label slot as read; the hub keeps metadata in it
+	origin  byte   // Origin as read
+}
+
+// originTag marks a label slot's Origin.
+var originTag = [2]byte{'S', 'B'}
+
+// labelEnd is the offset in a label slot just past the label's
+// terminator, or the slot's length when the label fills it.
+func labelEnd(enc wire.TextEncoding, slot []byte) int {
+	if enc == wire.UTF16BE {
+		for i := 0; i+1 < len(slot); i += 2 {
+			if slot[i] == 0 && slot[i+1] == 0 {
+				return i + 2
+			}
+		}
+		return len(slot)
+	}
+	for i, c := range slot {
+		if c == 0 {
+			return i + 1
+		}
+	}
+	return len(slot)
+}
+
+// slotOrigin reads a label slot's Origin.
+func slotOrigin(enc wire.TextEncoding, slot []byte) byte {
+	i := labelEnd(enc, slot)
+	if i+3 > len(slot) || slot[i] != originTag[0] || slot[i+1] != originTag[1] {
+		return 0
+	}
+	if d := slot[i+2]; d >= MinDeviceID && d <= MaxDeviceID {
+		return d
+	}
+	return 0
 }
 
 // ParseMacro decodes one macro record body of variant v (one record of a
@@ -69,6 +112,10 @@ func ParseMacro(v wire.Variant, body []byte) (*Macro, error) {
 	slot := body[6+n*StepLen : len(body)-1]
 	m.slot = append([]byte(nil), slot...)
 	m.Label = decodeMacroLabel(s.Labels, slot)
+	if m.ID != MacroPowerOn && m.ID != MacroPowerOff {
+		m.Origin = slotOrigin(s.Labels, slot)
+		m.origin = m.Origin
+	}
 	return m, nil
 }
 
@@ -118,10 +165,18 @@ func (m *Macro) Body() ([]byte, error) {
 		b = append(b, st.Code[:]...)
 		b = append(b, st.Duration, st.Delay)
 	}
-	if m.slot != nil && decodeMacroLabel(s.Labels, m.slot) == m.Label {
+	if m.slot != nil && decodeMacroLabel(s.Labels, m.slot) == m.Label && m.origin == m.Origin {
 		b = append(b, m.slot...)
 	} else {
+		start := len(b)
 		b = s.Labels.AppendSlot(b, m.Label, s.MacroLabelLen)
+		if m.Origin != 0 {
+			i := start + labelEnd(s.Labels, b[start:])
+			if s.Labels.DecodeSlot(b[start:]) != m.Label || i+3 > len(b) {
+				return nil, fmt.Errorf("record: macro %q is too long to carry its device", m.Label)
+			}
+			b[i], b[i+1], b[i+2] = originTag[0], originTag[1], m.Origin
+		}
 	}
 	return append(b, wire.Checksum(b)), nil
 }

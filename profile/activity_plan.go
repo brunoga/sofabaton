@@ -55,19 +55,23 @@ type ActivityChange struct {
 	Binding record.Binding
 	Key     Key
 	// Entity is the activity's new record (ActRecord); Renamed tells
-	// whether its name changes, from Name.
+	// whether its name changes, from Name. For a copy of a device's
+	// macro, Name is the device's.
 	Entity  *record.Entity
 	Renamed bool
 	Name    string
 
-	shortSeq, longSeq string // macros of Binding to resolve
+	shortSeq, longSeq string // new macros of Binding to resolve, by macroKey
 }
 
-// OrderEntry is one entry of an activity's list: a macro by name, or
-// anything else by id.
+// OrderEntry is one entry of an activity's list: one of its own macros
+// by name, a new copy of a device's macro (by its key), or anything else
+// by id.
 type OrderEntry struct {
 	Macro string
 	ID    byte
+
+	Copy string
 }
 
 func (c ActivityChange) String() string {
@@ -75,11 +79,11 @@ func (c ActivityChange) String() string {
 	case ActMembers:
 		return fmt.Sprintf("members     %s", strings.Join(c.Names, ", "))
 	case ActMacro:
-		return fmt.Sprintf("macro    rewrite %s, %d steps", c.Macro.Label, len(c.Macro.Steps))
+		return fmt.Sprintf("macro       rewrite %s, %d steps%s", c.Macro.Label, len(c.Macro.Steps), c.copyOf())
 	case ActNewMacro:
-		return fmt.Sprintf("macro    add %q, %d steps", c.Macro.Label, len(c.Macro.Steps))
+		return fmt.Sprintf("macro       add %q, %d steps%s", c.Macro.Label, len(c.Macro.Steps), c.copyOf())
 	case ActRemoveMacro:
-		return fmt.Sprintf("macro    remove %q (upstream's flow, untested on the X2)", c.Macro.Label)
+		return fmt.Sprintf("macro       remove %q%s", c.Macro.Label, c.copyOf())
 	case ActOrder:
 		return fmt.Sprintf("order       %d macros and favorites", len(c.Order))
 	case ActBind:
@@ -97,6 +101,17 @@ func (c ActivityChange) String() string {
 		return "record      rewrite the activity's record, as the app does after a member change"
 	}
 	return fmt.Sprintf("ActivityChangeKind(%d)", int(c.Kind))
+}
+
+// copyOf names the device of a copy of a device's macro.
+func (c ActivityChange) copyOf() string {
+	if c.Macro == nil || c.Macro.Origin == 0 {
+		return ""
+	}
+	if c.Name != "" {
+		return fmt.Sprintf(", %s's", c.Name)
+	}
+	return fmt.Sprintf(", device %d's", c.Macro.Origin)
 }
 
 // The hub's keys for the steps that run a device's power macros and
@@ -325,14 +340,42 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		}
 	}
 
-	// The activity's own macros, by name.
+	// The activity's own macros, by name, and the copies of its devices'
+	// (by macroKey), which their profiles keep: the copies of a device
+	// that leaves go, a device that joins brings its macros.
 	own := map[string]*record.Macro{}
+	copies := map[string]*record.Macro{}
+	var removed []byte
 	for _, m := range st.Macros {
-		if m.ID != record.MacroPowerOn && m.ID != record.MacroPowerOff {
+		switch {
+		case m.ID == record.MacroPowerOn || m.ID == record.MacroPowerOff:
+		case m.Origin == 0:
 			own[strings.ToLower(m.Label)] = m
+		case !slices.Contains(members, m.Origin):
+			changes = append(changes, ActivityChange{Kind: ActRemoveMacro, Activity: act, Macro: m, Name: st.Names[m.Origin]})
+			removed = append(removed, m.ID)
+		default:
+			copies[macroKey(m)] = m
 		}
 	}
-	reorder := false
+	reorder := len(removed) > 0
+	var newCopies []string
+	for _, d := range members {
+		for _, src := range st.DeviceMacros[d] {
+			key := macroKey(src)
+			if copies[key] != nil || slices.Contains(newCopies, key) {
+				continue
+			}
+			m, err := record.NewMacro(st.variant(), act, 0, src.Label)
+			if err != nil {
+				return nil, err
+			}
+			m.Origin, m.Steps = d, slices.Clone(src.Steps)
+			changes = append(changes, ActivityChange{Kind: ActNewMacro, Activity: act, Macro: m, Name: st.Names[d]})
+			newCopies = append(newCopies, key)
+			reorder = true
+		}
+	}
 	wanted := map[string]bool{}
 	for _, s := range a.Macros {
 		steps, err := r.steps(s.Steps, inputs)
@@ -354,7 +397,6 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		changes = append(changes, ActivityChange{Kind: ActNewMacro, Activity: act, Macro: m})
 		reorder = true
 	}
-	var removed []byte
 	for name, m := range own {
 		if prune && !wanted[name] {
 			changes = append(changes, ActivityChange{Kind: ActRemoveMacro, Activity: act, Macro: m})
@@ -373,6 +415,10 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	for _, s := range a.Macros {
 		order = append(order, OrderEntry{Macro: s.Name})
 	}
+	var tail []OrderEntry // new copies, after the rest
+	for _, k := range newCopies {
+		tail = append(tail, OrderEntry{Copy: k})
+	}
 	placed := slices.Clone(st.Order)
 	slices.SortStableFunc(placed, func(x, y record.Place) int { return int(x.Position) - int(y.Position) })
 	var current []OrderEntry
@@ -390,6 +436,16 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		}
 		order = append(order, current[len(current)-1])
 	}
+	if len(st.Order) == 0 && len(tail) > 0 {
+		// Without a list the remote shows the macros by id: keep them
+		// first.
+		for _, m := range st.Macros {
+			if m.ID != record.MacroPowerOn && m.ID != record.MacroPowerOff && !slices.Contains(removed, m.ID) && (m.Origin != 0 || !wanted[strings.ToLower(m.Label)]) {
+				order = append(order, OrderEntry{ID: m.ID})
+			}
+		}
+	}
+	order = append(order, tail...)
 	if reorder || len(st.Order) > 0 && !slices.EqualFunc(order, current, func(x, y OrderEntry) bool {
 		return strings.EqualFold(x.Macro, y.Macro) && x.ID == y.ID
 	}) {
@@ -411,7 +467,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			if m := own[strings.ToLower(s)]; m != nil {
 				return record.Press{Device: act, Command: m.ID}, "", nil
 			}
-			return record.Press{Device: act}, s, nil // a new macro
+			return record.Press{Device: act}, strings.ToLower(s), nil // a new macro
 		}
 		devName, cmdName, _ := strings.Cut(s, ": ")
 		dev, err := r.device(devName)
@@ -420,7 +476,15 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		}
 		cmd, err := r.command(dev, cmdName)
 		if err != nil {
-			return record.Press{}, "", err
+			// One of the device's macros, by its copy here.
+			key := copyKey(dev, cmdName)
+			if m := copies[key]; m != nil {
+				return record.Press{Device: act, Command: m.ID}, "", nil
+			}
+			if slices.Contains(newCopies, key) {
+				return record.Press{Device: act}, key, nil
+			}
+			return record.Press{}, "", fmt.Errorf("%w, nor a macro of it", err)
 		}
 		return record.Press{Device: dev, Command: cmd.ID}, "", nil
 	}
@@ -478,82 +542,9 @@ func (st *ActivityState) variant() wire.Variant {
 // ApplyActivity carries out an activity's plan on the hub, calling done
 // after each change.
 func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange, done func(ActivityChange)) error {
-	ids := map[string]byte{} // new macros by name
-	resolve := func(p *record.Press, seq string) error {
-		if seq == "" {
-			return nil
-		}
-		id, ok := ids[strings.ToLower(seq)]
-		if !ok {
-			return fmt.Errorf("profile: macro %q was not created", seq)
-		}
-		p.Command = id
-		return nil
-	}
+	ap := activityApplier{ids: map[string]byte{}}
 	for _, ch := range changes {
-		var err error
-		switch ch.Kind {
-		case ActMembers:
-			for _, d := range ch.Members {
-				if err = c.ConfirmMember(ctx, d); err != nil {
-					break
-				}
-			}
-		case ActMacro:
-			err = c.WriteMacro(ctx, ch.Macro)
-		case ActNewMacro:
-			var id byte
-			if id, err = c.CreateMacro(ctx, ch.Macro); err == nil {
-				ids[strings.ToLower(ch.Macro.Label)] = id
-			}
-		case ActRemoveMacro:
-			err = c.DeleteMacro(ctx, ch.Activity, ch.Macro.ID)
-		case ActOrder:
-			var places []record.Place
-			for i, e := range ch.Order {
-				id := e.ID
-				if e.Macro != "" {
-					var ok bool
-					if id, ok = ids[strings.ToLower(e.Macro)]; !ok {
-						id, err = macroID(ctx, c, ch.Activity, e.Macro)
-					}
-				}
-				if err != nil {
-					break
-				}
-				places = append(places, record.Place{Command: id, Position: byte(i + 1)})
-			}
-			if err == nil {
-				err = c.WriteOrder(ctx, ch.Activity, places)
-			}
-		case ActBind:
-			b := ch.Binding
-			if err = resolve(&b.Short, ch.shortSeq); err == nil {
-				if err = resolve(&b.Long, ch.longSeq); err == nil {
-					err = c.WriteButton(ctx, b)
-				}
-			}
-		case ActSync:
-			err = c.Sync(ctx, ch.Activity)
-		case ActRecord:
-			// The record as the hub holds it now (its power state moves),
-			// with the profile's name.
-			e := ch.Entity
-			if acts, rerr := c.Activities(ctx); rerr == nil {
-				for _, a := range acts {
-					if a.ID == ch.Activity {
-						cp := *a
-						cp.Tail = append([]byte(nil), a.Tail...)
-						cp.Name = ch.Entity.Name
-						e = &cp
-					}
-				}
-			}
-			err = c.UpdateActivity(ctx, e)
-		default:
-			err = fmt.Errorf("profile: unknown change %v", ch.Kind)
-		}
-		if err != nil {
+		if err := ap.apply(ctx, c, ch); err != nil {
 			return fmt.Errorf("profile: %v: %w", ch, err)
 		}
 		if done != nil {
@@ -563,14 +554,115 @@ func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange,
 	return nil
 }
 
-// macroID looks up the id of an activity's macro by name.
+// activityApplier carries out activity changes, keeping the ids the hub
+// gives new macros for the changes after them.
+type activityApplier struct {
+	ids map[string]byte // new macros by macroKey
+}
+
+// macroKey names a macro of an activity: its own by label, a copy of a
+// device's macro by the device and the label.
+func macroKey(m *record.Macro) string {
+	if m.Origin != 0 {
+		return copyKey(m.Origin, m.Label)
+	}
+	return strings.ToLower(m.Label)
+}
+
+func copyKey(device byte, label string) string {
+	return fmt.Sprintf("%d\x00%s", device, strings.ToLower(label))
+}
+
+func (ap activityApplier) apply(ctx context.Context, c *hub.Client, ch ActivityChange) error {
+	resolve := func(p *record.Press, key string) error {
+		if key == "" {
+			return nil
+		}
+		id, ok := ap.ids[key]
+		if !ok {
+			return fmt.Errorf("profile: macro %q was not created", key)
+		}
+		p.Command = id
+		return nil
+	}
+	switch ch.Kind {
+	case ActMembers:
+		for _, d := range ch.Members {
+			if err := c.ConfirmMember(ctx, d); err != nil {
+				return err
+			}
+		}
+		return nil
+	case ActMacro:
+		return c.WriteMacro(ctx, ch.Macro)
+	case ActNewMacro:
+		id, err := c.CreateMacro(ctx, ch.Macro)
+		if err == nil {
+			ap.ids[macroKey(ch.Macro)] = id
+		}
+		return err
+	case ActRemoveMacro:
+		return c.DeleteMacro(ctx, ch.Activity, ch.Macro.ID)
+	case ActOrder:
+		var places []record.Place
+		for i, e := range ch.Order {
+			id := e.ID
+			switch {
+			case e.Copy != "":
+				var ok bool
+				if id, ok = ap.ids[e.Copy]; !ok {
+					return fmt.Errorf("profile: macro %q was not created", e.Copy)
+				}
+			case e.Macro != "":
+				var ok bool
+				if id, ok = ap.ids[strings.ToLower(e.Macro)]; !ok {
+					var err error
+					if id, err = macroID(ctx, c, ch.Activity, e.Macro); err != nil {
+						return err
+					}
+				}
+			}
+			places = append(places, record.Place{Command: id, Position: byte(i + 1)})
+		}
+		return c.WriteOrder(ctx, ch.Activity, places)
+	case ActBind:
+		b := ch.Binding
+		if err := resolve(&b.Short, ch.shortSeq); err != nil {
+			return err
+		}
+		if err := resolve(&b.Long, ch.longSeq); err != nil {
+			return err
+		}
+		return c.WriteButton(ctx, b)
+	case ActSync:
+		return c.Sync(ctx, ch.Activity)
+	case ActRecord:
+		// The record as the hub holds it now (its power state moves),
+		// with the profile's name.
+		e := ch.Entity
+		if acts, err := c.Activities(ctx); err == nil {
+			for _, a := range acts {
+				if a.ID == ch.Activity {
+					cp := *a
+					cp.Tail = append([]byte(nil), a.Tail...)
+					cp.Name = ch.Entity.Name
+					e = &cp
+				}
+			}
+		}
+		return c.UpdateActivity(ctx, e)
+	}
+	return fmt.Errorf("profile: unknown change %v", ch.Kind)
+}
+
+// macroID looks up the id of an activity's own macro by name.
 func macroID(ctx context.Context, c *hub.Client, activity byte, name string) (byte, error) {
 	macros, err := c.Macros(ctx, activity)
 	if err != nil {
 		return 0, err
 	}
 	for _, m := range macros {
-		if strings.EqualFold(m.Label, name) {
+		if m.Origin == 0 && strings.EqualFold(m.Label, name) {
 			return m.ID, nil
 		}
 	}
@@ -592,7 +684,7 @@ func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(s
 		}
 	}
 	// Check every name before creating anything.
-	st, err := readDevices(ctx, c)
+	st, _, err := readDevices(ctx, c)
 	if err != nil {
 		return 0, err
 	}

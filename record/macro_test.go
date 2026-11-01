@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"strings"
 	"testing"
 
 	"github.com/brunoga/sofabaton/internal/testcorpus"
@@ -247,4 +248,60 @@ func FuzzParseMacro(f *testing.F) {
 			}
 		}
 	})
+}
+
+// A copy of a device's macro carries the device in its label slot, after
+// the label: the record our X2 returned (2026-11-01) for "Menu Back" of
+// the Aetherion (4) in activity 105, whose remote showed the label alone.
+func TestMacroOrigin(t *testing.T) {
+	hubRecord, _ := hex.DecodeString("040001690203041200000000002d00ffffffffffffffffffff02041000000000007400ff004d0065006e00750020004200610063006b000053420400000000000000000000000000000000000000000000000000000000000000000000000000ef")
+	m, err := ParseMacro(wire.X2, hubRecord)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Label != "Menu Back" || m.Origin != 4 {
+		t.Fatalf("read %q from %d", m.Label, m.Origin)
+	}
+	n, _ := NewMacro(wire.X2, 0x69, 2, "Menu Back")
+	n.Steps, n.Origin = m.Steps, 4
+	out, err := n.Body()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(out[6:len(out)-1], hubRecord[6:len(hubRecord)-1]) {
+		t.Fatalf("made\n% x\nthe hub's\n% x", out, hubRecord)
+	}
+	m.Label = "Back Menu" // a rename keeps the device
+	out, _ = m.Body()
+	if back, _ := ParseMacro(wire.X2, out); back.Label != "Back Menu" || back.Origin != 4 {
+		t.Fatalf("renamed: %q from %d", back.Label, back.Origin)
+	}
+	m.Origin = 0 // and the device can go
+	out, _ = m.Body()
+	if back, _ := ParseMacro(wire.X2, out); back.Origin != 0 {
+		t.Fatalf("still from %d", back.Origin)
+	}
+	n.Label = strings.Repeat("x", 28) // 27 characters leave room on the X2
+	if _, err := n.Body(); err == nil {
+		t.Error("a label without room for the device")
+	}
+	n.Label = strings.Repeat("x", 27)
+	if out, err := n.Body(); err != nil {
+		t.Error(err)
+	} else if back, _ := ParseMacro(wire.X2, out); back.Origin != 4 || back.Label != n.Label {
+		t.Errorf("27 characters: %q from %d", back.Label, back.Origin)
+	}
+	x1, _ := NewMacro(wire.X1, 0x65, 1, "Lights")
+	x1.Origin = 9
+	out, _ = x1.Body()
+	if back, _ := ParseMacro(wire.X1, out); back.Origin != 9 || back.Label != "Lights" {
+		t.Errorf("X1: %q from %d", back.Label, back.Origin)
+	}
+	// A power macro's slot is the hub's, whatever follows its label.
+	p, _ := NewMacro(wire.X2, 4, MacroPowerOn, "POWER_ON")
+	p.Origin = 4
+	out, _ = p.Body()
+	if back, _ := ParseMacro(wire.X2, out); back.Origin != 0 {
+		t.Error("a power macro from a device")
+	}
 }

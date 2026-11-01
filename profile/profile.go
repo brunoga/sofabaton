@@ -60,6 +60,9 @@ type Device struct {
 	// inputs, in order: activities switch the device to one of them. An
 	// empty list (inputs: []) says the device does not switch inputs.
 	Inputs InputList `yaml:"inputs,omitempty"`
+	// Macros are the device's macros, which applying the profile copies
+	// into every activity with the device (see MacroList).
+	Macros MacroList `yaml:"macros,omitempty"`
 }
 
 // InputList is a device's input commands. nil leaves the hub's inputs as
@@ -189,6 +192,7 @@ func (d *Device) Validate() error {
 		}
 	}
 	errs = append(errs, d.validateButtons()...)
+	errs = append(errs, d.validateMacros()...)
 	if p := d.Power; p != nil {
 		for _, c := range []string{p.On, p.Off} {
 			if d.find(c) < 0 {
@@ -376,6 +380,7 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			}
 		}
 	}
+	d.Macros = st.deviceMacros(byID)
 	return d, nil
 }
 
