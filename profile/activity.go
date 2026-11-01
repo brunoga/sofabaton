@@ -16,7 +16,7 @@ import (
 )
 
 // Activity is an activity's profile: its devices with the input each is
-// switched to, its keys, its power sequences and its other sequences.
+// switched to, its keys, its power macros and its other macros.
 // Keys and steps name commands as "Device: Command".
 //
 //	activity: Watch Blu-ray
@@ -33,7 +33,7 @@ import (
 //	  - input: Receiver
 //	power_off:
 //	  - power off: Receiver
-//	sequences:
+//	macros:
 //	  - name: Movie Mode
 //	    steps:
 //	      - Receiver: Movie
@@ -44,11 +44,11 @@ type Activity struct {
 	ID      uint8    `yaml:"id,omitempty"`
 	Devices []Member `yaml:"devices"`
 	// Buttons bind the remote's keys to the devices' commands
-	// ("Device: Command") or to the activity's sequences (by name).
-	Buttons   Buttons    `yaml:"buttons,omitempty"`
-	PowerOn   []Step     `yaml:"power_on,omitempty"`
-	PowerOff  []Step     `yaml:"power_off,omitempty"`
-	Sequences []ActivitySequence `yaml:"sequences,omitempty"`
+	// ("Device: Command") or to the activity's macros (by name).
+	Buttons  Buttons         `yaml:"buttons,omitempty"`
+	PowerOn  []Step          `yaml:"power_on,omitempty"`
+	PowerOff []Step          `yaml:"power_off,omitempty"`
+	Macros   []ActivityMacro `yaml:"macros,omitempty"`
 }
 
 // Member is a device of an activity and the input (a command of the
@@ -58,9 +58,9 @@ type Member struct {
 	Input  string `yaml:"input,omitempty"`
 }
 
-// ActivitySequence is one of an activity's sequences, run from a key or from the
+// ActivityMacro is one of an activity's macros, run from a key or from the
 // remote's list.
-type ActivitySequence struct {
+type ActivityMacro struct {
 	Name  string `yaml:"name"`
 	Steps []Step `yaml:"steps"`
 }
@@ -73,14 +73,14 @@ const (
 	StepCommand StepKind = iota
 	// StepWait pauses for Seconds.
 	StepWait
-	// StepPowerOn and StepPowerOff run the device's power sequences.
+	// StepPowerOn and StepPowerOff run the device's power macros.
 	StepPowerOn
 	StepPowerOff
 	// StepInput switches the device to its input for the activity.
 	StepInput
 )
 
-// Step is one step of a sequence. In YAML it is a mapping of one key:
+// Step is one step of a macro. In YAML it is a mapping of one key:
 // "wait: 2", "power on: Receiver", "power off: Receiver",
 // "input: Receiver" or "Receiver: Volume Up"; a command step can add
 // "hold" (the hub's duration byte, meaning unknown).
@@ -180,12 +180,12 @@ type ActivityState struct {
 	Commands map[byte][]*record.Command
 	Inputs   map[byte]*record.Inputs
 	// Order is the order of the remote's list of the activity's
-	// sequences (and favorites).
+	// macros (and favorites).
 	Order []record.Place
 	// Names are the hub's devices and activities by id.
 	//
 	// fresh marks an activity CreateActivity has just made, which gets
-	// the app's power sequences when the profile has none.
+	// the app's power macros when the profile has none.
 	Names map[byte]string
 	fresh bool
 }
@@ -337,14 +337,14 @@ func ActivityFromHub(st *ActivityState) (*Activity, error) {
 		case record.MacroPowerOff:
 			a.PowerOff = steps(m)
 		default:
-			a.Sequences = append(a.Sequences, ActivitySequence{Name: m.Label, Steps: steps(m)})
+			a.Macros = append(a.Macros, ActivityMacro{Name: m.Label, Steps: steps(m)})
 		}
 	}
 	return a, nil
 }
 
 // Validate checks that the activity has a name and devices, and that its
-// keys and steps name its devices and sequences.
+// keys and steps name its devices and macros.
 func (a *Activity) Validate() error {
 	if a.Name == "" {
 		return errors.New("profile: no activity name")
@@ -365,10 +365,10 @@ func (a *Activity) Validate() error {
 		errs = append(errs, errors.New("profile: the activity has no devices"))
 	}
 	seqs := map[string]bool{}
-	for _, s := range a.Sequences {
+	for _, s := range a.Macros {
 		key := strings.ToLower(s.Name)
 		if s.Name == "" || seqs[key] {
-			errs = append(errs, fmt.Errorf("profile: sequence %q has no name or appears twice", s.Name))
+			errs = append(errs, fmt.Errorf("profile: macro %q has no name or appears twice", s.Name))
 		}
 		seqs[key] = true
 	}
@@ -381,8 +381,8 @@ func (a *Activity) Validate() error {
 	}
 	checkSteps("power_on", a.PowerOn)
 	checkSteps("power_off", a.PowerOff)
-	for _, s := range a.Sequences {
-		checkSteps("sequence "+s.Name, s.Steps)
+	for _, s := range a.Macros {
+		checkSteps("macro "+s.Name, s.Steps)
 	}
 	for name, k := range a.Buttons {
 		if _, err := record.ParseButton(name); err != nil {
@@ -394,7 +394,7 @@ func (a *Activity) Validate() error {
 			}
 			dev, _, ok := strings.Cut(p, ": ")
 			if !ok || !members[strings.ToLower(dev)] {
-				errs = append(errs, fmt.Errorf("profile: buttons: %s runs %q, neither \"Device: Command\" of a device of the activity nor one of its sequences", name, p))
+				errs = append(errs, fmt.Errorf("profile: buttons: %s runs %q, neither \"Device: Command\" of a device of the activity nor one of its macros", name, p))
 			}
 		}
 	}

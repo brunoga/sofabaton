@@ -361,7 +361,7 @@ func TestDenon15(t *testing.T) {
 }
 
 // activityHub is a simulated hub with a TV, an AVR with two inputs and
-// an activity of both, with a power sequence and a sequence of its own.
+// an activity of both, with a power macro and a macro of its own.
 func activityHub(t *testing.T) *hub.Client {
 	t.Helper()
 	tv, _ := record.NewEntity(wire.X2)
@@ -432,7 +432,7 @@ power_on:
   - power on: TV
   - input: AVR
   - input: TV
-sequences:
+macros:
   - name: Movie
     steps:
       - TV: Menu
@@ -550,7 +550,7 @@ buttons:
   Menu: {short: 'TV: Menu', long: Movie}
   OK: Lights
   Vol+: 'AVR: Volume Up'
-sequences:
+macros:
   - name: Lights
     steps:
       - AVR: HDMI 2
@@ -570,10 +570,10 @@ sequences:
 		got = append(got, ch.String())
 	}
 	want := []string{
-		"sequence    rewrite POWER_ON, 5 steps", // the AVR's input
-		`sequence    add "Lights", 3 steps`,
-		"sequence    rewrite Movie, 1 steps",
-		"order       2 sequences and favorites",
+		"macro    rewrite POWER_ON, 5 steps", // the AVR's input
+		`macro    add "Lights", 3 steps`,
+		"macro    rewrite Movie, 1 steps",
+		"order       2 macros and favorites",
 		`button      OK -> "Lights"`,
 		`button      Vol+ -> "AVR: Volume Up"`,
 		"sync        activity 101 to the remotes",
@@ -591,31 +591,31 @@ sequences:
 	st, _ = profile.ReadActivity(ctx, c, 0x65)
 	for _, b := range st.Keymap {
 		if b.Button == record.ButtonOK && (b.Short.Device != 0x65 || b.Short.Command != 2) {
-			t.Fatalf("OK runs %+v, not the new sequence", b.Short)
+			t.Fatalf("OK runs %+v, not the new macro", b.Short)
 		}
 	}
 	if len(st.Order) != 2 || st.Order[0] != (record.Place{Command: 2, Position: 1}) {
 		t.Fatalf("order %v", st.Order)
 	}
 
-	// Dropping a sequence keeps it, unless pruned.
-	a.Sequences = a.Sequences[:1]
+	// Dropping a macro keeps it, unless pruned.
+	a.Macros = a.Macros[:1]
 	a.Buttons["Menu"] = profile.Key{Short: "TV: Menu"}
 	if changes := plan(a, 0x65, false); len(changes) != 2 || changes[0].Kind != profile.ActBind {
 		t.Fatalf("plan without Movie: %v", changes)
 	}
-	if changes := plan(a, 0x65, true); len(changes) != 4 || changes[0].Kind != profile.ActRemoveSequence || changes[1].Kind != profile.ActOrder {
+	if changes := plan(a, 0x65, true); len(changes) != 4 || changes[0].Kind != profile.ActRemoveMacro || changes[1].Kind != profile.ActOrder {
 		t.Fatalf("pruned: %v", changes)
 	}
 
-	// A new activity, with the app's power sequences.
+	// A new activity, with the app's power macros.
 	created := `activity: Games
 devices:
   - {device: TV}
   - {device: AVR, input: HDMI 2}
 buttons:
   Vol+: 'AVR: Volume Up'
-sequences:
+macros:
   - name: Loud
     steps: [{AVR: Volume Up}, {wait: 1}, {AVR: Volume Up}]
 `

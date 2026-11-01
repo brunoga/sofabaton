@@ -12,7 +12,7 @@ import (
 // The frames of the app's device creates that are not commands or keys
 // rebuild byte for byte from records made from scratch: the create (a new
 // record with the catalog's fields), the idle behavior, the power
-// sequences and the closing update (the create with the hub's id and the
+// macros and the closing update (the create with the hub's id and the
 // commit marker).
 func TestX2CreateFrames(t *testing.T) {
 	for _, path := range []string{"../testdata/x2/app-add-ir-device.jsonl", "../testdata/x2/app-add-aetherion.jsonl"} {

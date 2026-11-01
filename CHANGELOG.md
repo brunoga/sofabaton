@@ -8,7 +8,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `sbx apply` takes activity profiles: members and their inputs, power
-  sequences, the activity's own sequences across its devices, keys and
+  macros, the activity's own macros across its devices, keys and
   the name; `-create` makes a new activity, and `sbx remove-activity`
   deletes one (`profile.PlanActivity`, `ApplyActivity`,
   `CreateActivity`).
@@ -20,7 +20,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   id) and `DeleteMacro`; `record.NewActivity`. All but `DeleteMacro`
   rebuild the X2 app's frames byte for byte from our capture.
 - `sbx export -activity`: an activity's profile (devices and their
-  inputs, keys, power sequences and sequences across its devices), and
+  inputs, keys, power macros and macros across its devices), and
   `profile.Activity`, `ReadActivity` and `ActivityFromHub`.
 - `sbx --help` starts with a banner: name, version and what sbx is.
 - `hub.ErrUnsupported` and `Client.Writable`: the client refuses to write

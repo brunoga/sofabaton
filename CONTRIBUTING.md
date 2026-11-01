@@ -16,17 +16,21 @@ Thanks for your interest in contributing.
 go build ./cmd/sbx
 ```
 
-## Running CI locally
+## Checking a change
 
 ```sh
-make ci
+make test    # the race tests, while working
+make check   # before pushing: tidy, vet, lint and the tests
+make ci      # every CI job, as CI runs them
 ```
 
-runs every CI job the same way CI does: `go mod tidy -diff`, golangci-lint,
-the cross-compiles for every release platform (each with `go vet`), the race
-tests and a short run of every fuzz target. Each job is also its own target
-(`ci-tidy`, `ci-lint`, `ci-build`, `ci-test`, `ci-fuzz`). Run it before
-pushing.
+`make check` is quick; CI runs the rest (fuzzing, cross-builds) on every
+pull request. `make ci` runs every CI job the same way CI does: `go mod
+tidy -diff`, golangci-lint, the cross-compiles for every release platform
+(each with `go vet`), the race tests and a short run of every fuzz target.
+Each job is also its own target (`ci-tidy`, `ci-lint`, `ci-build`,
+`ci-test`, `ci-fuzz`). Run it before a release, or after changing the
+build.
 
 ## Running tests
 

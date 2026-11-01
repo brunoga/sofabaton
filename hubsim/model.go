@@ -154,7 +154,7 @@ func FromModel(m *Model) *Hub {
 			return []wire.Frame{Status(Rejected)}
 		}
 		dev, id := req.Payload[0], req.Payload[1]
-		if record.IsActivityID(dev) { // a sequence of the activity
+		if record.IsActivityID(dev) { // a macro of the activity
 			macros := m.Macros[dev]
 			for i, mac := range macros {
 				if mac.ID == id {
@@ -364,7 +364,7 @@ func FromModel(m *Model) *Hub {
 			m.Macros = map[byte][]*record.Macro{}
 		}
 		macros := m.Macros[mac.Entity]
-		if mac.ID == 0 { // a new sequence: the hub gives it a free id
+		if mac.ID == 0 { // a new macro: the hub gives it a free id
 			used := map[byte]bool{}
 			for _, o := range macros {
 				used[o.ID] = true
@@ -376,7 +376,7 @@ func FromModel(m *Model) *Hub {
 		}
 		if record.IsActivityID(mac.Entity) && mac.ID == record.MacroPowerOn {
 			// The hub takes an activity's members from its POWER_ON
-			// sequence, in order.
+			// macro, in order.
 			var members []byte
 			for _, st := range mac.Steps {
 				if st.Command == record.MacroPowerOn && !slices.Contains(members, st.Device) {

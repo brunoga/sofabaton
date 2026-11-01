@@ -10,7 +10,7 @@ import (
 // StepLen is the length of a macro step.
 const StepLen = 10
 
-// Macro ids the hub uses for an entity's power sequences; user macros
+// Macro ids the hub uses for an entity's power macros; user macros
 // take other ids.
 const (
 	MacroPowerOn  byte = 0xC6
@@ -31,7 +31,7 @@ type Step struct {
 func (s Step) IsDelay() bool { return s.Command == 0xFF }
 
 // Macro is a sequence of commands bound to a key of an activity or a
-// device: a user macro, or the power-on/off sequence (MacroPowerOn,
+// device: a user macro, or the power-on/off macro (MacroPowerOn,
 // MacroPowerOff). The record read from the hub (family 0x13) and the body
 // of a macro write (family 0x12) share a layout.
 type Macro struct {
@@ -72,7 +72,7 @@ func ParseMacro(v wire.Variant, body []byte) (*Macro, error) {
 	return m, nil
 }
 
-// decodeMacroLabel reads a macro label. The hub's own power-sequence labels
+// decodeMacroLabel reads a macro label. The hub's own power-macro labels
 // can carry other bytes before the text, so those are found anywhere in
 // the slot.
 func decodeMacroLabel(enc wire.TextEncoding, slot []byte) string {

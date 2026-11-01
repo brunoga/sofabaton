@@ -27,7 +27,7 @@ func (c *Client) ConfirmMember(ctx context.Context, device byte) error {
 // CreateActivity creates an activity from e (family 0x37; see
 // record.NewActivity) and returns the id the hub gives it. The hub takes
 // its members from the ConfirmMember calls before it and from its
-// POWER_ON sequence, written next.
+// POWER_ON macro, written next.
 func (c *Client) CreateActivity(ctx context.Context, e *record.Entity) (byte, error) {
 	if err := c.Writable(); err != nil {
 		return 0, err
@@ -72,7 +72,7 @@ func (c *Client) UpdateActivity(ctx context.Context, e *record.Entity) error {
 }
 
 // DeleteActivity deletes an activity (family 0x39 [activity]) with its
-// keys and sequences.
+// keys and macros.
 func (c *Client) DeleteActivity(ctx context.Context, id byte) error {
 	if err := c.Writable(); err != nil {
 		return err
@@ -88,7 +88,7 @@ func (c *Client) DeleteActivity(ctx context.Context, id byte) error {
 	return nil
 }
 
-// CreateMacro writes a new sequence of an activity, m with ID 0, and
+// CreateMacro writes a new macro of an activity, m with ID 0, and
 // returns the id the hub gives it (the last page's ack). The app then
 // places it on the remote's list with WriteOrder, entity for device, and
 // syncs.
@@ -122,7 +122,7 @@ func (c *Client) CreateMacro(ctx context.Context, m *record.Macro) (byte, error)
 	return last.Frame.Payload[0], nil
 }
 
-// DeleteMacro deletes a sequence of an activity (family 0x10 [entity,
+// DeleteMacro deletes a macro of an activity (family 0x10 [entity,
 // id], the frame that deletes a device's command; upstream, X1 and X1S).
 func (c *Client) DeleteMacro(ctx context.Context, entity, id byte) error {
 	if err := c.Writable(); err != nil {

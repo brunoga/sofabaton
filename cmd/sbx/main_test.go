@@ -355,8 +355,8 @@ func TestList(t *testing.T) {
 	if got := sbx("buttons", "watch tv"); !strings.Contains(got, "LONG PRESS") {
 		t.Fatalf("list buttons:\n%s", got)
 	}
-	if got := sbx("sequences"); !strings.Contains(got, "SEQUENCE") {
-		t.Fatalf("list sequences:\n%s", got)
+	if got := sbx("macros"); !strings.Contains(got, "MACRO") {
+		t.Fatalf("list macros:\n%s", got)
 	}
 	if err := run(context.Background(), strings.NewReader(""), []string{"list", "-hub", "192.0.2.1", "commands", "Radio"}, &out, &errs); err == nil || !strings.Contains(err.Error(), `"TV"`) {
 		t.Fatalf("unknown device: %v", err)

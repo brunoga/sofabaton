@@ -28,8 +28,8 @@ const (
 	Reorder
 	// Bind writes a key's binding.
 	Bind
-	// Sequence writes a power sequence.
-	Sequence
+	// PowerMacro writes a power macro.
+	PowerMacro
 	// Inputs writes the device's inputs page.
 	Inputs
 	// Record rewrites the device's record: its name and brand, its power
@@ -52,8 +52,8 @@ func (k ChangeKind) String() string {
 		return "order"
 	case Bind:
 		return "button"
-	case Sequence:
-		return "sequence"
+	case PowerMacro:
+		return "macro"
 	case Inputs:
 		return "inputs"
 	case Record:
@@ -81,7 +81,7 @@ type Change struct {
 	// Binding is the key's new binding (Bind); Key names its commands.
 	Binding record.Binding
 	Key     Key
-	// Macro is the new power sequence (Sequence), running Name.
+	// Macro is the new power macro (PowerMacro), running Name.
 	Macro *record.Macro
 	// Page is the new inputs page (Inputs), selected by Names.
 	Page  *record.Inputs
@@ -114,8 +114,8 @@ func (c Change) String() string {
 			s += fmt.Sprintf(", long %q", c.Key.Long)
 		}
 		return s
-	case Sequence:
-		return fmt.Sprintf("sequence    %s -> %q", c.Macro.Label, c.Name)
+	case PowerMacro:
+		return fmt.Sprintf("macro    %s -> %q", c.Macro.Label, c.Name)
 	case Inputs:
 		if len(c.Names) == 0 {
 			return "inputs      none: the device does not switch inputs"
@@ -136,7 +136,7 @@ func (c Change) String() string {
 
 // State is what a hub holds for one device: its commands, their signal
 // data by command id, their order on the remote (nil when the device has
-// none), the device's key bindings, its sequences, its record and its
+// none), the device's key bindings, its macros, its record and its
 // inputs page (nil when it has none).
 type State struct {
 	Variant  wire.Variant
@@ -151,7 +151,7 @@ type State struct {
 }
 
 // Read reads a device's state from a hub: its command list, each
-// command's data, its order, its keymap, its sequences, its record and its
+// command's data, its order, its keymap, its macros, its record and its
 // inputs.
 func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 	cmds, err := c.Commands(ctx, device)
@@ -196,7 +196,7 @@ func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 // Plan compares a profile with a device's state on the hub and returns the
 // changes that make the hub match the profile: command updates, adds and
 // (with prune) removes, then the order, the key bindings, the power
-// sequences, the inputs page, the device's record (power and input modes)
+// macros, the inputs page, the device's record (power and input modes)
 // and, after any of them, a sync to the remotes. Commands
 // are matched by exact name, then by name regardless of case, then by
 // signal (a rename: several commands can share one, so names go first); the hub's commands the profile does not match are
@@ -359,7 +359,7 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 				m = &cp
 			}
 			m.Steps = []record.Step{step}
-			changes = append(changes, Change{Kind: Sequence, Macro: m, Name: d.Commands[d.find(seq.command)].Name})
+			changes = append(changes, Change{Kind: PowerMacro, Macro: m, Name: d.Commands[d.find(seq.command)].Name})
 		}
 	}
 
@@ -459,7 +459,7 @@ func Apply(ctx context.Context, c *hub.Client, changes []Change, done func(Chang
 			err = c.WriteOrder(ctx, ch.Device, ch.Order)
 		case Bind:
 			err = c.WriteButton(ctx, ch.Binding)
-		case Sequence:
+		case PowerMacro:
 			err = c.WriteMacro(ctx, ch.Macro)
 		case Inputs:
 			err = c.WriteInputs(ctx, ch.Page)

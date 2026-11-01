@@ -95,7 +95,7 @@ func list(ctx context.Context, args []string, stdout, stderr io.Writer) error {
   activities           the activities and their devices
   commands DEVICE      a device's commands
   buttons ENTITY       what the keys of an activity or device run
-  sequences [ENTITY]   the sequences (macros) of an activity or device, or of all
+  macros [ENTITY]      the macros of an activity or device, or of all
 
 DEVICE and ENTITY are names or ids.
 `)
@@ -154,7 +154,7 @@ DEVICE and ENTITY are names or ids.
 			return err
 		}
 		return listButtons(ctx, c, tw, e)
-	case "sequences":
+	case "macros", "sequences":
 		var entities []*record.Entity
 		switch len(rest) {
 		case 0:
@@ -174,11 +174,11 @@ DEVICE and ENTITY are names or ids.
 			}
 			entities = []*record.Entity{e}
 		default:
-			return errors.New("list sequences takes at most one device or activity")
+			return errors.New("list macros takes at most one device or activity")
 		}
-		return listSequences(ctx, c, tw, entities)
+		return listMacros(ctx, c, tw, entities)
 	}
-	return fmt.Errorf("list: unknown %q (devices, activities, commands, buttons, sequences)", what)
+	return fmt.Errorf("list: unknown %q (devices, activities, commands, buttons, macros)", what)
 }
 
 func listDevices(ctx context.Context, c *hub.Client, w io.Writer) error {
@@ -213,7 +213,7 @@ func listActivities(ctx context.Context, c *hub.Client, w io.Writer) error {
 	return nil
 }
 
-// macroInput is the key activity sequences use after powering a device on;
+// macroInput is the key activity macros use after powering a device on;
 // presumably the input the activity selects for it (not yet confirmed).
 const macroInput = 0xC5
 
@@ -270,7 +270,7 @@ func listButtons(ctx context.Context, c *hub.Client, w io.Writer, e *record.Enti
 	return nil
 }
 
-func listSequences(ctx context.Context, c *hub.Client, w io.Writer, entities []*record.Entity) error {
+func listMacros(ctx context.Context, c *hub.Client, w io.Writer, entities []*record.Entity) error {
 	command, names, err := commandNamer(ctx, c)
 	if err != nil {
 		return err
@@ -279,18 +279,18 @@ func listSequences(ctx context.Context, c *hub.Client, w io.Writer, entities []*
 		if s.IsDelay() {
 			return fmt.Sprintf("wait %d", s.Delay)
 		}
-		// Activity steps call the device's own sequences by their keys.
+		// Activity steps call the device's own macros by their keys.
 		switch s.Command {
 		case record.MacroPowerOn:
-			return names[s.Device] + ": its POWER_ON sequence"
+			return names[s.Device] + ": its POWER_ON macro"
 		case record.MacroPowerOff:
-			return names[s.Device] + ": its POWER_OFF sequence"
+			return names[s.Device] + ": its POWER_OFF macro"
 		case macroInput:
 			return names[s.Device] + ": its input for the activity"
 		}
 		return command(s.Device, s.Command)
 	}
-	fmt.Fprintf(w, "OF\tKEY\tSEQUENCE\tSTEPS\n")
+	fmt.Fprintf(w, "OF\tKEY\tMACRO\tSTEPS\n")
 	for _, e := range entities {
 		macros, err := c.Macros(ctx, e.ID)
 		if errors.Is(err, hub.ErrNotFound) {

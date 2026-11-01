@@ -6,7 +6,7 @@ protocol, without Sofabaton's app or cloud.
 
 The goal is full local control of the hub's configuration: create devices
 from scratch (IR, Bluetooth, RF, Wi-Fi), add commands, assign buttons, build
-sequences and activities, and sync them to the remote — the foundation for a
+macros and activities, and sync them to the remote — the foundation for a
 better management app than the official one.
 
 > **Status: 0.1, a first prerelease.** IR devices can be read, backed up,
@@ -48,7 +48,7 @@ sbx info                              # identity: model, firmware, name
 sbx list                              # devices and activities
 sbx list commands Receiver            # a device's commands, in the remote's order
 sbx list buttons "Watch Blu-ray"      # what each key runs
-sbx list sequences Receiver           # sequences (macros), e.g. power on/off
+sbx list macros Receiver              # macros, e.g. power on/off
 sbx dump -o hub.json                  # the full configuration, read-only
 ```
 
@@ -132,7 +132,8 @@ is how the protocol behind every write above was learned.
 
 ```sh
 go build ./cmd/sbx
-make ci                       # every CI job: lint, race tests, fuzz smoke, cross-builds
+make check                    # before pushing: tidy, vet, lint, race tests
+make ci                       # every CI job: also fuzz smoke and cross-builds
 go test -race ./...           # unit and simulated-hub tests
 make fuzz FUZZTIME=1m         # every fuzz target
 SOFABATON_HUB=192.168.1.50 make test-live   # against a real hub (see CONTRIBUTING.md)

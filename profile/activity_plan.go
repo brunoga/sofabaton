@@ -17,16 +17,16 @@ type ActivityChangeKind int
 
 const (
 	// ActMembers confirms the activity's devices to the hub, in order,
-	// before its power sequences change them.
+	// before its power macros change them.
 	ActMembers ActivityChangeKind = iota + 1
-	// ActMacro rewrites one of the activity's sequences in place: a
-	// power sequence or one of its own.
+	// ActMacro rewrites one of the activity's macros in place: a
+	// power macro or one of its own.
 	ActMacro
-	// ActNewSequence adds a sequence; the hub gives it its id.
-	ActNewSequence
-	// ActRemoveSequence deletes a sequence the profile does not have.
-	ActRemoveSequence
-	// ActOrder writes the order of the remote's list of sequences.
+	// ActNewMacro adds a macro; the hub gives it its id.
+	ActNewMacro
+	// ActRemoveMacro deletes a macro the profile does not have.
+	ActRemoveMacro
+	// ActOrder writes the order of the remote's list of macros.
 	ActOrder
 	// ActBind writes a key's binding.
 	ActBind
@@ -44,14 +44,14 @@ type ActivityChange struct {
 	// Members are the devices to confirm (ActMembers), by id and name.
 	Members []byte
 	Names   []string
-	// Macro is the sequence to write (ActMacro, ActNewSequence with id 0)
-	// or delete (ActRemoveSequence).
+	// Macro is the macro to write (ActMacro, ActNewMacro with id 0)
+	// or delete (ActRemoveMacro).
 	Macro *record.Macro
-	// Order is the new list (ActOrder): sequences by name, so that new
+	// Order is the new list (ActOrder): macros by name, so that new
 	// ones get the ids the hub gives them, and the rest by id.
 	Order []OrderEntry
 	// Binding is the key's new binding (ActBind). A press of a new
-	// sequence names it in Key and gets its id when the change is applied.
+	// macro names it in Key and gets its id when the change is applied.
 	Binding record.Binding
 	Key     Key
 	// Entity is the activity's new record (ActRecord); Renamed tells
@@ -60,14 +60,14 @@ type ActivityChange struct {
 	Renamed bool
 	Name    string
 
-	shortSeq, longSeq string // sequences of Binding to resolve
+	shortSeq, longSeq string // macros of Binding to resolve
 }
 
-// OrderEntry is one entry of an activity's list: a sequence by name, or
+// OrderEntry is one entry of an activity's list: a macro by name, or
 // anything else by id.
 type OrderEntry struct {
-	Sequence string
-	ID       byte
+	Macro string
+	ID    byte
 }
 
 func (c ActivityChange) String() string {
@@ -75,13 +75,13 @@ func (c ActivityChange) String() string {
 	case ActMembers:
 		return fmt.Sprintf("members     %s", strings.Join(c.Names, ", "))
 	case ActMacro:
-		return fmt.Sprintf("sequence    rewrite %s, %d steps", c.Macro.Label, len(c.Macro.Steps))
-	case ActNewSequence:
-		return fmt.Sprintf("sequence    add %q, %d steps", c.Macro.Label, len(c.Macro.Steps))
-	case ActRemoveSequence:
-		return fmt.Sprintf("sequence    remove %q (upstream's flow, untested on the X2)", c.Macro.Label)
+		return fmt.Sprintf("macro    rewrite %s, %d steps", c.Macro.Label, len(c.Macro.Steps))
+	case ActNewMacro:
+		return fmt.Sprintf("macro    add %q, %d steps", c.Macro.Label, len(c.Macro.Steps))
+	case ActRemoveMacro:
+		return fmt.Sprintf("macro    remove %q (upstream's flow, untested on the X2)", c.Macro.Label)
 	case ActOrder:
-		return fmt.Sprintf("order       %d sequences and favorites", len(c.Order))
+		return fmt.Sprintf("order       %d macros and favorites", len(c.Order))
 	case ActBind:
 		s := fmt.Sprintf("button      %v -> %q", c.Binding.Button, c.Key.Short)
 		if c.Key.Long != "" {
@@ -99,7 +99,7 @@ func (c ActivityChange) String() string {
 	return fmt.Sprintf("ActivityChangeKind(%d)", int(c.Kind))
 }
 
-// The hub's keys for the steps that run a device's power sequences and
+// The hub's keys for the steps that run a device's power macros and
 // switch it to its input.
 const (
 	stepPowerOn  = record.MacroPowerOn
@@ -200,8 +200,8 @@ func (r resolver) steps(steps []Step, inputs map[byte]byte) ([]record.Step, erro
 	return out, nil
 }
 
-// sameSteps compares sequences, but for the duration of the steps that
-// run a device's power sequences, which the hub sets itself (1 for IR
+// sameSteps compares macros, but for the duration of the steps that
+// run a device's power macros, which the hub sets itself (1 for IR
 // devices, 0 for Bluetooth ones, whatever the app wrote).
 func sameSteps(a, b []record.Step) bool {
 	return slices.EqualFunc(a, b, func(x, y record.Step) bool {
@@ -212,8 +212,8 @@ func sameSteps(a, b []record.Step) bool {
 	})
 }
 
-// defaultPower is the power sequence the app writes for members: each
-// device's power sequence a second apart and, turning on, then each
+// defaultPower is the power macro the app writes for members: each
+// device's power macro a second apart and, turning on, then each
 // device's input.
 func defaultPower(members []byte, inputs map[byte]byte, on bool) []record.Step {
 	var out []record.Step
@@ -234,10 +234,10 @@ func defaultPower(members []byte, inputs map[byte]byte, on bool) []record.Step {
 
 // PlanActivity compares an activity's profile with its state on the hub
 // and returns the changes that make the hub match: its members and power
-// sequences, its own sequences (matched by name; removed only with
+// macros, its own macros (matched by name; removed only with
 // prune), their order on the remote, its keys, a sync and its record.
 // Without power_on or power_off, a new activity, or one whose devices
-// change, gets the app's: each device's power sequence and input, a
+// change, gets the app's: each device's power macro and input, a
 // second apart; others keep theirs, with the devices' inputs. Keys the profile does not bind are
 // left as they are.
 func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange, error) {
@@ -325,7 +325,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		}
 	}
 
-	// The activity's own sequences, by name.
+	// The activity's own macros, by name.
 	own := map[string]*record.Macro{}
 	for _, m := range st.Macros {
 		if m.ID != record.MacroPowerOn && m.ID != record.MacroPowerOff {
@@ -334,10 +334,10 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	}
 	reorder := false
 	wanted := map[string]bool{}
-	for _, s := range a.Sequences {
+	for _, s := range a.Macros {
 		steps, err := r.steps(s.Steps, inputs)
 		if err != nil {
-			return nil, fmt.Errorf("%w (sequence %s)", err, s.Name)
+			return nil, fmt.Errorf("%w (macro %s)", err, s.Name)
 		}
 		wanted[strings.ToLower(s.Name)] = true
 		if m := own[strings.ToLower(s.Name)]; m != nil {
@@ -351,27 +351,27 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			return nil, err
 		}
 		m.Steps = steps
-		changes = append(changes, ActivityChange{Kind: ActNewSequence, Activity: act, Macro: m})
+		changes = append(changes, ActivityChange{Kind: ActNewMacro, Activity: act, Macro: m})
 		reorder = true
 	}
 	var removed []byte
 	for name, m := range own {
 		if prune && !wanted[name] {
-			changes = append(changes, ActivityChange{Kind: ActRemoveSequence, Activity: act, Macro: m})
+			changes = append(changes, ActivityChange{Kind: ActRemoveMacro, Activity: act, Macro: m})
 			removed = append(removed, m.ID)
 			reorder = true
 		}
 	}
 
-	// The remote's list: the profile's sequences in its order, then what
-	// else the list has (favorites, sequences kept), in their order.
+	// The remote's list: the profile's macros in its order, then what
+	// else the list has (favorites, macros kept), in their order.
 	seqID := map[byte]string{}
 	for name, m := range own {
 		seqID[m.ID] = name
 	}
 	var order []OrderEntry
-	for _, s := range a.Sequences {
-		order = append(order, OrderEntry{Sequence: s.Name})
+	for _, s := range a.Macros {
+		order = append(order, OrderEntry{Macro: s.Name})
 	}
 	placed := slices.Clone(st.Order)
 	slices.SortStableFunc(placed, func(x, y record.Place) int { return int(x.Position) - int(y.Position) })
@@ -381,7 +381,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			continue
 		}
 		if name, ok := seqID[p.Command]; ok {
-			current = append(current, OrderEntry{Sequence: name})
+			current = append(current, OrderEntry{Macro: name})
 			if wanted[name] {
 				continue
 			}
@@ -391,14 +391,14 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 		order = append(order, current[len(current)-1])
 	}
 	if reorder || len(st.Order) > 0 && !slices.EqualFunc(order, current, func(x, y OrderEntry) bool {
-		return strings.EqualFold(x.Sequence, y.Sequence) && x.ID == y.ID
+		return strings.EqualFold(x.Macro, y.Macro) && x.ID == y.ID
 	}) {
 		if len(order) > 0 {
 			changes = append(changes, ActivityChange{Kind: ActOrder, Activity: act, Order: order})
 		}
 	}
 
-	// Keys: "Device: Command", or a sequence's name.
+	// Keys: "Device: Command", or a macro's name.
 	bound := map[record.Button]record.Binding{}
 	for _, b := range st.Keymap {
 		bound[b.Button] = b
@@ -411,7 +411,7 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			if m := own[strings.ToLower(s)]; m != nil {
 				return record.Press{Device: act, Command: m.ID}, "", nil
 			}
-			return record.Press{Device: act}, s, nil // a new sequence
+			return record.Press{Device: act}, s, nil // a new macro
 		}
 		devName, cmdName, _ := strings.Cut(s, ": ")
 		dev, err := r.device(devName)
@@ -478,14 +478,14 @@ func (st *ActivityState) variant() wire.Variant {
 // ApplyActivity carries out an activity's plan on the hub, calling done
 // after each change.
 func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange, done func(ActivityChange)) error {
-	ids := map[string]byte{} // new sequences by name
+	ids := map[string]byte{} // new macros by name
 	resolve := func(p *record.Press, seq string) error {
 		if seq == "" {
 			return nil
 		}
 		id, ok := ids[strings.ToLower(seq)]
 		if !ok {
-			return fmt.Errorf("profile: sequence %q was not created", seq)
+			return fmt.Errorf("profile: macro %q was not created", seq)
 		}
 		p.Command = id
 		return nil
@@ -501,21 +501,21 @@ func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange,
 			}
 		case ActMacro:
 			err = c.WriteMacro(ctx, ch.Macro)
-		case ActNewSequence:
+		case ActNewMacro:
 			var id byte
 			if id, err = c.CreateMacro(ctx, ch.Macro); err == nil {
 				ids[strings.ToLower(ch.Macro.Label)] = id
 			}
-		case ActRemoveSequence:
+		case ActRemoveMacro:
 			err = c.DeleteMacro(ctx, ch.Activity, ch.Macro.ID)
 		case ActOrder:
 			var places []record.Place
 			for i, e := range ch.Order {
 				id := e.ID
-				if e.Sequence != "" {
+				if e.Macro != "" {
 					var ok bool
-					if id, ok = ids[strings.ToLower(e.Sequence)]; !ok {
-						id, err = sequenceID(ctx, c, ch.Activity, e.Sequence)
+					if id, ok = ids[strings.ToLower(e.Macro)]; !ok {
+						id, err = macroID(ctx, c, ch.Activity, e.Macro)
 					}
 				}
 				if err != nil {
@@ -563,8 +563,8 @@ func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange,
 	return nil
 }
 
-// sequenceID looks up the id of an activity's sequence by name.
-func sequenceID(ctx context.Context, c *hub.Client, activity byte, name string) (byte, error) {
+// macroID looks up the id of an activity's macro by name.
+func macroID(ctx context.Context, c *hub.Client, activity byte, name string) (byte, error) {
 	macros, err := c.Macros(ctx, activity)
 	if err != nil {
 		return 0, err
@@ -574,12 +574,12 @@ func sequenceID(ctx context.Context, c *hub.Client, activity byte, name string) 
 			return m.ID, nil
 		}
 	}
-	return 0, fmt.Errorf("profile: activity %d has no sequence %q", activity, name)
+	return 0, fmt.Errorf("profile: activity %d has no macro %q", activity, name)
 }
 
 // CreateActivity makes a new activity on the hub from a profile, in the
-// app's order: its devices, the record, its power sequences, its keys, a
-// sync; then its own sequences and their order. done is called after
+// app's order: its devices, the record, its power macros, its keys, a
+// sync; then its own macros and their order. done is called after
 // each step. It returns the new activity's id; if a step after the create
 // fails, the activity is left on the hub for the caller to delete.
 func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(string)) (byte, error) {
