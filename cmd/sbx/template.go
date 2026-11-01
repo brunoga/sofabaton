@@ -68,8 +68,13 @@ func newProfile(args []string, stdout io.Writer) error {
 		_, err = stdout.Write(p)
 		return err
 	}
-	if _, err := os.Stat(*out); err == nil {
-		return fmt.Errorf("%s exists", *out)
+	f, err := os.OpenFile(*out, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return err
 	}
-	return os.WriteFile(*out, p, 0o644)
+	if _, err := f.Write(p); err != nil {
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
 }
