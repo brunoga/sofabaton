@@ -40,9 +40,11 @@ jobs:
 
       - name: Fuzz every target briefly
         # Every decoder of hub input has a fuzz target; a short run per
-        # target catches panics on malformed frames. Long runs are local
-        # (make fuzz FUZZTIME=10m).
-        run: make fuzz FUZZTIME=15s
+        # target catches panics on malformed frames. Pull requests wait on
+        # it, so they get a few seconds per target; pushes to main, which
+        # nobody waits on, longer. Long runs are local (make fuzz
+        # FUZZTIME=10m).
+        run: make fuzz FUZZTIME=${{ github.event_name == 'pull_request' && '3s' || '30s' }}
 
   build:
     name: Build (${{ matrix.goos }}/${{ matrix.goarch }}${{ matrix.goarm && format('/v{0}', matrix.goarm) || '' }})

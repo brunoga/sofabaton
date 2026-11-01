@@ -67,7 +67,7 @@ ci-test:
 
 ci-fuzz:
 	@echo "== ci: fuzz (smoke)"
-	$(MAKE) --no-print-directory fuzz FUZZTIME=15s
+	$(MAKE) --no-print-directory fuzz FUZZTIME=3s
 
 ci-build:
 	@echo "== ci: build"
