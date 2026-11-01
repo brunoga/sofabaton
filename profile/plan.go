@@ -94,6 +94,8 @@ type Change struct {
 	// Entity is the device's new record (Record); Renamed tells whether
 	// its name or brand changes, from Name.
 	Entity *record.Entity
+	// Look describes a Record's change of icon and color.
+	Look string
 	// Activity and Act are an activity's name and its change
 	// (InActivity).
 	Activity string
@@ -136,7 +138,7 @@ func (c Change) String() string {
 		if c.Renamed {
 			s = fmt.Sprintf("record      rename device %q -> %q (brand %q), power mode %d style %d, input mode %d", c.Name, c.Entity.Name, c.Entity.Brand, t.PowerMode, t.PowerStyle, t.InputMode)
 		}
-		return s
+		return s + c.Look
 	case Sync:
 		return fmt.Sprintf("sync        device %d to the remotes", c.Device)
 	case InActivity:
@@ -461,8 +463,12 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		case d.Inputs != nil:
 			want.InputMode = record.InputsNoSwitch
 		}
+		if d.Color != 0 {
+			want.Color = d.Color
+		}
 		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
-		if want != t || renamed {
+		reiconed := d.Icon != 0 && d.Icon != e.Icon
+		if want != t || renamed || reiconed {
 			ne := *e
 			ne.Tail = append([]byte(nil), e.Tail...)
 			if err := ne.SetDeviceTail(want); err != nil {
@@ -472,7 +478,10 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			if d.Brand != "" {
 				ne.Brand = d.Brand
 			}
-			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name})
+			if d.Icon != 0 {
+				ne.Icon = d.Icon
+			}
+			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name, Look: lookChange(e.Icon, ne.Icon, t.Color, want.Color)})
 		}
 	}
 	// The remotes keep their own copy of the device and do not see edits

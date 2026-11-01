@@ -40,6 +40,8 @@ device: AWOLVision          # the device's name on the hub
 brand: AWOL Vision
 from: ir/awol-vision/aetherion   # the template it was made from, if any
 id: 4                       # the device's id on the hub (or -device)
+icon: 10                    # the remote's icon and color (palette 1-12);
+color: 1                    # left out, the hub's stay
 ir: {protocol: NEC, system: 0x00CE}   # lets commands give just a code
 commands:
   - {name: Power On, code: 0xE5}
@@ -129,7 +131,8 @@ macros, from which the hub takes them, then the record, as the app
 does), the power macros, the activity's own macros (matched by
 name; new ones get their ids from the hub and go on the remote's list in
 the profile's order), the keys, and syncs the activity. A different
-`activity:` renames it. Macros the profile lacks stay unless `-prune`. Leaving out
+`activity:` renames it, and a different `icon:` or `color:` rewrites
+the record. Macros the profile lacks stay unless `-prune`. Leaving out
 `power_on` or `power_off` keeps the hub's, with the devices' inputs; a new
 activity, or one whose devices change, gets the app's instead: each
 device's power macro a second apart, then each device's input.
@@ -137,6 +140,8 @@ device's power macro a second apart, then each device's input.
 ```yaml
 activity: Watch Blu-ray
 id: 103
+icon: 17                        # as for devices
+color: 7
 devices:                        # in the hub's member order
   - {device: Receiver, input: Input Blu-ray}   # a command of its inputs
   - {device: Blu-ray}           # not switched
@@ -158,6 +163,10 @@ macros:                         # the activity's own, across its devices
       - wait: 2
       - Blu-ray: Play
 ```
+
+Icons and colors are the hub's numbers. Which picture or color each
+number is has not been mapped yet: set one in the app and export to
+find it.
 
 A command step may add `hold: N`, the step's duration byte as the hub
 keeps it; what it does is not known. `export` drops the duration bytes of
@@ -201,6 +210,7 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Unbinding a key, the device's category and icon, Bluetooth devices, and
+Unbinding a key, the device's category, an activity's favorites, the
+names of icons and colors, Bluetooth devices, and
 protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

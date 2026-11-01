@@ -800,3 +800,71 @@ macros:
 		t.Fatalf("the new activity's Red: %+v", km)
 	}
 }
+
+// A profile's icon and color rewrite the record; 0 keeps the hub's.
+func TestLook(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
+	st, err := profile.ReadActivity(ctx, c, 0x65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.ActivityFromHub(st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	icon, color := a.Icon, a.Color
+	a.Icon, a.Color = 0, 0
+	if changes, _ := profile.PlanActivity(a, st, false); len(changes) != 0 {
+		t.Fatalf("no look, plans %v", changes)
+	}
+	a.Icon, a.Color = icon+1, color%12+1
+	changes, err := profile.PlanActivity(a, st, false)
+	want := fmt.Sprintf("record      icon %d -> %d, color %d -> %d", icon, icon+1, color, color%12+1)
+	if err != nil || len(changes) != 2 || changes[0].String() != want || changes[1].Kind != profile.ActSync {
+		t.Fatalf("plan %v %v, want %s", changes, err, want)
+	}
+	if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	st, _ = profile.ReadActivity(ctx, c, 0x65)
+	if st.Entity.Icon != icon+1 || st.Entity.ActivityColor() != color%12+1 {
+		t.Fatalf("activity icon %d color %d", st.Entity.Icon, st.Entity.ActivityColor())
+	}
+	if changes, _ := profile.PlanActivity(a, st, false); len(changes) != 0 {
+		t.Fatalf("applied, still %v", changes)
+	}
+
+	a.Color = 13
+	if err := a.Validate(); err == nil {
+		t.Fatal("color 13 validated")
+	}
+
+	c = simulated(t)
+	ds, err := profile.Read(ctx, c, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := profile.FromHub(ds.Entity, ds)
+	if err != nil {
+		t.Fatal(err)
+	}
+	icon, color = d.Icon, d.Color
+	d.Icon, d.Color = 9, 3
+	changes2, _, err := profile.Plan(d, ds, false)
+	want = fmt.Sprintf(", icon %d -> 9, color %d -> 3", icon, color)
+	if err != nil || len(changes2) != 2 || changes2[0].Kind != profile.Record || !strings.HasSuffix(changes2[0].String(), want) {
+		t.Fatalf("device plan %v %v, want %s", changes2, err, want)
+	}
+	if err := profile.Apply(ctx, c, changes2, nil); err != nil {
+		t.Fatal(err)
+	}
+	ds, _ = profile.Read(ctx, c, 4)
+	tail, _ := ds.Entity.DeviceTail()
+	if ds.Entity.Icon != 9 || tail.Color != 3 {
+		t.Fatalf("device icon %d color %d", ds.Entity.Icon, tail.Color)
+	}
+	if changes, _, _ := profile.Plan(d, ds, false); len(changes) != 0 {
+		t.Fatalf("device applied, still %v", changes)
+	}
+}

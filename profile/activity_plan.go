@@ -60,6 +60,8 @@ type ActivityChange struct {
 	Entity  *record.Entity
 	Renamed bool
 	Name    string
+	// Look describes an ActRecord's change of icon and color.
+	Look string
 
 	shortSeq, longSeq string // new macros of Binding to resolve, by macroKey
 }
@@ -96,7 +98,10 @@ func (c ActivityChange) String() string {
 		return fmt.Sprintf("sync        activity %d to the remotes", c.Activity)
 	case ActRecord:
 		if c.Renamed {
-			return fmt.Sprintf("record      rename activity %q -> %q", c.Name, c.Entity.Name)
+			return fmt.Sprintf("record      rename activity %q -> %q%s", c.Name, c.Entity.Name, c.Look)
+		}
+		if c.Look != "" {
+			return "record      " + strings.TrimPrefix(c.Look, ", ")
 		}
 		return "record      rewrite the activity's record, as the app does after a member change"
 	}
@@ -519,14 +524,30 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 	}
 
 	renamed := st.Entity.Name != a.Name
+	icon, color := st.Entity.Icon, st.Entity.ActivityColor()
+	if a.Icon != 0 {
+		icon = a.Icon
+	}
+	if a.Color != 0 {
+		color = a.Color
+	}
+	look := lookChange(st.Entity.Icon, icon, st.Entity.ActivityColor(), color)
 	if len(changes) > 0 {
 		changes = append(changes, ActivityChange{Kind: ActSync, Activity: act})
 	}
-	if renamed || membersChange {
+	if renamed || membersChange || look != "" {
 		e := *st.Entity
 		e.Tail = append([]byte(nil), st.Entity.Tail...)
-		e.Name = a.Name
-		changes = append(changes, ActivityChange{Kind: ActRecord, Activity: act, Entity: &e, Renamed: renamed, Name: st.Entity.Name})
+		e.Name, e.Icon = a.Name, icon
+		if color != e.ActivityColor() {
+			if err := e.SetActivityColor(color); err != nil {
+				return nil, err
+			}
+		}
+		changes = append(changes, ActivityChange{Kind: ActRecord, Activity: act, Entity: &e, Renamed: renamed, Name: st.Entity.Name, Look: look})
+		if len(changes) == 1 { // the remotes see a new record once synced
+			changes = append(changes, ActivityChange{Kind: ActSync, Activity: act})
+		}
 	}
 	return changes, nil
 }
@@ -638,14 +659,19 @@ func (ap activityApplier) apply(ctx context.Context, c *hub.Client, ch ActivityC
 		return c.Sync(ctx, ch.Activity)
 	case ActRecord:
 		// The record as the hub holds it now (its power state moves),
-		// with the profile's name.
+		// with the profile's name, icon and color.
 		e := ch.Entity
 		if acts, err := c.Activities(ctx); err == nil {
 			for _, a := range acts {
 				if a.ID == ch.Activity {
 					cp := *a
 					cp.Tail = append([]byte(nil), a.Tail...)
-					cp.Name = ch.Entity.Name
+					cp.Name, cp.Icon = ch.Entity.Name, ch.Entity.Icon
+					if color := ch.Entity.ActivityColor(); color != cp.ActivityColor() {
+						if err := cp.SetActivityColor(color); err != nil {
+							return err
+						}
+					}
 					e = &cp
 				}
 			}
@@ -688,9 +714,16 @@ func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(s
 	if err != nil {
 		return 0, err
 	}
-	e, err := record.NewActivity(c.Variant(), a.Name, newActivityColor)
+	color := byte(newActivityColor)
+	if a.Color != 0 {
+		color = a.Color
+	}
+	e, err := record.NewActivity(c.Variant(), a.Name, color)
 	if err != nil {
 		return 0, err
+	}
+	if a.Icon != 0 {
+		e.Icon = a.Icon
 	}
 	st.Entity = e
 	plan, err := PlanActivity(a, st, false)
