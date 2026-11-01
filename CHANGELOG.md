@@ -25,6 +25,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Discovery skips an `sbx proxy` running on the same machine, which
+  answers as the hub it holds.
 - `sbx export` works on X1 and X1S hubs again: it only reads.
 
 ## [0.1.0] - 2026-10-31
