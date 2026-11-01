@@ -49,7 +49,8 @@ func (c *Client) Devices(ctx context.Context) ([]*record.Entity, error) {
 
 // Activities reads the activity catalog.
 func (c *Client) Activities(ctx context.Context) ([]*record.Entity, error) {
-	return c.entities(ctx, reqActivities, wire.FamActivityRow)
+	acts, err := c.entities(ctx, reqActivities, wire.FamActivityRow)
+	return acts, notFound(err)
 }
 
 // Members reads the devices that belong to an activity.

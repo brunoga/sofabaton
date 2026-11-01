@@ -38,6 +38,9 @@ const (
 	Record
 	// Sync updates the remotes' copy of the device.
 	Sync
+	// InActivity changes an activity with the device: the copies of the
+	// device's macros (Act), in the activity named Activity.
+	InActivity
 )
 
 func (k ChangeKind) String() string {
@@ -60,6 +63,8 @@ func (k ChangeKind) String() string {
 		return "record"
 	case Sync:
 		return "sync"
+	case InActivity:
+		return "activity"
 	}
 	return fmt.Sprintf("ChangeKind(%d)", int(k))
 }
@@ -89,6 +94,10 @@ type Change struct {
 	// Entity is the device's new record (Record); Renamed tells whether
 	// its name or brand changes, from Name.
 	Entity *record.Entity
+	// Activity and Act are an activity's name and its change
+	// (InActivity).
+	Activity string
+	Act      ActivityChange
 }
 
 func (c Change) String() string {
@@ -115,7 +124,7 @@ func (c Change) String() string {
 		}
 		return s
 	case PowerMacro:
-		return fmt.Sprintf("macro    %s -> %q", c.Macro.Label, c.Name)
+		return fmt.Sprintf("macro       %s -> %q", c.Macro.Label, c.Name)
 	case Inputs:
 		if len(c.Names) == 0 {
 			return "inputs      none: the device does not switch inputs"
@@ -130,6 +139,8 @@ func (c Change) String() string {
 		return s
 	case Sync:
 		return fmt.Sprintf("sync        device %d to the remotes", c.Device)
+	case InActivity:
+		return fmt.Sprintf("%v (in %q)", c.Act, c.Activity)
 	}
 	return c.Kind.String()
 }
@@ -148,11 +159,22 @@ type State struct {
 	Macros   []*record.Macro
 	Entity   *record.Entity
 	Inputs   *record.Inputs
+	// Activities are the activities with the device, which hold the
+	// copies of its macros.
+	Activities []*DeviceActivity
+}
+
+// DeviceActivity is an activity with the device: its record, macros and
+// the order of its list on the remote.
+type DeviceActivity struct {
+	Entity *record.Entity
+	Macros []*record.Macro
+	Order  []record.Place
 }
 
 // Read reads a device's state from a hub: its command list, each
-// command's data, its order, its keymap, its macros, its record and its
-// inputs.
+// command's data, its order, its keymap, its macros, its record, its
+// inputs and the activities with it.
 func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 	cmds, err := c.Commands(ctx, device)
 	if err != nil {
@@ -190,7 +212,40 @@ func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 		}
 		st.Data[cmd.ID] = data
 	}
+	if st.Activities, err = readDeviceActivities(ctx, c, device); err != nil {
+		return nil, err
+	}
 	return st, nil
+}
+
+// readDeviceActivities reads the activities a device is a member of.
+func readDeviceActivities(ctx context.Context, c *hub.Client, device byte) ([]*DeviceActivity, error) {
+	acts, err := c.Activities(ctx)
+	if errors.Is(err, hub.ErrNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var out []*DeviceActivity
+	for _, a := range acts {
+		members, err := c.Members(ctx, a.ID)
+		if err != nil && !errors.Is(err, hub.ErrNotFound) {
+			return nil, err
+		}
+		if !slices.ContainsFunc(members, func(m *record.Entity) bool { return m.ID == device }) {
+			continue
+		}
+		da := &DeviceActivity{Entity: a}
+		if da.Macros, err = c.Macros(ctx, a.ID); err != nil && !errors.Is(err, hub.ErrNotFound) {
+			return nil, err
+		}
+		if da.Order, err = c.Order(ctx, a.ID); err != nil && !errors.Is(err, hub.ErrNotFound) {
+			return nil, err
+		}
+		out = append(out, da)
+	}
+	return out, nil
 }
 
 // Plan compares a profile with a device's state on the hub and returns the
@@ -425,7 +480,11 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 	if len(changes) > 0 {
 		changes = append(changes, Change{Kind: Sync, Device: st.Device})
 	}
-	return changes, kept, nil
+	copies, err := d.planCopies(st, press, prune)
+	if err != nil {
+		return nil, nil, err
+	}
+	return append(changes, copies...), kept, nil
 }
 
 // The tail's power fields once the app has set a device's power up.
@@ -444,9 +503,17 @@ func sameInputs(a, b []record.InputEntry) bool {
 
 // Apply carries out a plan on the hub, calling done after each change.
 func Apply(ctx context.Context, c *hub.Client, changes []Change, done func(Change)) error {
+	acts := map[byte]activityApplier{}
 	for _, ch := range changes {
 		var err error
 		switch ch.Kind {
+		case InActivity:
+			ap, ok := acts[ch.Act.Activity]
+			if !ok {
+				ap = activityApplier{ids: map[string]byte{}}
+				acts[ch.Act.Activity] = ap
+			}
+			err = ap.apply(ctx, c, ch.Act)
 		case Add:
 			err = c.WriteCommand(ctx, ch.Command, ch.Data)
 		case Update:

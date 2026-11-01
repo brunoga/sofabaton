@@ -7,6 +7,15 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Device macros: `macros:` in a device's profile, of its own commands and
+  pauses. The remote cannot show a device's own macros (it shows each as
+  the same blank entry), so `apply` copies them into every activity with
+  the device and keeps the copies in step (`-prune` removes the ones the
+  profile lacks). Each copy carries its device in its label slot: an
+  activity's keys run it as `'Device: Macro'`, an activity's profile
+  leaves it alone, an activity the device joins gets the device's macros
+  and one it leaves loses them, and `export -device` reads them back.
+
 - Device templates: read-only profiles of the devices we maintain, in
   `templates/` by transport and maker (`ir/denon/avr-x8500h`), carried by
   `sbx`. `sbx templates` lists them; `sbx new -template NAME -name NAME`

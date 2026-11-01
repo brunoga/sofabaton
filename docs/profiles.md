@@ -129,8 +129,7 @@ macros, from which the hub takes them, then the record, as the app
 does), the power macros, the activity's own macros (matched by
 name; new ones get their ids from the hub and go on the remote's list in
 the profile's order), the keys, and syncs the activity. A different
-`activity:` renames it. Macros the profile lacks stay unless `-prune`
-(the delete is upstream's flow, not yet seen on the X2). Leaving out
+`activity:` renames it. Macros the profile lacks stay unless `-prune`. Leaving out
 `power_on` or `power_off` keeps the hub's, with the devices' inputs; a new
 activity, or one whose devices change, gets the app's instead: each
 device's power macro a second apart, then each device's input.
@@ -165,10 +164,43 @@ keeps it; what it does is not known. `export` drops the duration bytes of
 `power on` steps (the hub has 1 for IR devices and 0 for Bluetooth ones),
 so an exported power macro is not yet a byte-exact copy.
 
+## Device macros
+
+A device's profile can have macros of its own commands:
+
+```yaml
+macros:
+  - name: 3D On                 # at most 27 characters
+    steps:
+      - Menu                    # one of the device's commands
+      - {wait: 2}               # seconds
+      - {send: OK, hold: 3}     # with the hub's duration byte
+```
+
+The remote cannot show a device's own macros (every one appears as the
+same blank entry on its page, see
+[write-flows.md](protocol/write-flows.md#device-macros-x2)), so `apply`
+copies them into every activity with the device, where they are listed
+by name, and keeps the copies in step with the profile: a new macro is
+added to each activity's list, a changed one rewritten, and, with
+`-prune`, one the profile lacks is removed. Leaving `macros` out leaves
+the copies as they are. Each copy carries the device it belongs to, so:
+
+- an activity's keys run one as `'Device: Macro'`, like a command;
+- an activity's profile leaves the copies alone, `-prune` too, and its
+  export lists them under the device's profile, not the activity's
+  `macros`;
+- an activity a device joins gets the device's macros, and one it leaves
+  loses them;
+- `export -device` reads the macros back from the copies.
+
+The hub has the macros only in the activities: a device in none keeps
+them in its profile alone, until `apply` runs after it joins one. A macro
+cannot share a name with one of the device's commands, nor with a macro
+of its own of an activity with the device.
+
 ## Not yet
 
-Applying activity profiles, unbinding a key, device macros of more
-than one command (per-device ones, which `sbx` will copy into every
-activity with the device), the device's category and icon, activities, Bluetooth
-devices, and protocols other than NEC, Denon-K and Denon for `code`. See
+Unbinding a key, the device's category and icon, Bluetooth devices, and
+protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

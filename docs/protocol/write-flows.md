@@ -246,8 +246,37 @@ the record's power state is the activity's current one.
 
 **Delete:** `0x39 [activity]`, status-acked.
 
-Upstream's notes (X1, X1S) agree where they overlap; they also delete a
-sequence with `0x10 [activity, id]`, not yet seen on the X2.
+Upstream's notes (X1, X1S) agree where they overlap.
+
+**Macro delete:** `0x10 [activity, id]`, upstream's flow: on our X2
+(2026-11-01) it took 0.3 s, dropped the macro and its place on the
+activity's list, and left the keys as they were. (On a device the same
+frame deletes a command.)
+
+## Device macros `[X2✓]`
+
+A device holds macros other than its power ones: `0x12` with the device
+as the entity and id `00` was accepted on our X2 (2026-11-01), the hub
+gave it the next free id of the device's *commands* (they share one id
+space: a command written at that id replaced the macro), it read back
+as written, it ran from the device's page, and an activity's key bound
+to `{device, id}` ran it.
+
+The remote cannot name them. It shows a device's power macros as "Turn
+On" and "Turn Off" whatever their labels ("POWER_ON" on every device of
+ours), and every other macro of a device as one entry of three blank
+boxes: two macros showed as one; labels of 2 and 12 characters, a place
+on the device's order table, a command label at the same id (which
+replaced the macro) and an order entry of `FF` changed nothing. So `sbx`
+keeps a device's macros as copies in the activities with the device,
+where the remote names macros.
+
+**The copy's device:** a copy carries its device in the label slot,
+after the label's terminator: `53 42 <device>` ("SB" and the id). The
+hub keeps a label slot's bytes, and the remote showed "Menu Back" with
+that tag cleanly, as it shows any label (2026-11-01). `record.Macro`'s
+`Origin` reads and writes it; `record.TestMacroOrigin` checks the hub's
+record of our copy.
 
 ## TODO
 

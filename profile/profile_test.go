@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -578,9 +579,9 @@ macros:
 		got = append(got, ch.String())
 	}
 	want := []string{
-		"macro    rewrite POWER_ON, 5 steps", // the AVR's input
-		`macro    add "Lights", 3 steps`,
-		"macro    rewrite Movie, 1 steps",
+		"macro       rewrite POWER_ON, 5 steps", // the AVR's input
+		`macro       add "Lights", 3 steps`,
+		"macro       rewrite Movie, 1 steps",
 		"order       2 macros and favorites",
 		`button      OK -> "Lights"`,
 		`button      Vol+ -> "AVR: Volume Up"`,
@@ -657,5 +658,145 @@ devices: [{device: TV, input: Nope}]
 	}
 	if acts, _ := c.Activities(ctx); len(acts) != 2 {
 		t.Fatalf("%d activities: a failed create left one", len(acts))
+	}
+}
+
+// A device's macros live as copies in its activities: applying the
+// device's profile writes them, export reads them back, an activity's
+// keys run them as "Device: Macro", and an activity the device joins or
+// leaves gains or loses them.
+func TestDeviceMacros(t *testing.T) {
+	ctx := context.Background()
+	c := activityHub(t)
+	const tv = `device: TV
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  - {name: Menu, code: 0x10}
+  - {name: Back, code: 0x11}
+macros:
+  - name: Menu Back
+    steps:
+      - Menu
+      - {wait: 2}
+      - {send: Back, hold: 3}
+`
+	d, err := profile.Load(strings.NewReader(tv))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmds, _ := c.Commands(ctx, 1)
+	data, _ := record.Descriptor("P:NEC R:38400 D:0 S:206 F:16")
+	if err := c.WriteCommand(ctx, cmds[0], data); err != nil {
+		t.Fatal(err)
+	}
+	plan := func() []profile.Change {
+		t.Helper()
+		st, err := profile.Read(ctx, c, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		changes, _, err := profile.Plan(d, st, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return changes
+	}
+	changes := plan()
+	var got []string
+	for _, ch := range changes {
+		got = append(got, ch.String())
+	}
+	want := []string{
+		`add       1 "Back"`,
+		"order       2 commands, as the profile lists them",
+		"sync        device 1 to the remotes",
+		`macro       add "Menu Back", 3 steps, TV's (in "Watch TV")`,
+		`order       2 macros and favorites (in "Watch TV")`,
+		`sync        activity 101 to the remotes (in "Watch TV")`,
+	}
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("plan:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+	}
+	if err := profile.Apply(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	if changes := plan(); len(changes) != 0 {
+		t.Fatalf("applied, still %v", changes)
+	}
+	macros, _ := c.Macros(ctx, 0x65)
+	var cp *record.Macro
+	for _, m := range macros {
+		if m.Label == "Menu Back" {
+			cp = m
+		}
+	}
+	if cp == nil || cp.Origin != 1 || len(cp.Steps) != 3 || cp.Steps[0].Command != 3 || cp.Steps[2].Command != 1 || cp.Steps[2].Duration != 3 || cp.Steps[1].Delay != 2 {
+		t.Fatalf("the copy: %+v", cp)
+	}
+
+	// Export reads the macro back from its copy.
+	st, _ := profile.Read(ctx, c, 1)
+	back, err := profile.FromHub(st.Entity, st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	_ = back.Encode(&buf)
+	if !strings.Contains(buf.String(), "macros:\n  - name: Menu Back\n    steps:\n      - Menu\n      - {wait: 2}\n      - {send: Back, hold: 3}\n") {
+		t.Fatalf("exported:\n%s", buf.String())
+	}
+
+	// The activity's keys run it; its profile leaves it to the device's,
+	// even when pruning.
+	ast, _ := profile.ReadActivity(ctx, c, 0x65)
+	a, _ := profile.ActivityFromHub(ast)
+	if len(a.Macros) != 1 || a.Macros[0].Name != "Movie" {
+		t.Fatalf("the activity's macros: %+v", a.Macros)
+	}
+	a.Buttons["Red"] = profile.Key{Short: "TV: Menu Back"}
+	achanges, err := profile.PlanActivity(a, ast, true)
+	if err != nil || len(achanges) != 2 || achanges[0].Kind != profile.ActBind || achanges[0].Binding.Short != (record.Press{Device: 0x65, Command: cp.ID}) {
+		t.Fatalf("bind: %v %v", achanges, err)
+	}
+	if err := profile.ApplyActivity(ctx, c, achanges, nil); err != nil {
+		t.Fatal(err)
+	}
+	ast, _ = profile.ReadActivity(ctx, c, 0x65)
+	if a, _ = profile.ActivityFromHub(ast); a.Buttons["Red"].Short != "TV: Menu Back" {
+		t.Fatalf("exported Red: %q", a.Buttons["Red"].Short)
+	}
+
+	// Without the TV, the activity loses its copy.
+	gone := *a
+	gone.Devices = []profile.Member{{Device: "AVR", Input: "HDMI 2"}}
+	gone.Buttons = profile.Buttons{"Vol+": {Short: "AVR: Volume Up"}}
+	gone.Macros, gone.PowerOn, gone.PowerOff = nil, nil, nil
+	achanges, err = profile.PlanActivity(&gone, ast, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(achanges, func(ch profile.ActivityChange) bool { return ch.String() == `macro       remove "Menu Back", TV's` }) {
+		t.Errorf("leaving: %v", achanges)
+	}
+
+	// A new activity with the TV gets it.
+	id, err := profile.CreateActivity(ctx, c, &profile.Activity{Name: "Watch More", Devices: []profile.Member{{Device: "TV"}},
+		Buttons: profile.Buttons{"Red": {Short: "TV: Menu Back"}}}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	macros, _ = c.Macros(ctx, id)
+	var nc *record.Macro
+	for _, m := range macros {
+		if m.Label == "Menu Back" {
+			nc = m
+		}
+	}
+	if nc == nil || nc.Origin != 1 || len(nc.Steps) != 3 {
+		t.Fatalf("the new activity's copy: %+v", nc)
+	}
+	km, _ := c.Keymap(ctx, id)
+	if len(km) != 1 || km[0].Short != (record.Press{Device: id, Command: nc.ID}) {
+		t.Fatalf("the new activity's Red: %+v", km)
 	}
 }
