@@ -1,6 +1,8 @@
 package profile_test
 
 import (
+	"go.yaml.in/yaml/v3"
+
 	"bytes"
 	"context"
 	"fmt"
@@ -818,9 +820,9 @@ func TestLook(t *testing.T) {
 	if changes, _ := profile.PlanActivity(a, st, false); len(changes) != 0 {
 		t.Fatalf("no look, plans %v", changes)
 	}
-	a.Icon, a.Color = icon+1, color%12+1
+	a.Icon, a.Color = 10, 5
 	changes, err := profile.PlanActivity(a, st, false)
-	want := fmt.Sprintf("record      icon %d -> %d, color %d -> %d", icon, icon+1, color, color%12+1)
+	want := fmt.Sprintf("record      icon %v -> Projector, color %v -> green", icon, color)
 	if err != nil || len(changes) != 2 || changes[0].String() != want || changes[1].Kind != profile.ActSync {
 		t.Fatalf("plan %v %v, want %s", changes, err, want)
 	}
@@ -828,13 +830,12 @@ func TestLook(t *testing.T) {
 		t.Fatal(err)
 	}
 	st, _ = profile.ReadActivity(ctx, c, 0x65)
-	if st.Entity.Icon != icon+1 || st.Entity.ActivityColor() != color%12+1 {
+	if st.Entity.Icon != 10 || st.Entity.ActivityColor() != 5 {
 		t.Fatalf("activity icon %d color %d", st.Entity.Icon, st.Entity.ActivityColor())
 	}
 	if changes, _ := profile.PlanActivity(a, st, false); len(changes) != 0 {
 		t.Fatalf("applied, still %v", changes)
 	}
-
 	a.Color = 13
 	if err := a.Validate(); err == nil {
 		t.Fatal("color 13 validated")
@@ -849,14 +850,14 @@ func TestLook(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	icon, color = d.Icon, d.Color
+	dicon, dcolor := d.Icon, d.Color
 	d.Icon, d.Color = 9, 3
-	changes2, _, err := profile.Plan(d, ds, false)
-	want = fmt.Sprintf(", icon %d -> 9, color %d -> 3", icon, color)
-	if err != nil || len(changes2) != 2 || changes2[0].Kind != profile.Record || !strings.HasSuffix(changes2[0].String(), want) {
-		t.Fatalf("device plan %v %v, want %s", changes2, err, want)
+	dchanges, _, err := profile.Plan(d, ds, false)
+	want = fmt.Sprintf(", icon %v -> Wifi router, color %v -> navy", dicon, dcolor)
+	if err != nil || len(dchanges) != 2 || dchanges[0].Kind != profile.Record || !strings.HasSuffix(dchanges[0].String(), want) {
+		t.Fatalf("device plan %v %v, want %s", dchanges, err, want)
 	}
-	if err := profile.Apply(ctx, c, changes2, nil); err != nil {
+	if err := profile.Apply(ctx, c, dchanges, nil); err != nil {
 		t.Fatal(err)
 	}
 	ds, _ = profile.Read(ctx, c, 4)
@@ -864,7 +865,40 @@ func TestLook(t *testing.T) {
 	if ds.Entity.Icon != 9 || tail.Color != 3 {
 		t.Fatalf("device icon %d color %d", ds.Entity.Icon, tail.Color)
 	}
-	if changes, _, _ := profile.Plan(d, ds, false); len(changes) != 0 {
-		t.Fatalf("device applied, still %v", changes)
+	if dchanges, _, _ := profile.Plan(d, ds, false); len(dchanges) != 0 {
+		t.Fatalf("device applied, still %v", dchanges)
+	}
+}
+
+// Icons and colors read as names or numbers, and write as names.
+func TestLookYAML(t *testing.T) {
+	for _, tc := range []struct {
+		in          string
+		icon, color profile.Icon
+		err         bool
+	}{
+		{in: "icon: Game Controller\ncolor: light-blue", icon: 7, color: 11},
+		{in: "icon: 18\ncolor: 7", icon: 18, color: 7},
+		{in: "icon: Toaster", err: true},
+		{in: "color: 13", err: true},
+		{in: "icon: 46", icon: 46},
+	} {
+		a, err := profile.LoadActivity(strings.NewReader("activity: A\ndevices: [{device: TV}]\n" + tc.in))
+		if tc.err {
+			if err == nil {
+				t.Errorf("%q: no error", tc.in)
+			}
+			continue
+		}
+		if err != nil || a.Icon != tc.icon || profile.Icon(a.Color) != tc.color {
+			t.Errorf("%q: icon %d color %d, %v", tc.in, a.Icon, a.Color, err)
+		}
+	}
+	out, err := yaml.Marshal(&profile.Activity{Name: "A", Icon: 24, Color: 12})
+	if err != nil || !strings.Contains(string(out), "icon: Front projector\ncolor: lavender\n") {
+		t.Fatalf("%v:\n%s", err, out)
+	}
+	if out, _ := yaml.Marshal(&profile.Activity{Name: "A", Icon: 200}); !strings.Contains(string(out), "icon: 200\n") {
+		t.Fatalf("unknown icon:\n%s", out)
 	}
 }

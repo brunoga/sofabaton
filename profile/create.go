@@ -36,7 +36,14 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 		return 0, err
 	}
 	e.Name, e.Brand, e.Class, e.Type, e.Icon = d.Name, d.Brand, record.ClassIR, defaultType, defaultIcon
-	if err := e.SetDeviceTail(record.NewIRDeviceTail()); err != nil {
+	if d.Icon != 0 {
+		e.Icon = byte(d.Icon)
+	}
+	newTail := record.NewIRDeviceTail()
+	if d.Color != 0 {
+		newTail.Color = byte(d.Color)
+	}
+	if err := e.SetDeviceTail(newTail); err != nil {
 		return 0, err
 	}
 	id, err := c.CreateDevice(ctx, e)

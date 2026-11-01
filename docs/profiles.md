@@ -40,8 +40,8 @@ device: AWOLVision          # the device's name on the hub
 brand: AWOL Vision
 from: ir/awol-vision/aetherion   # the template it was made from, if any
 id: 4                       # the device's id on the hub (or -device)
-icon: 10                    # the remote's icon and color (palette 1-12);
-color: 1                    # left out, the hub's stay
+icon: Projector             # the remote's icon and color, by name or
+color: grey                 # number; left out, the hub's stay
 ir: {protocol: NEC, system: 0x00CE}   # lets commands give just a code
 commands:
   - {name: Power On, code: 0xE5}
@@ -140,8 +140,8 @@ device's power macro a second apart, then each device's input.
 ```yaml
 activity: Watch Blu-ray
 id: 103
-icon: 17                        # as for devices
-color: 7
+icon: Media player              # as for devices
+color: blue
 devices:                        # in the hub's member order
   - {device: Receiver, input: Input Blu-ray}   # a command of its inputs
   - {device: Blu-ray}           # not switched
@@ -164,9 +164,41 @@ macros:                         # the activity's own, across its devices
       - Blu-ray: Play
 ```
 
-Icons and colors are the hub's numbers. Which picture or color each
-number is has not been mapped yet: set one in the app and export to
-find it.
+### Icons and colors
+
+Names are matched regardless of case, spaces and hyphens; a number is
+the hub's id. `export` writes names. These are the X2's (from upstream's
+drawings of them, checked against our hub's devices).
+
+| Id | Icon | Id | Icon | Id | Icon |
+|---|---|---|---|---|---|
+| 1 | Monitor | 16 | Netflix | 31 | Wall switch |
+| 2 | Picture | 17 | Media player | 32 | Presentation screen |
+| 3 | Music | 18 | Curved TV | 33 | Party |
+| 4 | Film reel | 19 | Download | 34 | Sleep |
+| 5 | TV | 20 | Satellite dish | 35 | DAZN |
+| 6 | Gamepad | 21 | Disc | 36 | DIRECTV |
+| 7 | Game controller | 22 | Set-top box | 37 | Disney |
+| 8 | Router | 23 | Cassette deck | 38 | Hulu |
+| 9 | Wifi router | 24 | Front projector | 39 | NVIDIA |
+| 10 | Projector | 25 | Smart speaker | 40 | Prime Video |
+| 11 | Receiver | 26 | Air conditioner | 41 | PS |
+| 12 | Pendant lamp | 27 | Desk fan | 42 | R |
+| 13 | Apple TV | 28 | Ceiling fan | 43 | SAM |
+| 14 | Roku | 29 | Table lamp | 44 | Xbox |
+| 15 | Fire TV | 30 | Power outlet | 45 | YouTube |
+
+Colors are the X2 palette, named for the nearest common color:
+
+| Id | Color | App's | Id | Color | App's |
+|---|---|---|---|---|---|
+| 1 | grey | `#7F7F7F` | 7 | blue | `#00A8E0` |
+| 2 | red | `#F16161` | 8 | indigo | `#717FB4` |
+| 3 | navy | `#2E385E` | 9 | cyan | `#56CBCB` |
+| 4 | purple | `#8171B4` | 10 | beige | `#BCAD90` |
+| 5 | green | `#64BB80` | 11 | light blue | `#6EACEB` |
+| 6 | pink | `#E39E89` | 12 | lavender | `#97A5DB` |
+
 
 A command step may add `hold: N`, the step's duration byte as the hub
 keeps it; what it does is not known. `export` drops the duration bytes of
@@ -210,7 +242,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Unbinding a key, the device's category, an activity's favorites, the
-names of icons and colors, Bluetooth devices, and
+Unbinding a key, the device's category, an activity's favorites, Bluetooth devices, and
 protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

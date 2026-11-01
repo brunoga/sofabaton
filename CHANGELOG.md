@@ -9,7 +9,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `icon:` and `color:` in device and activity profiles: `export` reads
   them, and `apply` rewrites the record (and syncs) when they differ.
-  They are the hub's numbers (color: the X2's palette, 1-12).
+  They take the X2's names (`icon: Projector`, `color: green`, from
+  upstream's tables) or the hub's numbers, and `export` writes names.
 
 - Device macros: `macros:` in a device's profile, of its own commands and
   pauses. The remote cannot show a device's own macros (it shows each as

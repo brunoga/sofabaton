@@ -464,10 +464,10 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			want.InputMode = record.InputsNoSwitch
 		}
 		if d.Color != 0 {
-			want.Color = d.Color
+			want.Color = byte(d.Color)
 		}
 		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
-		reiconed := d.Icon != 0 && d.Icon != e.Icon
+		reiconed := d.Icon != 0 && byte(d.Icon) != e.Icon
 		if want != t || renamed || reiconed {
 			ne := *e
 			ne.Tail = append([]byte(nil), e.Tail...)
@@ -479,9 +479,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 				ne.Brand = d.Brand
 			}
 			if d.Icon != 0 {
-				ne.Icon = d.Icon
+				ne.Icon = byte(d.Icon)
 			}
-			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name, Look: lookChange(e.Icon, ne.Icon, t.Color, want.Color)})
+			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name, Look: lookChange(Icon(e.Icon), Icon(ne.Icon), Color(t.Color), Color(want.Color))})
 		}
 	}
 	// The remotes keep their own copy of the device and do not see edits
