@@ -24,6 +24,8 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - Icons and colors of devices and activities, by name.
 - Activity favorites: added, ordered and removed.
 - Unbinding an activity's key (`apply -prune`).
+- `sbx restore`: a dump written back to a hub, by name, creating what is
+  missing (IR devices of codes and descriptors, activities).
 
 ## Next
 
@@ -38,7 +40,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    R1).
 3. **Keys.** Unbinding a device's key: the activities' frame deletes a
    device's command, so another is needed (a capture of the app).
-4. **Restore.** Write a `dump` back to a hub.
+4. **Restore, the rest.** Devices of commands with raw data (learned or
+   from Sofabaton's database), Bluetooth devices, and the order of the
+   devices and activities.
 
 ## Later
 

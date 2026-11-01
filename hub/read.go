@@ -2,6 +2,7 @@ package hub
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/brunoga/sofabaton/record"
@@ -42,9 +43,14 @@ func reqInputs(dev byte) wire.Frame {
 	return wire.Frame{Family: wire.FamReqActivityInputs, Payload: []byte{dev}}
 }
 
-// Devices reads the device catalog.
+// Devices reads the device catalog. A hub without devices (one just
+// reset) has an empty one.
 func (c *Client) Devices(ctx context.Context) ([]*record.Entity, error) {
-	return c.entities(ctx, reqDevices, wire.FamDeviceRow)
+	devs, err := c.entities(ctx, reqDevices, wire.FamDeviceRow)
+	if errors.Is(notFound(err), ErrNotFound) {
+		return nil, nil
+	}
+	return devs, err
 }
 
 // Activities reads the activity catalog.

@@ -53,7 +53,14 @@ sbx dump -o hub.json                  # the full configuration, read-only
 ```
 
 `dump` keeps every reply's raw bytes next to the decoded view, so it is a
-lossless backup. `-v` on any command logs every frame to stderr.
+lossless backup, with each command's signal. `-v` on any command logs
+every frame to stderr.
+
+`sbx restore -f hub.json` writes a dump back: devices and activities are
+matched by name and made to match the dump, and missing ones are created
+(a hub just reset, or another hub). `-n` shows the plan. Only IR devices of
+commands with a code or descriptor can be created so far; the others, and
+the activities with them, are skipped and reported.
 
 ### Changing devices with profiles
 
@@ -124,7 +131,8 @@ is how the protocol behind every write above was learned.
 |---|---|
 | `wire/`, `record/` | Pure protocol code: frames, paging, the hub's records |
 | `transport/`, `session/`, `hub/` | Discovery, the hub connection, the public client |
-| `profile/` | YAML device profiles, IR protocols, plans and their application |
+| `profile/` | YAML device profiles, IR protocols, plans and their application, restore |
+| `dump/` | Lossless dumps of a hub, served back as a simulated hub |
 | `proxy/`, `capture/`, `hubsim/` | Official-app proxy, traffic captures, a simulated hub for tests |
 | `cmd/sbx/` | Command-line tool |
 | `docs/` | The protocol as we understand it, with a confidence level per fact |

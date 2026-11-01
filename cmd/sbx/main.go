@@ -4,6 +4,7 @@
 //	sbx info              show a hub's identity
 //	sbx list              list devices, activities, commands, macros
 //	sbx dump              dump a hub's configuration as JSON
+//	sbx restore -f F      make a hub hold what a dump holds
 //	sbx proxy             stand between the app and the hub, recording
 //	sbx add-ir ...        add an IR command to a device
 //	sbx remove-ir ...     delete a command of a device
@@ -93,6 +94,9 @@ commands:
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
              IR device or activity)
+  restore    make a hub hold what a dump holds: devices and activities
+             matched by name are applied, missing ones created (-f
+             dump.json; -n shows the plan, -prune as for apply)
   remove-device    delete a device (-device ID)
   remove-activity  delete an activity (-activity ID)
   sync       update the remotes' copy of a device or activity (-device ID);
@@ -129,7 +133,7 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 	case "list":
 		return list(ctx, args, stdout, stderr)
 	case "dump":
-		return dump(ctx, args, stdout, stderr)
+		return dumpHub(ctx, args, stdout, stderr)
 	case "add-ir":
 		return addIR(ctx, args, stdout, stderr)
 	case "remove-ir":
@@ -140,6 +144,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return export(ctx, args, stdout, stderr)
 	case "apply":
 		return apply(ctx, args, stdin, stdout, stderr)
+	case "restore":
+		return restore(ctx, args, stdin, stdout, stderr)
 	case "templates":
 		return listTemplates(args, stdout)
 	case "new":

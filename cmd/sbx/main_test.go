@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/brunoga/sofabaton/dump"
+
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/hubsim"
 	"github.com/brunoga/sofabaton/record"
@@ -57,7 +59,7 @@ func TestDump(t *testing.T) {
 	if err := run(context.Background(), strings.NewReader(""), []string{"dump", "-hub", "192.0.2.1", "-v"}, &out, &errs); err != nil {
 		t.Fatal(err)
 	}
-	var d dumpFile
+	var d dump.File
 	if err := json.Unmarshal(out.Bytes(), &d); err != nil {
 		t.Fatalf("dump is not JSON: %v\n%s", err, out.String())
 	}
