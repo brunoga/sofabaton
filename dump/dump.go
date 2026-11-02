@@ -16,6 +16,7 @@ import (
 
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/record"
+	"github.com/brunoga/sofabaton/session"
 	"github.com/brunoga/sofabaton/wire"
 )
 
@@ -63,14 +64,17 @@ type Entity struct {
 	Members  *Reply   `json:"members,omitempty"`
 }
 
-// Read dumps the hub c is connected to. A request that fails is kept in
-// the dump, with its error, and reported to log.
+// Read dumps the hub c is connected to. A request the hub refuses is kept
+// in the dump, with its error, and reported to log. Read stops at the
+// first other failure (a lost connection, a hub that stopped answering),
+// and the dump lacks what was not read: ReadProgress reports it.
 func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File {
 	d, _ := ReadProgress(ctx, c, tool, log, nil)
 	return d
 }
 
-// ReadProgress is Read, calling progress (if not nil) before each device
+// ReadProgress is Read, returning the failure that stopped it, and calling
+// progress (if not nil) before each device
 // and activity with how many are done, how many there are, and the one
 // being read; reading a real hub takes about two seconds for each. ctx
 // cancels it between them, with ctx's error.
@@ -82,7 +86,7 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 			Batch: i.BatchDate(), ID: hex.EncodeToString(i.ID[:]), Raw: hex.EncodeToString(i.AppendPayload(nil))},
 	}
 	v := c.Variant()
-	r := reader{ctx: ctx, c: c, log: log}
+	r := &reader{ctx: ctx, c: c, log: log}
 	d.Devices = r.reply("devices", wire.Frame{Family: wire.FamReqDevices}, wire.FamDeviceRow,
 		func(bodies [][]byte) (any, error) { return entities(v, bodies) })
 	d.Activities = r.reply("activities", wire.Frame{Family: wire.FamReqActivities}, wire.FamActivityRow,
@@ -95,6 +99,9 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 		for _, e := range ents {
 			if err := ctx.Err(); err != nil {
 				return d, err
+			}
+			if r.err != nil {
+				return d, r.err
 			}
 			if progress != nil {
 				progress(done, total, e.Name)
@@ -151,6 +158,9 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 			d.Entities = append(d.Entities, de)
 		}
 	}
+	if r.err != nil {
+		return d, r.err
+	}
 	if progress != nil {
 		progress(total, total, "")
 	}
@@ -181,14 +191,25 @@ type reader struct {
 	ctx context.Context
 	c   *hub.Client
 	log io.Writer
+	// err is the first failure that was not the hub refusing a request:
+	// a lost connection, or a hub that stopped answering. The requests
+	// after it are not sent.
+	err error
 }
 
-// reply runs one request and records its outcome; failures are kept in
-// the dump rather than ending it.
-func (r reader) reply(name string, req wire.Frame, fam wire.Family, decode func([][]byte) (any, error)) *Reply {
+// reply runs one request and records its outcome. The hub's refusals
+// are kept in the dump; other failures end the reading (see reader.err).
+func (r *reader) reply(name string, req wire.Frame, fam wire.Family, decode func([][]byte) (any, error)) *Reply {
 	rep := &Reply{Request: name}
+	if r.err != nil {
+		rep.Error = "not read: " + r.err.Error()
+		return rep
+	}
 	bodies, err := r.c.Records(r.ctx, req, fam)
 	if err != nil {
+		if !errors.Is(err, session.ErrRejected) {
+			r.err = fmt.Errorf("dump: %s: %w", name, err)
+		}
 		rep.Error = err.Error()
 		if r.log != nil {
 			fmt.Fprintf(r.log, "%s: %v\n", name, err)
