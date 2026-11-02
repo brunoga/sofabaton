@@ -4,8 +4,9 @@ This library is a Go port of the protocol implementation in
 https://github.com/m3tac0de/home-assistant-sofabaton-x1s (the Python library
 under custom_components/sofabaton_x1s/lib/, also published as sofabaton-x).
 Protocol knowledge, test vectors under testdata/ that were extracted from or
-generated with that project, and code structure derived from it are used
-under its license:
+generated with that project, code structure derived from it, and the X2's
+icon drawings (profile/icon_paths.go, from its remote card) are used under its
+license (the icons that are wordmarks belong to the services they name):
 
   MIT License
 

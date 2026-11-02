@@ -48,6 +48,32 @@ var colorNames = []string{
 	12: "lavender",   // #97A5DB
 }
 
+// rgb are the palette's colors as the X2 app draws them, by id.
+var rgb = [...][3]uint8{
+	1: {0x7F, 0x7F, 0x7F}, {0xF1, 0x61, 0x61}, {0x2E, 0x38, 0x5E}, {0x81, 0x71, 0xB4},
+	{0x64, 0xBB, 0x80}, {0xE3, 0x9E, 0x89}, {0x00, 0xA8, 0xE0}, {0x71, 0x7F, 0xB4},
+	{0x56, 0xCB, 0xCB}, {0xBC, 0xAD, 0x90}, {0x6E, 0xAC, 0xEB}, {0x97, 0xA5, 0xDB},
+}
+
+// Path is the icon's drawing on the X2: one path on a 24x24 view box,
+// filled (nonzero), or "" for an id the X2 has none for. X1 and X1S hubs
+// number their icons differently.
+func (i Icon) Path() string {
+	if int(i) < len(x2IconPaths) {
+		return x2IconPaths[i]
+	}
+	return ""
+}
+
+// RGB is the color as the X2 app draws it: 0 and ids it does not know as
+// grey.
+func (c Color) RGB() (r, g, b uint8) {
+	if c == 0 || int(c) >= len(rgb) {
+		c = 1
+	}
+	return rgb[c][0], rgb[c][1], rgb[c][2]
+}
+
 func (i Icon) String() string             { return lookName(iconNames, uint8(i)) }
 func (c Color) String() string            { return lookName(colorNames, uint8(c)) }
 func (i Icon) IsZero() bool               { return i == 0 }

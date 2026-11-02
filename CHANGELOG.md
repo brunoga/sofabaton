@@ -16,6 +16,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `profile.Icon.Path`: the X2's drawing of each icon, as an SVG path on
+  a 24x24 view box (upstream's, MIT), and `profile.Color.RGB`: each
+  palette color as the X2 app draws it. For apps that show devices and
+  activities as the remote does.
 - Clearing a device's key: `hub.Client.UnbindKey` takes devices as well
   as activities (the frame the app sends, captured on our X2:
   `0x10 [device, key]`, the one that deletes a command when given a
