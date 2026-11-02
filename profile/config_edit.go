@@ -146,6 +146,74 @@ func (cfg *Config) RemoveCommand(device, name string) error {
 	return nil
 }
 
+// RenameMacro renames a device's macro, in the device's keys and in the
+// activities' keys, steps and favorites ("Device: Macro").
+func (cfg *Config) RenameMacro(device, old, name string) error {
+	d := cfg.Device(device)
+	if d == nil {
+		return fmt.Errorf("profile: no device %q", device)
+	}
+	i := slices.IndexFunc(d.Macros, func(m DeviceMacro) bool { return strings.EqualFold(m.Name, old) })
+	if i < 0 {
+		return fmt.Errorf("profile: device %q has no macro %q", d.Name, old)
+	}
+	if j := slices.IndexFunc(d.Macros, func(m DeviceMacro) bool { return strings.EqualFold(m.Name, name) }); j >= 0 && j != i {
+		return fmt.Errorf("profile: device %q has a macro named %q already", d.Name, d.Macros[j].Name)
+	}
+	if slices.ContainsFunc(d.Commands, func(c Command) bool { return strings.EqualFold(c.Name, name) }) {
+		return fmt.Errorf("profile: device %q has a command named %q: a macro cannot share its name", d.Name, name)
+	}
+	old, d.Macros[i].Name = d.Macros[i].Name, name
+	for k, key := range d.Buttons {
+		if strings.EqualFold(key.Short, old) {
+			key.Short = name
+		}
+		if strings.EqualFold(key.Long, old) {
+			key.Long = name
+		}
+		d.Buttons[k] = key
+	}
+	for _, a := range cfg.Activities {
+		a.refs(func(dev, cmd string) (string, string, bool) {
+			if strings.EqualFold(dev, d.Name) && strings.EqualFold(cmd, old) {
+				return dev, name, true
+			}
+			return dev, cmd, true
+		})
+	}
+	return nil
+}
+
+// RemoveMacro removes a device's macro, and the keys and favorites that
+// run it.
+func (cfg *Config) RemoveMacro(device, name string) error {
+	d := cfg.Device(device)
+	if d == nil {
+		return fmt.Errorf("profile: no device %q", device)
+	}
+	i := slices.IndexFunc(d.Macros, func(m DeviceMacro) bool { return strings.EqualFold(m.Name, name) })
+	if i < 0 {
+		return fmt.Errorf("profile: device %q has no macro %q", d.Name, name)
+	}
+	name = d.Macros[i].Name
+	d.Macros = slices.Delete(d.Macros, i, i+1)
+	is := func(s string) bool { return strings.EqualFold(s, name) }
+	for k, key := range d.Buttons {
+		switch {
+		case is(key.Short):
+			delete(d.Buttons, k)
+		case is(key.Long):
+			d.Buttons[k] = Key{Short: key.Short}
+		}
+	}
+	for _, a := range cfg.Activities {
+		a.refs(func(dev, cmd string) (string, string, bool) {
+			return dev, cmd, !strings.EqualFold(dev, d.Name) || !is(cmd)
+		})
+	}
+	return nil
+}
+
 // RemoveActivity removes an activity.
 func (cfg *Config) RemoveActivity(name string) error {
 	a := cfg.Activity(name)
