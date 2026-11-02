@@ -85,8 +85,14 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 // Refresh is ReadProgress for a hub read before into old: a command whose
 // record (id, label, type and code) is as old has it keeps old's signal
 // instead of reading it again. Reading signals is most of a dump's time
-// (19 of 33 s on our X2), and a signal does not change without its
-// record. old must be a dump of the same hub; a nil old reads everything.
+// (19 of 33 s on our X2). old must be a dump of the same hub; a nil old
+// reads everything.
+//
+// The hub keeps a command's record when its signal is written again under
+// the same label (on our X2, 2026-11-02): a signal can change without its
+// record. So old must hold only signals known to be current, such as a
+// dump made before writes, without the devices written to (drop their
+// entities' Data).
 func Refresh(ctx context.Context, c *hub.Client, old *File, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
 	if old != nil {
 		i := c.Info()
