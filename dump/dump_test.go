@@ -106,3 +106,71 @@ func TestReadFailures(t *testing.T) {
 		}
 	}
 }
+
+// Refresh reads again only the signals of commands whose record changed,
+// and makes the same dump as a full read.
+func TestRefresh(t *testing.T) {
+	ctx := context.Background()
+	tv, _ := record.NewEntity(wire.X2)
+	tv.ID, tv.Name, tv.Class = 1, "TV", record.ClassIR
+	h := hubsim.FromModel(&hubsim.Model{
+		Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 9, Name: "X2 HUB"},
+		Devices: []*record.Entity{tv},
+	})
+	c, err := hub.Open(ctx, hubsim.Pipe(h), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	write := func(id byte, label string, f int) {
+		t.Helper()
+		cmd, _ := record.NewCommand(wire.X2)
+		cmd.Device, cmd.ID, cmd.Type, cmd.Label = 1, id, record.ClassIR, label
+		data, _ := record.Descriptor(fmt.Sprintf("P:NEC R:38400 D:0 S:206 F:%d", f))
+		if err := c.WriteCommand(ctx, cmd, data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(1, "Power", 1)
+	write(2, "Menu", 2)
+	write(3, "Back", 3)
+	old, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(2, "Home", 9) // renamed and recoded
+
+	blobs := func() int {
+		n := 0
+		for _, r := range h.Requests() {
+			if r.Family == wire.FamReqBlob {
+				n++
+			}
+		}
+		return n
+	}
+	before := blobs()
+	got, err := dump.Refresh(ctx, c, old, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := blobs() - before; n != 1 {
+		t.Errorf("read %d signals, want 1", n)
+	}
+	full, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var a, b strings.Builder
+	got.Write(&a)
+	full.Write(&b)
+	if a.String() != b.String() {
+		t.Errorf("refresh:\n%s\nfull read:\n%s", a.String(), b.String())
+	}
+
+	other := *old
+	other.Info.ID = "aabbccddeeff"
+	if _, err := dump.Refresh(ctx, c, &other, "test", nil, nil); err == nil {
+		t.Error("refreshed from another hub's dump")
+	}
+}
