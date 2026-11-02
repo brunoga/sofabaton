@@ -79,6 +79,25 @@ func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File 
 // being read; reading a real hub takes about two seconds for each. ctx
 // cancels it between them, with ctx's error.
 func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
+	return read(ctx, c, tool, log, progress, nil)
+}
+
+// Refresh is ReadProgress for a hub read before into old: a command whose
+// record (id, label, type and code) is as old has it keeps old's signal
+// instead of reading it again. Reading signals is most of a dump's time
+// (19 of 33 s on our X2), and a signal does not change without its
+// record. old must be a dump of the same hub; a nil old reads everything.
+func Refresh(ctx context.Context, c *hub.Client, old *File, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
+	if old != nil {
+		i := c.Info()
+		if old.Info.ID != hex.EncodeToString(i.ID[:]) {
+			return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
+		}
+	}
+	return read(ctx, c, tool, log, progress, old)
+}
+
+func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File) (*File, error) {
 	i := c.Info()
 	d := &File{
 		Tool: tool,
@@ -118,7 +137,12 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 					wire.Frame{Family: wire.FamReqCommands, Payload: []byte{id, 0xFF}}, wire.FamCommandPage,
 					func(bodies [][]byte) (any, error) { return record.ParseCommandList(v, single(bodies)) })
 				cmds, _ := de.Commands.Decoded.([]*record.Command)
+				kept := old.signals(v, id)
 				for _, cmd := range cmds {
+					if rep := kept[keyOf(cmd)]; rep != nil {
+						de.Data = append(de.Data, rep)
+						continue
+					}
 					de.Data = append(de.Data, r.reply(fmt.Sprintf("data %#x %d", id, cmd.ID),
 						wire.Frame{Family: wire.FamReqBlob, Payload: []byte{id, cmd.ID}}, wire.FamBlobPage,
 						func(bodies [][]byte) (any, error) {
@@ -165,6 +189,57 @@ func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer
 		progress(total, total, "")
 	}
 	return d, nil
+}
+
+// cmdKey is what identifies a command's signal: a command with the same
+// key has the same signal.
+type cmdKey struct {
+	id, kind byte
+	code     [record.CodeLen]byte
+	label    string
+}
+
+func keyOf(c *record.Command) cmdKey {
+	return cmdKey{id: c.ID, kind: byte(c.Type), code: c.Code, label: c.Label}
+}
+
+// signals is the device's command data replies in d, by their command's
+// key: only replies read without error, of commands d lists.
+func (d *File) signals(v wire.Variant, device byte) map[cmdKey]*Reply {
+	if d == nil {
+		return nil
+	}
+	for _, e := range d.Entities {
+		if e.ID != device {
+			continue
+		}
+		b, ok, err := bodies(e.Commands)
+		if err != nil || !ok {
+			return nil
+		}
+		cmds, err := record.ParseCommandList(v, single(b))
+		if err != nil {
+			return nil
+		}
+		byID := map[byte]*record.Command{}
+		for _, c := range cmds {
+			byID[c.ID] = c
+		}
+		out := map[cmdKey]*Reply{}
+		for _, r := range e.Data {
+			b, ok, err := bodies(r)
+			if err != nil || !ok || r.Error != "" {
+				continue
+			}
+			_, c, _, err := record.ParseCommandWrite(v, single(b))
+			if err != nil || byID[c.ID] == nil {
+				continue
+			}
+			out[keyOf(byID[c.ID])] = r
+		}
+		return out
+	}
+	return nil
 }
 
 // Write writes the dump as indented JSON.
