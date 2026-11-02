@@ -67,6 +67,9 @@ type Device struct {
 	// Macros are the device's macros, which applying the profile copies
 	// into every activity with the device (see MacroList).
 	Macros MacroList `yaml:"macros,omitempty"`
+
+	// class is the device's on the hub it was read from (FromHub), or 0.
+	class record.Class
 }
 
 // InputList is a device's input commands. nil leaves the hub's inputs as
@@ -273,7 +276,7 @@ func (h *Hex16) UnmarshalYAML(n *yaml.Node) error {
 // when every command is an NEC code of one system code, they become codes
 // of the device's IR protocol.
 func FromHub(dev *record.Entity, st *State) (*Device, error) {
-	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID, Icon: Icon(dev.Icon)}
+	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID, Icon: Icon(dev.Icon), class: dev.Class}
 	if t, err := dev.DeviceTail(); err == nil {
 		d.Color = Color(t.Color)
 	}

@@ -613,10 +613,13 @@ func (st *ActivityState) variant() wire.Variant {
 }
 
 // ApplyActivity carries out an activity's plan on the hub, calling done
-// after each change.
+// after each change. ctx can cancel it between changes.
 func ApplyActivity(ctx context.Context, c *hub.Client, changes []ActivityChange, done func(ActivityChange)) error {
 	ap := activityApplier{ids: map[string]byte{}}
 	for _, ch := range changes {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err := ap.apply(ctx, c, ch); err != nil {
 			return fmt.Errorf("profile: %v: %w", ch, err)
 		}

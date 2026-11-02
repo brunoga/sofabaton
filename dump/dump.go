@@ -66,6 +66,15 @@ type Entity struct {
 // Read dumps the hub c is connected to. A request that fails is kept in
 // the dump, with its error, and reported to log.
 func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File {
+	d, _ := ReadProgress(ctx, c, tool, log, nil)
+	return d
+}
+
+// ReadProgress is Read, calling progress (if not nil) before each device
+// and activity with how many are done, how many there are, and the one
+// being read; reading a real hub takes about two seconds for each. ctx
+// cancels it between them, with ctx's error.
+func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
 	i := c.Info()
 	d := &File{
 		Tool: tool,
@@ -79,9 +88,18 @@ func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File 
 	d.Activities = r.reply("activities", wire.Frame{Family: wire.FamReqActivities}, wire.FamActivityRow,
 		func(bodies [][]byte) (any, error) { return entities(v, bodies) })
 
-	for _, list := range []*Reply{d.Devices, d.Activities} {
-		ents, _ := list.Decoded.([]*record.Entity)
+	devs, _ := d.Devices.Decoded.([]*record.Entity)
+	acts, _ := d.Activities.Decoded.([]*record.Entity)
+	done, total := 0, len(devs)+len(acts)
+	for _, ents := range [][]*record.Entity{devs, acts} {
 		for _, e := range ents {
+			if err := ctx.Err(); err != nil {
+				return d, err
+			}
+			if progress != nil {
+				progress(done, total, e.Name)
+			}
+			done++
 			de := &Entity{ID: e.ID, Name: e.Name}
 			id := e.ID
 			if record.IsActivityID(id) {
@@ -133,7 +151,10 @@ func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File 
 			d.Entities = append(d.Entities, de)
 		}
 	}
-	return d
+	if progress != nil {
+		progress(total, total, "")
+	}
+	return d, nil
 }
 
 // Write writes the dump as indented JSON.
