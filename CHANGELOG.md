@@ -18,7 +18,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `dump.Refresh` reads a hub again, keeping an older dump's signal for
   each command whose record is unchanged: signals are most of a dump's
-  time, so apps can cache a hub and check it quickly.
+  time. The hub keeps a command's record when its signal is rewritten
+  under the same label, so the older dump must hold only signals known
+  to be current (see its doc).
 
 - Reads the hub leaves unanswered are asked again, up to
   `hub.ReadRetries` times: our X2 drops about one command read in a few
