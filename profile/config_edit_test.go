@@ -144,3 +144,30 @@ func TestRemoveCommand(t *testing.T) {
 		t.Error("removed what is not there")
 	}
 }
+
+func TestMacroEdits(t *testing.T) {
+	cfg := editConfig(t)
+	a := cfg.Activities[0]
+	a.Buttons["Blue"] = profile.Key{Short: "TV: Twice"}
+	a.Favorites = append(a.Favorites, "TV: Twice")
+	if err := cfg.RenameMacro("tv", "twice", "Double Menu"); err != nil {
+		t.Fatal(err)
+	}
+	got := yamlOf(t, a)
+	if !strings.Contains(got, "Blue: 'TV: Double Menu'") || !strings.Contains(got, "- 'TV: Double Menu'") || strings.Contains(got, "Twice") {
+		t.Errorf("after the rename:\n%s", got)
+	}
+	if cfg.RenameMacro("TV", "Double Menu", "Menu") == nil {
+		t.Error("a macro took a command's name")
+	}
+	if err := cfg.RemoveMacro("TV", "double menu"); err != nil {
+		t.Fatal(err)
+	}
+	got = yamlOf(t, a)
+	if strings.Contains(got, "Double Menu") || len(cfg.Devices[0].Macros) != 0 {
+		t.Errorf("after the removal:\n%s", got)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Error(err)
+	}
+}
