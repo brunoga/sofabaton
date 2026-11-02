@@ -33,6 +33,14 @@ func (h *Hub) Handle(fam wire.Family, handler Handler) {
 	h.handlers[fam] = handler
 }
 
+// Handler is the handler for requests of family fam, or nil: for wrapping
+// it, as tests of a flaky hub do.
+func (h *Hub) Handler(fam wire.Family) Handler {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.handlers[fam]
+}
+
 // Requests returns the requests received so far.
 func (h *Hub) Requests() []wire.Frame {
 	h.mu.Lock()

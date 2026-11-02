@@ -7,6 +7,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Reads the hub leaves unanswered are asked again, up to
+  `hub.ReadRetries` times: our X2 drops about one command read in a few
+  hundred, which failed a whole-hub read now and then.
+
 - A whole hub as one configuration, for apps: `profile.Snapshot` reads
   every device and activity as profiles (with progress), and
   `profile.ApplyConfig` makes a hub hold a `profile.Config`, matching by
