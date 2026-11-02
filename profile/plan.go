@@ -511,9 +511,13 @@ func sameInputs(a, b []record.InputEntry) bool {
 }
 
 // Apply carries out a plan on the hub, calling done after each change.
+// ctx can cancel it between changes.
 func Apply(ctx context.Context, c *hub.Client, changes []Change, done func(Change)) error {
 	acts := map[byte]activityApplier{}
 	for _, ch := range changes {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		var err error
 		switch ch.Kind {
 		case InActivity:

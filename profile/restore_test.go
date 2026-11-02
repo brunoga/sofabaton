@@ -62,9 +62,11 @@ func export(t *testing.T, c *hub.Client) map[string]string {
 	return out
 }
 
-// A hub restored from another, directly and through a dump, has the same
-// profiles; restoring again changes nothing.
-func TestRestore(t *testing.T) {
+// populated is a simulated hub with two devices and an activity using
+// them: keys, a device macro run from a key, an activity macro, and
+// favorites.
+func populated(t *testing.T) *hub.Client {
+	t.Helper()
 	ctx := context.Background()
 	src := emptyHub(t)
 	for _, y := range []string{`device: TV
@@ -144,6 +146,14 @@ favorites: ['TV: Back', 'AVR: HDMI 1']
 	if err := profile.ApplyActivity(ctx, src, changes2, nil); err != nil {
 		t.Fatal(err)
 	}
+	return src
+}
+
+// A hub restored from another, directly and through a dump, has the same
+// profiles; restoring again changes nothing.
+func TestRestore(t *testing.T) {
+	ctx := context.Background()
+	src := populated(t)
 	want := export(t, src)
 	if !strings.Contains(want["Watch TV"], "Red: 'TV: Menu Back'") || !strings.Contains(want["TV"], "Menu Back") {
 		t.Fatalf("source:\n%s\n%s", want["Watch TV"], want["TV"])

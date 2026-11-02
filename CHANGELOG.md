@@ -7,6 +7,19 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- A whole hub as one configuration, for apps: `profile.Snapshot` reads
+  every device and activity as profiles (with progress), and
+  `profile.ApplyConfig` makes a hub hold a `profile.Config`, matching by
+  id (an edited snapshot: renames are renames) or by name (a restore),
+  creating what is missing and, with `Delete`, deleting what the config
+  lacks (activities first, devices last). `Config.RenameDevice`,
+  `RenameCommand`, `RemoveDevice` and `RemoveActivity` edit a config
+  with every reference kept consistent. `dump.ReadProgress` reports
+  progress. Long operations (`Apply`, `ApplyActivity`, `ApplyConfig`,
+  `Snapshot`, `ReadProgress`) can be cancelled between steps.
+  `profile.Restore` is now `Snapshot` then `ApplyConfig`, and no longer
+  unbinds and rebinds keys that run device macros whose copies exist.
+
 - `sbx restore -f dump.json`: makes a hub hold what a dump holds.
   Devices and activities are matched by name, applied, and created when
   missing (IR devices of codes and descriptors; activities, then their

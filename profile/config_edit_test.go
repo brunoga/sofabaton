@@ -1,0 +1,120 @@
+package profile_test
+
+import (
+	"strings"
+	"testing"
+
+	"go.yaml.in/yaml/v3"
+
+	"github.com/brunoga/sofabaton/profile"
+)
+
+func editConfig(t *testing.T) *profile.Config {
+	t.Helper()
+	tv, err := profile.Load(strings.NewReader(`device: TV
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  - {name: Power On, code: 0x01}
+  - {name: Power Off, code: 0x02}
+  - {name: Menu, code: 0x10}
+power: {on: Power On, off: Power Off}
+buttons:
+  OK: Menu
+macros:
+  - name: Twice
+    steps: [Menu, Menu]
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	avr, err := profile.Load(strings.NewReader(`device: AVR
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  - {name: HDMI 1, code: 0x23}
+  - {name: Volume Up, code: 0x24}
+inputs: [HDMI 1]
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.LoadActivity(strings.NewReader(`activity: Watch TV
+devices:
+  - {device: AVR, input: HDMI 1}
+  - {device: TV}
+buttons:
+  Vol+: 'AVR: Volume Up'
+  Menu: {short: 'TV: Menu', long: 'AVR: HDMI 1'}
+  Red: Both
+power_on: [{power on: TV}, {input: AVR}, TV: Menu]
+macros:
+  - name: Both
+    steps: [TV: Menu, AVR: HDMI 1]
+favorites: ['TV: Menu', 'AVR: HDMI 1']
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &profile.Config{Devices: []*profile.Device{tv, avr}, Activities: []*profile.Activity{a}}
+}
+
+func yamlOf(t *testing.T, v any) string {
+	t.Helper()
+	b, err := yaml.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
+
+func TestConfigEdits(t *testing.T) {
+	cfg := editConfig(t)
+	if err := cfg.RenameDevice("tv", "Television"); err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.RenameCommand("Television", "menu", "Home"); err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	got := yamlOf(t, cfg.Activities[0]) + yamlOf(t, cfg.Devices[0])
+	for _, want := range []string{"device: Television", "short: 'Television: Home'", "- Television: Home", "- power on: Television",
+		"favorites:\n    - 'Television: Home'", "OK: Home", "steps:\n        - Home\n        - Home"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, " TV:") || strings.Contains(got, "'TV:") || strings.Contains(got, ": TV\n") || strings.Contains(got, ": Menu") || strings.Contains(got, "- Menu") {
+		t.Errorf("old names left:\n%s", got)
+	}
+
+	if err := cfg.RemoveDevice("AVR"); err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	got = yamlOf(t, cfg.Activities[0])
+	if strings.Contains(got, "AVR") {
+		t.Errorf("AVR left:\n%s", got)
+	}
+	// The Menu key keeps its short press; Vol+ goes.
+	if !strings.Contains(got, "Menu: 'Television: Home'") || strings.Contains(got, "Vol+") {
+		t.Errorf("keys:\n%s", got)
+	}
+
+	for _, err := range []error{
+		cfg.RenameDevice("Nope", "X"),
+		cfg.RenameCommand("Television", "Nope", "X"),
+		cfg.RenameCommand("Television", "Home", "power on"),
+		cfg.RemoveDevice("AVR"),
+	} {
+		if err == nil {
+			t.Error("an edit that should fail did not")
+		}
+	}
+	cfg.Devices = append(cfg.Devices, &profile.Device{Name: "AVR"})
+	if err := cfg.RenameDevice("Television", "avr"); err == nil {
+		t.Error("renamed onto another device's name")
+	}
+}
