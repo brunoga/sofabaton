@@ -16,6 +16,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Clearing a device's key: `hub.Client.UnbindKey` takes devices as well
+  as activities (the frame the app sends, captured on our X2:
+  `0x10 [device, key]`, the one that deletes a command when given a
+  command's id), and `profile.Plan` with prune clears the keys the
+  profile does not bind, before removing commands. `hub.NextCommandID`
+  keeps command ids below the keys' codes (`record.FirstKey`), so the
+  two cannot be confused.
+
 - `dump.Refresh` reads a hub again, keeping an older dump's signal for
   each command whose record is unchanged: signals are most of a dump's
   time. The hub keeps a command's record when its signal is rewritten

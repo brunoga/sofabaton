@@ -28,6 +28,8 @@ const (
 	Reorder
 	// Bind writes a key's binding.
 	Bind
+	// Unbind clears a key the profile does not bind (with prune).
+	Unbind
 	// PowerMacro writes a power macro.
 	PowerMacro
 	// Inputs writes the device's inputs page.
@@ -55,6 +57,8 @@ func (k ChangeKind) String() string {
 		return "order"
 	case Bind:
 		return "button"
+	case Unbind:
+		return "unbind"
 	case PowerMacro:
 		return "macro"
 	case Inputs:
@@ -83,7 +87,8 @@ type Change struct {
 	// Device and Order are the device and its new order (Reorder).
 	Device byte
 	Order  []record.Place
-	// Binding is the key's new binding (Bind); Key names its commands.
+	// Binding is the key's new binding (Bind), or the one cleared
+	// (Unbind); Key names its commands.
 	Binding record.Binding
 	Key     Key
 	// Macro is the new power macro (PowerMacro), running Name.
@@ -125,6 +130,8 @@ func (c Change) String() string {
 			s += fmt.Sprintf(", long %q", c.Key.Long)
 		}
 		return s
+	case Unbind:
+		return fmt.Sprintf("button      %v unbound", c.Binding.Button)
 	case PowerMacro:
 		return fmt.Sprintf("macro       %s -> %q", c.Macro.Label, c.Name)
 	case Inputs:
@@ -258,7 +265,8 @@ func readDeviceActivities(ctx context.Context, c *hub.Client, device byte) ([]*D
 // are matched by exact name, then by name regardless of case, then by
 // signal (a rename: several commands can share one, so names go first); the hub's commands the profile does not match are
 // removed only with prune, and returned as kept otherwise, listed after
-// the profile's. Keys the profile does not bind are left as they are.
+// the profile's. Keys the profile does not bind are cleared with prune,
+// before any command is removed, and left as they are otherwise.
 func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Command, err error) {
 	cmds, data := st.Commands, st.Data
 	if err := d.Validate(); err != nil {
@@ -320,6 +328,18 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})
 	}
 	changes = append(changes, adds...)
+	if prune {
+		bound := map[record.Button]bool{}
+		for name := range d.Buttons {
+			btn, _ := record.ParseButton(name) // validated
+			bound[btn] = true
+		}
+		for _, r := range st.Keymap {
+			if !bound[r.Button] && r.Button.IsHardKey() {
+				changes = append(changes, Change{Kind: Unbind, Binding: r})
+			}
+		}
+	}
 	removed := map[byte]bool{}
 	for _, id := range displayOrder(cmds, st.Order) {
 		if claimed[id] {
@@ -539,6 +559,8 @@ func Apply(ctx context.Context, c *hub.Client, changes []Change, done func(Chang
 			err = c.WriteOrder(ctx, ch.Device, ch.Order)
 		case Bind:
 			err = c.WriteButton(ctx, ch.Binding)
+		case Unbind:
+			err = c.UnbindKey(ctx, ch.Binding.Entity, ch.Binding.Button)
 		case PowerMacro:
 			err = c.WriteMacro(ctx, ch.Macro)
 		case Inputs:

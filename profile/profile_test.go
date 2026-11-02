@@ -169,11 +169,37 @@ func TestPlanAndApply(t *testing.T) {
 			t.Fatalf("Back is bound to %+v", b)
 		}
 	}
-	// Pruning removes what the profile lacks.
-	changes, _, _ = profile.Plan(d, st, true)
-	if len(changes) != 2 || changes[0].Kind != profile.Remove || changes[0].Command.Label != "Mute" || changes[1].Kind != profile.Sync {
-		t.Fatalf("prune %v", changes)
+	// Pruning removes what the profile lacks: keys first, then commands.
+	delete(d.Buttons, "OK")
+	if changes, _, _ := profile.Plan(d, st, false); len(changes) != 0 {
+		t.Fatalf("an unbound key, unpruned: %v", changes)
 	}
+	changes, _, _ = profile.Plan(d, st, true)
+	got = nil
+	for _, ch := range changes {
+		got = append(got, ch.String())
+	}
+	want = []string{
+		`button      OK unbound`,
+		`remove    4 "Mute"`,
+		`sync        device 4 to the remotes`,
+	}
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("prune:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+	}
+	if err := profile.Apply(ctx, c, changes[:1], nil); err != nil {
+		t.Fatal(err)
+	}
+	st, _ = profile.Read(ctx, c, 4)
+	if len(st.Keymap) != 2 || len(st.Commands) != 5 {
+		t.Fatalf("after the unbind: keys %v, %d commands", st.Keymap, len(st.Commands))
+	}
+	d.Buttons["OK"] = profile.Key{Short: "OK"}
+	changes, _, _ = profile.Plan(d, st, false)
+	if err := profile.Apply(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	st, _ = profile.Read(ctx, c, 4)
 
 	// Export gives back the profile, codes and all.
 	devs, _ := c.Devices(ctx)
@@ -1024,7 +1050,7 @@ func TestUnbind(t *testing.T) {
 	if back, _ := profile.ActivityFromHub(st); len(back.Buttons) != 0 || len(back.Favorites) != 1 {
 		t.Fatalf("after: buttons %v, favorites %q", back.Buttons, back.Favorites)
 	}
-	if err := c.UnbindKey(ctx, 1, record.ButtonOK); err == nil {
-		t.Fatal("unbound a device's key")
+	if err := c.UnbindKey(ctx, 1, record.Button(0x05)); err == nil {
+		t.Fatal("unbound a favorite slot as a key")
 	}
 }

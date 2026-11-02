@@ -11,6 +11,10 @@ import (
 // at 0x97.
 type Button uint8
 
+// FirstKey is the lowest hard key's code; ids below it are favorites,
+// macros and commands.
+const FirstKey = ButtonC
+
 // Hard keys. The X2 remote has every one; the X1 and X1S remotes lack the
 // ones from ButtonC through ButtonNum1 (see Button.X2Only).
 const (

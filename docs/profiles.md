@@ -16,7 +16,8 @@ sbx remove-device -hub IP -device "ZZ Test"      # delete a device
 `apply` compares the file with the hub and changes only what differs:
 renames and new signals rewrite a command in place (same id, same code, so
 buttons and macros that use it keep working), missing commands are
-added, and commands the file lacks are kept unless `-prune` is given.
+added, and commands the file lacks are kept unless `-prune` is given,
+as are the keys it does not bind (`-prune` clears them).
 Commands are matched by name, then by name regardless of case, then by
 signal (so a renamed command is recognized; names go first because
 catalog profiles often give several commands one code). The order of the commands
@@ -251,7 +252,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Unbinding a device's key (the frame that unbinds an activity's deletes
-a device's command), the device's category, Bluetooth devices, and
+The device's category, Bluetooth devices, and
 protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).
