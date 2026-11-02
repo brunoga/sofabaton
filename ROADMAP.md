@@ -39,7 +39,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
 3. **Keys.** Unbinding a device's key: the activities' frame deletes a
-   device's command, so another is needed (a capture of the app).
+   device's command, so another is needed (a capture of the app clearing
+   a device's key). Required: Armrest's device editor lets users clear
+   keys, and until then its review warns that they stay.
 4. **Restore, the rest.** Devices of commands with raw data (learned or
    from Sofabaton's database), Bluetooth devices, and the order of the
    devices and activities.
