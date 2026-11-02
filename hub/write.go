@@ -56,13 +56,15 @@ func (c *Client) DeleteCommand(ctx context.Context, device, id byte) error {
 	return nil
 }
 
-// NextCommandID is the lowest command id the commands do not use.
+// NextCommandID is the lowest command id the commands do not use. Ids stay
+// below the keys' (record.Button), since deleting a command and clearing a
+// key are the same frame, told apart by the id.
 func NextCommandID(cmds []*record.Command) (byte, error) {
 	used := map[byte]bool{}
 	for _, c := range cmds {
 		used[c.ID] = true
 	}
-	for id := 1; id < 0xFF; id++ {
+	for id := 1; id < int(record.FirstKey); id++ {
 		if !used[byte(id)] {
 			return byte(id), nil
 		}

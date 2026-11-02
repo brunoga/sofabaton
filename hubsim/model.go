@@ -177,6 +177,16 @@ func FromModel(m *Model) *Hub {
 			}
 			return []wire.Frame{Status(NotFound)}
 		}
+		if record.Button(id).IsHardKey() { // a key of the device
+			rows := m.Keymaps[dev]
+			for i, b := range rows {
+				if byte(b.Button) == id {
+					m.Keymaps[dev] = append(rows[:i:i], rows[i+1:]...)
+					return []wire.Frame{Status(0)}
+				}
+			}
+			return []wire.Frame{Status(NotFound)}
+		}
 		cmds := m.Commands[dev]
 		for i, c := range cmds {
 			if c.ID == id {

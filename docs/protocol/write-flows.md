@@ -251,15 +251,21 @@ Upstream's notes (X1, X1S) agree where they overlap.
 **Macro delete:** `0x10 [activity, id]`, upstream's flow: on our X2
 (2026-11-01) it took 0.3 s, dropped the macro and its place on the
 activity's list, and left the keys as they were. (On a device the same
-frame deletes a command.)
+frame with a command's id deletes the command.)
 
-## Unbinding an activity's key `[X2✓]`
+## Unbinding a key `[X2✓]`
 
-`0x10 [activity, key]`, status-acked, then the sync (upstream's flow;
-our X2 took it on 2026-11-01 and the keymap read back without the
-key). The frame that deletes a macro or favorite: their ids are below
-the keys'. On a device it deletes the command with that id, so it
-cannot unbind a device's key.
+`0x10 [entity, key]`, status-acked, then the sync `0x65 [entity, 01]`,
+for an activity (upstream's flow; our X2 took it on 2026-11-01 and the
+keymap read back without the key) and a device (the app's flow, captured
+on our X2 on 2026-11-02 clearing the Receiver's Up:
+`testdata/x2/app-clear-device-key.jsonl`; the keymap read back one row
+short, the rest and the commands as they were). It is the frame that
+deletes an activity's macro or favorite and a device's command: the hub
+tells them apart by the id. Macros, favorites and commands have ids
+below the keys' (0x97 and up), so `hub.NextCommandID` keeps new
+commands' ids below them. Assigning the key again is a binding write
+(`0x3E`), as in a create.
 
 ## Favorites `[X2✓]`
 
