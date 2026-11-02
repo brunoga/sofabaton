@@ -5,6 +5,15 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- A dump stops at the first failure that is not the hub refusing a
+  request (a lost connection, a hub that stopped answering), and
+  `dump.ReadProgress` and `sbx dump` report it. It used to carry on,
+  recording every request after it as failed, and hand back a dump
+  missing most of the hub: an app whose phone slept mid-read showed an
+  empty hub.
+
 ### Added
 
 - Reads the hub leaves unanswered are asked again, up to

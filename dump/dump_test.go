@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/brunoga/sofabaton/dump"
 	"github.com/brunoga/sofabaton/hub"
@@ -58,5 +59,50 @@ func TestReadProgress(t *testing.T) {
 	})
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("got %v, want cancelled", err)
+	}
+}
+
+// A request the hub refuses is kept in the dump; a hub that stops
+// answering ends the read with an error, rather than with a dump missing
+// what was not read.
+func TestReadFailures(t *testing.T) {
+	ctx := context.Background()
+	m := func() *hubsim.Hub {
+		tv, _ := record.NewEntity(wire.X2)
+		tv.ID, tv.Name, tv.Class = 1, "TV", record.ClassIR
+		return hubsim.FromModel(&hubsim.Model{
+			Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 9, Name: "X2 HUB"},
+			Devices: []*record.Entity{tv},
+		})
+	}
+
+	h := m()
+	h.Handle(wire.FamReqButtons, func(wire.Frame) []wire.Frame { return []wire.Frame{hubsim.Status(hubsim.NotFound)} })
+	c, err := hub.Open(ctx, hubsim.Pipe(h), hub.Options{Timeout: 50 * time.Millisecond})
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	c.Close()
+	if err != nil || d.Entities[0].Keymap.Error == "" {
+		t.Errorf("refused keymap: %v, %+v", err, d.Entities[0].Keymap)
+	}
+
+	h = m()
+	h.Handle(wire.FamReqButtons, func(wire.Frame) []wire.Frame { return nil })
+	c, err = hub.Open(ctx, hubsim.Pipe(h), hub.Options{Timeout: 50 * time.Millisecond})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	_, err = dump.ReadProgress(ctx, c, "test", nil, nil)
+	if !errors.Is(err, context.DeadlineExceeded) || !strings.Contains(err.Error(), "keymap") {
+		t.Errorf("unanswered keymap: got %v", err)
+	}
+	// The read stopped there: nothing after the keymap was asked for.
+	for _, r := range h.Requests() {
+		if r.Family == wire.FamReqMacros {
+			t.Error("macros asked for after the hub stopped answering")
+		}
 	}
 }

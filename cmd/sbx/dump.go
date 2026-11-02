@@ -22,7 +22,10 @@ func dumpHub(ctx context.Context, args []string, stdout, stderr io.Writer) error
 		return err
 	}
 	defer func() { _ = c.Close() }()
-	d := dump.Read(ctx, c, "sbx "+version, stderr)
+	d, err := dump.ReadProgress(ctx, c, "sbx "+version, stderr, nil)
+	if err != nil {
+		return err
+	}
 	w := stdout
 	if *out != "" {
 		f, err := os.Create(*out)
