@@ -118,3 +118,29 @@ func TestConfigEdits(t *testing.T) {
 		t.Error("renamed onto another device's name")
 	}
 }
+
+func TestRemoveCommand(t *testing.T) {
+	cfg := editConfig(t)
+	if err := cfg.RemoveCommand("tv", "menu"); err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.RemoveCommand("AVR", "HDMI 1"); err != nil {
+		t.Fatal(err)
+	}
+	got := yamlOf(t, cfg.Devices[0]) + yamlOf(t, cfg.Devices[1]) + yamlOf(t, cfg.Activities[0])
+	for _, bad := range []string{"Menu", "HDMI 1", "OK:"} {
+		if strings.Contains(got, bad) {
+			t.Errorf("%q left in:\n%s", bad, got)
+		}
+	}
+	// The TV's macro lost its steps; its power stays.
+	if tv := cfg.Devices[0]; tv.Power == nil || len(tv.Macros[0].Steps) != 0 {
+		t.Errorf("TV: %+v", tv)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Error(err)
+	}
+	if cfg.RemoveCommand("TV", "Nope") == nil || cfg.RemoveCommand("Nope", "Menu") == nil {
+		t.Error("removed what is not there")
+	}
+}

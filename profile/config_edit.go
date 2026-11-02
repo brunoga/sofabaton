@@ -100,6 +100,52 @@ func (cfg *Config) RemoveDevice(name string) error {
 	return nil
 }
 
+// RemoveCommand removes a device's command, and what uses it: the
+// device's keys (a long press that uses it goes, a short press takes the
+// whole key), power (both of it), inputs and macro steps, and the
+// activities' keys, steps and favorites.
+func (cfg *Config) RemoveCommand(device, name string) error {
+	d := cfg.Device(device)
+	if d == nil {
+		return fmt.Errorf("profile: no device %q", device)
+	}
+	i := slices.IndexFunc(d.Commands, func(c Command) bool { return strings.EqualFold(c.Name, name) })
+	if i < 0 {
+		return fmt.Errorf("profile: device %q has no command %q", d.Name, name)
+	}
+	name = d.Commands[i].Name
+	d.Commands = slices.Delete(d.Commands, i, i+1)
+	is := func(cmd string) bool { return strings.EqualFold(cmd, name) }
+	for k, key := range d.Buttons {
+		switch {
+		case is(key.Short):
+			delete(d.Buttons, k)
+		case is(key.Long):
+			d.Buttons[k] = Key{Short: key.Short}
+		}
+	}
+	if d.Power != nil && (is(d.Power.On) || is(d.Power.Off)) {
+		d.Power = nil
+	}
+	if d.Inputs != nil {
+		d.Inputs = slices.DeleteFunc(d.Inputs, is)
+	}
+	for i := range d.Macros {
+		d.Macros[i].Steps = slices.DeleteFunc(d.Macros[i].Steps, func(s DeviceStep) bool { return is(s.Command) })
+	}
+	for _, a := range cfg.Activities {
+		a.refs(func(dev, cmd string) (string, string, bool) {
+			return dev, cmd, !strings.EqualFold(dev, d.Name) || !is(cmd)
+		})
+		for j, m := range a.Devices {
+			if strings.EqualFold(m.Device, d.Name) && is(m.Input) {
+				a.Devices[j].Input = ""
+			}
+		}
+	}
+	return nil
+}
+
 // RemoveActivity removes an activity.
 func (cfg *Config) RemoveActivity(name string) error {
 	a := cfg.Activity(name)

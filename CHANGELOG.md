@@ -30,7 +30,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   id (an edited snapshot: renames are renames) or by name (a restore),
   creating what is missing and, with `Delete`, deleting what the config
   lacks (activities first, devices last). `Config.RenameDevice`,
-  `RenameCommand`, `RemoveDevice` and `RemoveActivity` edit a config
+  `RenameCommand`, `RemoveDevice`, `RemoveCommand` and `RemoveActivity` edit a config
   with every reference kept consistent. `dump.ReadProgress` reports
   progress. Long operations (`Apply`, `ApplyActivity`, `ApplyConfig`,
   `Snapshot`, `ReadProgress`) can be cancelled between steps.
