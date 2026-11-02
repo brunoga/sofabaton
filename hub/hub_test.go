@@ -208,6 +208,49 @@ func TestDefaultTimeout(t *testing.T) {
 	}
 }
 
+// A read the hub leaves unanswered is asked again, up to ReadRetries
+// times.
+func TestReadRetries(t *testing.T) {
+	for _, drops := range []int{1, hub.ReadRetries, hub.ReadRetries + 1} {
+		h := hubsim.FromModel(model(t))
+		devices := h.Handler(wire.FamReqDevices)
+		var asked int
+		h.Handle(wire.FamReqDevices, func(req wire.Frame) []wire.Frame {
+			if asked++; asked <= drops {
+				return nil
+			}
+			return devices(req)
+		})
+		c, err := hub.Open(context.Background(), hubsim.Pipe(h), hub.Options{Timeout: 50 * time.Millisecond})
+		if err != nil {
+			t.Fatal(err)
+		}
+		devs, err := c.Devices(context.Background())
+		c.Close()
+		if drops <= hub.ReadRetries && (err != nil || len(devs) == 0) {
+			t.Errorf("%d dropped: %v", drops, err)
+		}
+		if drops > hub.ReadRetries && !errors.Is(err, context.DeadlineExceeded) {
+			t.Errorf("%d dropped: got %v, want a timeout", drops, err)
+		}
+	}
+
+	// The caller's own deadline is not retried.
+	h := hubsim.FromModel(model(t))
+	h.Handle(wire.FamReqDevices, func(wire.Frame) []wire.Frame { return nil })
+	c, err := hub.Open(context.Background(), hubsim.Pipe(h), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	if _, err := c.Devices(ctx); !errors.Is(err, context.DeadlineExceeded) || time.Since(start) > time.Second {
+		t.Errorf("got %v after %v", err, time.Since(start))
+	}
+}
+
 func TestAddCommand(t *testing.T) {
 	ctx := context.Background()
 	m := model(t)

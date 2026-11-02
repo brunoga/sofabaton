@@ -103,14 +103,27 @@ func (c *Client) readInfo(ctx context.Context) (*record.HubInfo, error) {
 // answers with in family fam. The typed readers are built on it; it is
 // exported for dumps that keep the hub's exact bytes.
 func (c *Client) Records(ctx context.Context, req wire.Frame, fam wire.Family) ([][]byte, error) {
-	ctx, cancel := c.bound(ctx)
-	defer cancel()
-	b := &session.Burst{Family: fam}
-	if err := c.s.Exchange(ctx, req, b); err != nil {
+	for try := 0; ; try++ {
+		rctx, cancel := c.bound(ctx)
+		b := &session.Burst{Family: fam}
+		err := c.s.Exchange(rctx, req, b)
+		cancel()
+		if err == nil {
+			return b.Records()
+		}
+		// Reads change nothing, so one the hub left unanswered is asked
+		// again, unless the caller's own deadline is what ran out.
+		if try < ReadRetries && ctx.Err() == nil && errors.Is(err, context.DeadlineExceeded) {
+			continue
+		}
 		return nil, fmt.Errorf("hub: %v: %w", req.Family.Name(wire.ToHub), err)
 	}
-	return b.Records()
 }
+
+// ReadRetries is how many times Records asks again when the hub does not
+// answer a read: now and then the X2 leaves one unanswered (one in a few
+// hundred command reads on ours, 2026-11-02), and asking again works.
+const ReadRetries = 2
 
 // ErrUnsupported reports a write to a hub model we have not tested
 // writes on: only the X2's are verified, so the client refuses the X1's and
