@@ -16,6 +16,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `irfile`: Flipper Zero's `.ir` files and irdb's `.csv` files of IR
+  codes, read into device profiles. Codes in the protocols profiles
+  render become commands, named the usual way ("Volume Up" for Vol_up
+  or KEY_VOLUMEUP); raw timings and other protocols are left out and
+  listed with why. `sbx import-ir -f file` writes the profile.
 - More IR protocols in profiles, in irdb's device, subdevice and
   function: NECx (and Samsung32 as NECx), Sony12, Sony15, Sony20, JVC,
   RC6, Samsung20 and Panasonic, in the descriptor forms upstream found

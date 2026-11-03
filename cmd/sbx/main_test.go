@@ -449,3 +449,36 @@ func TestTemplates(t *testing.T) {
 		t.Errorf("applied a template: %v", err)
 	}
 }
+
+// import-ir makes a profile of a Flipper file, saying what it left out.
+func TestImportIR(t *testing.T) {
+	dir := t.TempDir()
+	file := dir + "/My_Projector.ir"
+	if err := os.WriteFile(file, []byte(`Filetype: IR signals file
+Version: 1
+#
+name: Power
+type: parsed
+protocol: NECext
+address: 00 CE 00 00
+command: 12 ED 00 00
+#
+name: Ok
+type: raw
+frequency: 38000
+duty_cycle: 0.330000
+data: 9000 4500
+`), 0o666); err != nil {
+		t.Fatal(err)
+	}
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"import-ir", "-f", file}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "device: My Projector") || !strings.Contains(out.String(), "name: Power") {
+		t.Errorf("profile:\n%s", out.String())
+	}
+	if !strings.Contains(errs.String(), "left out Ok: raw timings") {
+		t.Errorf("stderr: %s", errs.String())
+	}
+}
