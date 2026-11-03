@@ -255,13 +255,14 @@ var Types = []string{
 }
 
 // typeWords give each type the words a source's kinds start with, in the
-// order they are tried: the first a kind has a word starting with wins.
+// order they are tried: the first a kind has a word starting with wins
+// ("satel" is irdb's satellites, some of them misspelled).
 var typeWords = []struct {
 	typ   string
 	words []string
 }{
 	{"Soundbar", []string{"soundbar", "sound bar"}},
-	{"Cable or satellite", []string{"cable", "satellite", "satelite", "sat", "dss", "dvb", "dvr", "set top", "settop", "stb", "tivo", "receiver hddvr"}},
+	{"Cable or satellite", []string{"cable", "satel", "sat", "dss", "dvb", "dvr", "set top", "settop", "stb", "tivo", "receiver hddvr"}},
 	{"Streaming or media player", []string{"streaming", "media", "multimedia", "apple tv", "roku", "fire tv"}},
 	{"TV", []string{"tv", "television", "plasma", "lcd", "hdtv", "monitor", "display", "touchscreen"}},
 	{"Projector", []string{"projector", "beamer"}},
@@ -276,7 +277,7 @@ var typeWords = []struct {
 // Type is the kind of device the entry is the file of, one of Types.
 func (e Entry) Type() string {
 	k := " " + strings.Join(strings.FieldsFunc(strings.ToLower(e.Kind), func(r rune) bool {
-		return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9')
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
 	}), " ") + " "
 	for _, t := range typeWords {
 		for _, w := range t.words {
