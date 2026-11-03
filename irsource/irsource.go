@@ -243,3 +243,96 @@ func Search(entries []Entry, query string, max int) []Entry {
 	}
 	return out
 }
+
+// Types are the kinds of device entries are sorted into, in the order to
+// offer them: the sources' own kinds differ (Flipper-IRDB's "Audio and
+// Video Receivers" are irdb's "Receiver", "Amplifier", "Surround
+// Processor" and more).
+var Types = []string{
+	"TV", "Projector", "Receiver or amplifier", "Soundbar", "Speaker",
+	"Blu-ray, DVD or VCR", "CD or audio player", "Streaming or media player",
+	"Cable or satellite", "Lighting", "Air conditioner, fan or heater", "Other",
+}
+
+// typeWords give each type the words a source's kinds start with, in the
+// order they are tried: the first a kind has a word starting with wins.
+var typeWords = []struct {
+	typ   string
+	words []string
+}{
+	{"Soundbar", []string{"soundbar", "sound bar"}},
+	{"Cable or satellite", []string{"cable", "satellite", "satelite", "sat", "dss", "dvb", "dvr", "set top", "settop", "stb", "tivo", "receiver hddvr"}},
+	{"Streaming or media player", []string{"streaming", "media", "multimedia", "apple tv", "roku", "fire tv"}},
+	{"TV", []string{"tv", "television", "plasma", "lcd", "hdtv", "monitor", "display", "touchscreen"}},
+	{"Projector", []string{"projector", "beamer"}},
+	{"Receiver or amplifier", []string{"receiver", "audio and video receiver", "amplifier", "amp", "preamp", "surround", "av processor", "processor", "dsp", "tuner", "lifestyle", "mini system", "music center"}},
+	{"Speaker", []string{"speaker", "subwoofer"}},
+	{"Blu-ray, DVD or VCR", []string{"blu", "dvd", "vcr", "laser", "laserdisc", "video", "hd dvd"}},
+	{"CD or audio player", []string{"cd", "cassette", "tape", "minidisc", "jukebox", "mp3", "ipod", "music", "dat", "turntable", "phono"}},
+	{"Lighting", []string{"light", "led", "lamp"}},
+	{"Air conditioner, fan or heater", []string{"ac", "acs", "air", "fan", "heater", "humidifier", "purifier", "fireplace", "climate"}},
+}
+
+// Type is the kind of device the entry is the file of, one of Types.
+func (e Entry) Type() string {
+	k := " " + strings.Join(strings.FieldsFunc(strings.ToLower(e.Kind), func(r rune) bool {
+		return !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9')
+	}), " ") + " "
+	for _, t := range typeWords {
+		for _, w := range t.words {
+			// At a word's start, and the whole word for short ones (so
+			// that "ac" is not "accessory").
+			if len(w) <= 3 && strings.Contains(k, " "+w+" ") || len(w) > 3 && strings.Contains(k, " "+w) {
+				return t.typ
+			}
+		}
+	}
+	return "Other"
+}
+
+// Makers are the makers of entries of the type (of any, for ""), each
+// once whatever its capitals, by name.
+func Makers(entries []Entry, typ string) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, e := range entries {
+		k := strings.ToLower(e.Brand)
+		if seen[k] || typ != "" && e.Type() != typ || strings.HasPrefix(k, "unknown") {
+			continue
+		}
+		seen[k] = true
+		out = append(out, e.Brand)
+	}
+	sort.Slice(out, func(i, j int) bool { return strings.ToLower(out[i]) < strings.ToLower(out[j]) })
+	return out
+}
+
+// Browse is the entries of the type and maker ("" for any), searched for
+// query, or, without one, all of them by maker and model. At most max are
+// returned (all for 0), with how many there were.
+func Browse(entries []Entry, typ, maker, query string, max int) ([]Entry, int) {
+	var in []Entry
+	for _, e := range entries {
+		if (typ == "" || e.Type() == typ) && (maker == "" || strings.EqualFold(e.Brand, maker)) {
+			in = append(in, e)
+		}
+	}
+	var out []Entry
+	if strings.TrimSpace(query) != "" {
+		out = Search(in, query, 0)
+	} else {
+		out = in
+		sort.SliceStable(out, func(i, j int) bool {
+			a, b := out[i], out[j]
+			if !strings.EqualFold(a.Brand, b.Brand) {
+				return strings.ToLower(a.Brand) < strings.ToLower(b.Brand)
+			}
+			return strings.ToLower(a.Model) < strings.ToLower(b.Model)
+		})
+	}
+	n := len(out)
+	if max > 0 && n > max {
+		out = out[:max]
+	}
+	return out, n
+}

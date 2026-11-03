@@ -81,3 +81,44 @@ func TestIndexSearchFetch(t *testing.T) {
 		t.Error("fetched a file that is not there")
 	}
 }
+
+// Kinds of both sources' wording sort into the same types; makers merge
+// whatever their capitals; browsing narrows by type and maker.
+func TestTypesMakersBrowse(t *testing.T) {
+	for kind, want := range map[string]string{
+		"Audio and Video Receivers": "Receiver or amplifier",
+		"Pre-Amplifier":             "Receiver or amplifier",
+		"Surround Processor":        "Receiver or amplifier",
+		"Video Projector":           "Projector",
+		"Unknown_TV":                "TV",
+		"SoundBars":                 "Soundbar",
+		"Satellite DVR":             "Cable or satellite",
+		"Blu-Ray":                   "Blu-ray, DVD or VCR",
+		"ACs":                       "Air conditioner, fan or heater",
+		"Accessories":               "Other",
+	} {
+		if got := (Entry{Kind: words(kind)}).Type(); got != want {
+			t.Errorf("%s: %s, want %s", kind, got, want)
+		}
+	}
+	all := []Entry{
+		{Source: Flipper, Brand: "Denon", Kind: "Audio and Video Receivers", Model: "Denon AVR 1", Path: "a"},
+		{Source: IRDB, Brand: "DENON", Kind: "Amplifier", Model: "device 2", Path: "b"},
+		{Source: IRDB, Brand: "Acme", Kind: "Receiver", Model: "device 4", Path: "c"},
+		{Source: IRDB, Brand: "Denon", Kind: "TV", Model: "device 1", Path: "d"},
+		{Source: IRDB, Brand: "Unknown_Acme", Kind: "Receiver", Model: "device 5", Path: "e"},
+	}
+	if got := Makers(all, "Receiver or amplifier"); len(got) != 2 || got[0] != "Acme" || got[1] != "Denon" {
+		t.Errorf("receivers' makers %v", got)
+	}
+	got, n := Browse(all, "Receiver or amplifier", "denon", "", 0)
+	if n != 2 || got[0].Path != "a" || got[1].Path != "b" {
+		t.Errorf("Denon receivers: %d %+v", n, got)
+	}
+	if got, n := Browse(all, "", "denon", "tv", 0); n != 1 || got[0].Path != "d" {
+		t.Errorf("Denon, searching tv: %d %+v", n, got)
+	}
+	if got, n := Browse(all, "Receiver or amplifier", "", "", 1); n != 4 || len(got) != 1 {
+		t.Errorf("at most 1 of %d: %+v", n, got)
+	}
+}
