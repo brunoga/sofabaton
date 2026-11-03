@@ -86,6 +86,62 @@ address: 00 CE 00 00
 command: 0B F4 00 00
 `
 
+// A made-up Flipper file of a Denon receiver's keys (Kaseikyo, Denon's
+// vendor: Denon-K, as Denon's charts number them), with a Panasonic key
+// and one of another vendor.
+const kaseikyoFile = `Filetype: IR signals file
+Version: 1
+#
+name: Vol_up
+type: parsed
+protocol: Kaseikyo
+address: 41 54 32 00
+command: 70 01 00 00
+#
+name: Mute
+type: parsed
+protocol: Kaseikyo
+address: 41 54 32 00
+command: 72 01 00 00
+#
+name: Netflix
+type: parsed
+protocol: Kaseikyo
+address: 80 02 20 01
+command: A0 00 00 00
+#
+name: Odd
+type: parsed
+protocol: Kaseikyo
+address: 00 03 01 00
+command: 01 00 00 00
+`
+
+func TestFlipperKaseikyo(t *testing.T) {
+	sigs, err := irfile.ReadFlipper(strings.NewReader(kaseikyoFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, skip := irfile.Device("Receiver", sigs)
+	want := map[string]string{
+		// Our X2's receiver has these two, byte for byte.
+		"Volume Up": "P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:368 CHECKSUM:86",
+		"Mute":      "P:DenonK R:37000 C0:84 C1:50 C2:0 D:4 S:1 F:370 CHECKSUM:118",
+		// Panasonic {128, 0, 74}, as Flipper keeps it: upstream's sample,
+		// byte for byte (less the MUL:1 the hub does not send).
+		"Netflix": "P:Panasonic R:37000 C0:2 C1:32 D:128 S:0 F:74 CHECKSUM:202",
+	}
+	got := descriptors(t, d)
+	for n, w := range want {
+		if got[n] != w {
+			t.Errorf("%s: %q, want %q", n, got[n], w)
+		}
+	}
+	if why := skipped(skip)["Odd"]; !strings.Contains(why, "vendor 0x0103") {
+		t.Errorf("Odd skipped for %q", why)
+	}
+}
+
 func TestFlipper(t *testing.T) {
 	sigs, err := irfile.ReadFlipper(strings.NewReader(flipperFile))
 	if err != nil {

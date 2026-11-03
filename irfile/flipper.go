@@ -120,8 +120,39 @@ func flipperSignal(f map[string]string) Signal {
 	case "RC6":
 		s.IR = profile.IR{Protocol: "RC6", Device: u8(a)}
 		s.Code = uint16(c & 0xFF)
+	case "KASEIKYO":
+		return flipperKaseikyo(s, a, c)
 	default:
 		s.Skip = fmt.Sprintf("protocol %s: not one the X2 is known to send yet", proto)
+	}
+	return s
+}
+
+// flipperKaseikyo is a Kaseikyo signal of a Flipper file. Flipper splits
+// the frame's six bytes (b0 to b5, sent in that order) into a vendor (b0,
+// b1), two 4-bit genres (b2's high nibble, b3's low), a 10-bit command
+// (b3's high nibble, b4's low six bits) and a 2-bit id (b4's top), and
+// keeps the address as id<<24 | vendor<<8 | genre1<<4 | genre2. Two
+// vendors are protocols profiles render: Panasonic's (0x2002), whose
+// device, subdevice and function are b2, b3 and b4, and Denon's (0x3254),
+// Denon-K, whose device and subdevice are the genres and whose function
+// is the command and the id (12 bits: Flipper's Denon files give the
+// codes of Denon's charts, 368 for a receiver's volume up).
+func flipperKaseikyo(s Signal, a, c uint32) Signal {
+	id, vendor := a>>24&0x3, a>>8&0xFFFF
+	g1, g2 := uint8(a>>4&0xF), uint8(a&0xF)
+	cmd := c & 0x3FF
+	switch vendor {
+	case 0x2002:
+		// b2's low nibble is the vendor's parity, 0 for 0x2002.
+		d, sub := g1<<4, g2|uint8(cmd&0xF)<<4
+		s.IR = profile.IR{Protocol: "Panasonic", Device: &d, Subdevice: &sub}
+		s.Code = uint16(cmd>>4 | id<<6)
+	case 0x3254:
+		s.IR = profile.IR{Protocol: "DenonK", Device: &g1, Subdevice: &g2}
+		s.Code = uint16(cmd | id<<10)
+	default:
+		s.Skip = fmt.Sprintf("Kaseikyo of vendor 0x%04X: not supported yet", vendor)
 	}
 	return s
 }
