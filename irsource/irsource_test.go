@@ -86,15 +86,16 @@ func TestIndexSearchFetch(t *testing.T) {
 // whatever their capitals; browsing narrows by type and maker.
 func TestTypesMakersBrowse(t *testing.T) {
 	for kind, want := range map[string]string{
-		"Audio and Video Receivers": "Receiver or amplifier",
-		"Pre-Amplifier":             "Receiver or amplifier",
-		"Surround Processor":        "Receiver or amplifier",
+		"Audio and Video Receivers": "Receiver",
+		"Pre-Amplifier":             "Receiver",
+		"Surround Processor":        "Receiver",
 		"Video Projector":           "Projector",
 		"Unknown_TV":                "TV",
+		"TVs":                       "TV",
 		"SoundBars":                 "Soundbar",
-		"Satellite DVR":             "Cable or satellite",
-		"Blu-Ray":                   "Blu-ray, DVD or VCR",
-		"ACs":                       "Air conditioner, fan or heater",
+		"Satellite DVR":             "Cable/satellite",
+		"Blu-Ray":                   "Video player",
+		"ACs":                       "Climate",
 		"Accessories":               "Other",
 	} {
 		if got := (Entry{Kind: words(kind)}).Type(); got != want {
@@ -108,17 +109,17 @@ func TestTypesMakersBrowse(t *testing.T) {
 		{Source: IRDB, Brand: "Denon", Kind: "TV", Model: "device 1", Path: "d"},
 		{Source: IRDB, Brand: "Unknown_Acme", Kind: "Receiver", Model: "device 5", Path: "e"},
 	}
-	if got := Makers(all, "Receiver or amplifier"); len(got) != 2 || got[0] != "Acme" || got[1] != "Denon" {
+	if got := Makers(all, "Receiver"); len(got) != 2 || got[0] != "Acme" || got[1] != "Denon" {
 		t.Errorf("receivers' makers %v", got)
 	}
-	got, n := Browse(all, "Receiver or amplifier", "denon", "", 0)
+	got, n := Browse(all, "Receiver", "denon", "", 0)
 	if n != 2 || got[0].Path != "a" || got[1].Path != "b" {
 		t.Errorf("Denon receivers: %d %+v", n, got)
 	}
 	if got, n := Browse(all, "", "denon", "tv", 0); n != 1 || got[0].Path != "d" {
 		t.Errorf("Denon, searching tv: %d %+v", n, got)
 	}
-	if got, n := Browse(all, "Receiver or amplifier", "", "", 1); n != 4 || len(got) != 1 {
+	if got, n := Browse(all, "Receiver", "", "", 1); n != 4 || len(got) != 1 {
 		t.Errorf("at most 1 of %d: %+v", n, got)
 	}
 }

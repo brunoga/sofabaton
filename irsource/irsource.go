@@ -249,9 +249,9 @@ func Search(entries []Entry, query string, max int) []Entry {
 // Video Receivers" are irdb's "Receiver", "Amplifier", "Surround
 // Processor" and more).
 var Types = []string{
-	"TV", "Projector", "Receiver or amplifier", "Soundbar", "Speaker",
-	"Blu-ray, DVD or VCR", "CD or audio player", "Streaming or media player",
-	"Cable or satellite", "Lighting", "Air conditioner, fan or heater", "Other",
+	"TV", "Projector", "Receiver", "Soundbar", "Speaker", "Video player",
+	"Audio player", "Media player", "Cable/satellite", "Lighting", "Climate",
+	"Other",
 }
 
 // typeWords give each type the words a source's kinds start with, in the
@@ -262,16 +262,16 @@ var typeWords = []struct {
 	words []string
 }{
 	{"Soundbar", []string{"soundbar", "sound bar"}},
-	{"Cable or satellite", []string{"cable", "satel", "sat", "dss", "dvb", "dvr", "set top", "settop", "stb", "tivo", "receiver hddvr"}},
-	{"Streaming or media player", []string{"streaming", "media", "multimedia", "apple tv", "roku", "fire tv"}},
+	{"Cable/satellite", []string{"cable", "satel", "sat", "dss", "dvb", "dvr", "set top", "settop", "stb", "tivo", "receiver hddvr"}},
+	{"Media player", []string{"streaming", "media", "multimedia", "apple tv", "roku", "fire tv"}},
 	{"TV", []string{"tv", "television", "plasma", "lcd", "hdtv", "monitor", "display", "touchscreen"}},
 	{"Projector", []string{"projector", "beamer"}},
-	{"Receiver or amplifier", []string{"receiver", "audio and video receiver", "amplifier", "amp", "preamp", "surround", "av processor", "processor", "dsp", "tuner", "lifestyle", "mini system", "music center"}},
+	{"Receiver", []string{"receiver", "audio and video receiver", "amplifier", "amp", "preamp", "surround", "av processor", "processor", "dsp", "tuner", "lifestyle", "mini system", "music center"}},
 	{"Speaker", []string{"speaker", "subwoofer"}},
-	{"Blu-ray, DVD or VCR", []string{"blu", "dvd", "vcr", "laser", "laserdisc", "video", "hd dvd"}},
-	{"CD or audio player", []string{"cd", "cassette", "tape", "minidisc", "jukebox", "mp3", "ipod", "music", "dat", "turntable", "phono"}},
+	{"Video player", []string{"blu", "dvd", "vcr", "laser", "laserdisc", "video", "hd dvd"}},
+	{"Audio player", []string{"cd", "cassette", "tape", "minidisc", "jukebox", "mp3", "ipod", "music", "dat", "turntable", "phono"}},
 	{"Lighting", []string{"light", "led", "lamp"}},
-	{"Air conditioner, fan or heater", []string{"ac", "acs", "air", "fan", "heater", "humidifier", "purifier", "fireplace", "climate"}},
+	{"Climate", []string{"ac", "acs", "air", "fan", "heater", "humidifier", "purifier", "fireplace", "climate"}},
 }
 
 // Type is the kind of device the entry is the file of, one of Types.
@@ -281,9 +281,10 @@ func (e Entry) Type() string {
 	}), " ") + " "
 	for _, t := range typeWords {
 		for _, w := range t.words {
-			// At a word's start, and the whole word for short ones (so
-			// that "ac" is not "accessory").
-			if len(w) <= 3 && strings.Contains(k, " "+w+" ") || len(w) > 3 && strings.Contains(k, " "+w) {
+			// At a word's start, and the whole word (or its plural) for
+			// short ones (so that "ac" is not "accessory").
+			short := strings.Contains(k, " "+w+" ") || strings.Contains(k, " "+w+"s ")
+			if len(w) <= 3 && short || len(w) > 3 && strings.Contains(k, " "+w) {
 				return t.typ
 			}
 		}
