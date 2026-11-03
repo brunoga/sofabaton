@@ -102,13 +102,17 @@ type Power struct {
 
 // IR is the IR protocol a device's codes share, and its parameters.
 type IR struct {
-	// Protocol is NEC, DenonK or Denon (Denon's 15-bit codes).
+	// Protocol is NEC, DenonK or Denon (Denon's 15-bit codes), or one of
+	// irdb's: NECx, Sony12, Sony15, Sony20, JVC, RC6, Samsung20 and
+	// Panasonic.
 	Protocol string `yaml:"protocol"`
 	// System is NEC's 16-bit system code, as manufacturers list it: its
 	// high byte becomes the hub's D, its low byte S.
 	System Hex16 `yaml:"system,omitempty"`
 	// Device and Subdevice are DenonK's (4 and 1 for a Denon receiver's
-	// main zone); Denon has a device (2 or 12 for a receiver) only.
+	// main zone); Denon has a device (2 or 12 for a receiver) only. The
+	// irdb protocols take irdb's device and subdevice (Sony12, Sony15, JVC
+	// and RC6 a device only).
 	Device    *uint8 `yaml:"device,omitempty"`
 	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }

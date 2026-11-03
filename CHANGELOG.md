@@ -16,6 +16,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- More IR protocols in profiles, in irdb's device, subdevice and
+  function: NECx (and Samsung32 as NECx), Sony12, Sony15, Sony20, JVC,
+  RC6, Samsung20 and Panasonic, in the descriptor forms upstream found
+  the X2 sends exactly. Not verified on our X2 yet.
 - `profile.Icon.Path`: the X2's drawing of each icon, as an SVG path on
   a 24x24 view box (upstream's, MIT), and `profile.Color.RGB`: each
   palette color as the X2 app draws it. For apps that show devices and
