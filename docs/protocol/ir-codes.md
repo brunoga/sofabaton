@@ -55,6 +55,29 @@ Open: which protocol names the X2 renders (upstream photon-verified many),
 whether the catalog code id and the per-command codes must be real catalog
 ids, and what a learned (raw) code looks like in the same write.
 
+## More protocols `[ref]`
+
+Upstream played descriptors on an X2 into a second hub learning IR and
+decoded the light (IrScrutinizer's `x2-protocols.md`, 2026-09-03). The
+forms it found the X2 sends exactly, with irdb's device (D), subdevice
+(S) and function (F), are the ones profiles write:
+
+| Protocol | Descriptor | Note |
+|---|---|---|
+| NECx | `P:NECx R:38400 D S F` | Samsung32 is NECx with S = D: the hub's `P:Samsung32` is silent |
+| Sony12, Sony15 | `P:Sony12 R:40000 D F MUL:2` | `MUL:2` is two repeats (three frames) |
+| Sony20 | `P:Sony20 R:40000 D S F MUL:2` | |
+| JVC | `P:JVC R:38000 D F` | |
+| RC6 | `P:RC6 R:36000 D F MUL:1` | mode 0 |
+| Samsung20 | `P:Samsung20 R:38000 D S F` | F:2 came out as 222 (open) |
+| Panasonic | `P:Panasonic R:37000 C0:2 C1:32 D S F CHECKSUM:<D^S^F>` | the catalog adds `MUL:1`, with which the hub sent nothing |
+
+Also verified there, not in profiles yet: RC6-6-20, Samsung36,
+Samsung-SMT-G, Logitech, DirecTV1, Bose (`F` alone), Sharp (odd D, as
+`P:Sharp2`) and SharpDVD. RC5 sent only from some states, and the
+guessed Kaseikyo form sent nothing. None of these are verified on our X2
+yet: each will be once a device of ours speaks it.
+
 ## Why this matters
 
 Generating either form locally from open IR databases removes the dependency

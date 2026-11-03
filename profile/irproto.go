@@ -87,6 +87,101 @@ var protocols = []irProtocol{
 			return IR{Protocol: "Denon", Device: &a}, f, true
 		},
 	},
+	// The protocols below are in irdb's terms (device, subdevice,
+	// function), as the hub's descriptors are; upstream verified each form
+	// by the light the X2 sends (docs/protocol/ir-codes.md). NECx is
+	// Samsung's NEC, an 8-bit device and subdevice (Samsung32 is NECx with
+	// both the same: the hub's own Samsung32 is silent).
+	fields("NECx", "P:NECx R:38400", 8, 8, 8, ""),
+	fields("Sony12", "P:Sony12 R:40000", 5, 0, 7, " MUL:2"),
+	fields("Sony15", "P:Sony15 R:40000", 8, 0, 7, " MUL:2"),
+	fields("Sony20", "P:Sony20 R:40000", 5, 8, 7, " MUL:2"),
+	fields("JVC", "P:JVC R:38000", 8, 0, 8, ""),
+	fields("RC6", "P:RC6 R:36000", 8, 0, 8, " MUL:1"),
+	// Samsung20's F:2 comes out as 222 (upstream, open).
+	fields("Samsung20", "P:Samsung20 R:38000", 6, 6, 8, ""),
+	panasonic(),
+}
+
+// fields is a protocol whose descriptor is head, then its device (D),
+// subdevice (S, when it has one: sBits not 0) and function (F) in decimal,
+// then tail: the form of most of the hub's protocols. The bit sizes bound
+// each.
+func fields(name, head string, dBits, sBits, fBits int, tail string) irProtocol {
+	render := func(ir *IR, code uint16) string {
+		if sBits == 0 {
+			return fmt.Sprintf("%s D:%d F:%d%s", head, *ir.Device, code, tail)
+		}
+		return fmt.Sprintf("%s D:%d S:%d F:%d%s", head, *ir.Device, *ir.Subdevice, code, tail)
+	}
+	pattern := `^` + regexp.QuoteMeta(head) + ` D:(\d+)`
+	bits := []int{dBits}
+	if sBits != 0 {
+		pattern += ` S:(\d+)`
+		bits = append(bits, sBits)
+	}
+	pattern += ` F:(\d+)` + regexp.QuoteMeta(tail) + `$`
+	re := regexp.MustCompile(pattern)
+	return irProtocol{
+		name: name, maxCode: 1<<fBits - 1, decimal: true,
+		check: func(ir *IR) error {
+			ok := ir.Device != nil && int(*ir.Device) < 1<<dBits && ir.System == 0
+			if sBits == 0 {
+				ok = ok && ir.Subdevice == nil
+			} else {
+				ok = ok && ir.Subdevice != nil && int(*ir.Subdevice) < 1<<sBits
+			}
+			switch {
+			case ok:
+				return nil
+			case sBits == 0:
+				return fmt.Errorf("profile: %s needs a device, 0 to %d, and no subdevice", name, 1<<dBits-1)
+			}
+			return fmt.Errorf("profile: %s needs a device, 0 to %d, and a subdevice, 0 to %d", name, 1<<dBits-1, 1<<sBits-1)
+		},
+		render: render,
+		parse: func(desc string) (IR, uint16, bool) {
+			v, ok := match(re, desc, append(bits, fBits)...)
+			if !ok {
+				return IR{}, 0, false
+			}
+			d := uint8(v[0])
+			ir := IR{Protocol: name, Device: &d}
+			if sBits != 0 {
+				s := uint8(v[1])
+				ir.Subdevice = &s
+			}
+			f := uint16(v[len(v)-1])
+			if render(&ir, f) != desc {
+				return IR{}, 0, false
+			}
+			return ir, f, true
+		},
+	}
+}
+
+// panasonic is Panasonic's Kaseikyo (manufacturer code 0x2002, which the
+// hub writes as C0:2 C1:32), its check byte D^S^F. The catalog's form ends
+// in MUL:1, which upstream found the hub never sends: it is left out.
+func panasonic() irProtocol {
+	p := fields("Panasonic", "P:Panasonic R:37000 C0:2 C1:32", 8, 8, 8, "")
+	plain, parse := p.render, p.parse
+	p.render = func(ir *IR, code uint16) string {
+		return fmt.Sprintf("%s CHECKSUM:%d", plain(ir, code), *ir.Device^*ir.Subdevice^uint8(code))
+	}
+	re := regexp.MustCompile(`^(.*) CHECKSUM:\d+$`)
+	p.parse = func(desc string) (IR, uint16, bool) {
+		m := re.FindStringSubmatch(desc)
+		if m == nil {
+			return IR{}, 0, false
+		}
+		ir, f, ok := parse(m[1])
+		if !ok || p.render(&ir, f) != desc {
+			return IR{}, 0, false
+		}
+		return ir, f, true
+	}
+	return p
 }
 
 // denonK renders a DenonK descriptor. Its checksum is the Kaseikyo
