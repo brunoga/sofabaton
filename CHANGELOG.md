@@ -21,6 +21,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   render become commands, named the usual way ("Volume Up" for Vol_up
   or KEY_VOLUMEUP); raw timings and other protocols are left out and
   listed with why. `sbx import-ir -f file` writes the profile.
+  Flipper's Kaseikyo signals of Panasonic's vendor become Panasonic
+  codes, and of Denon's Denon-K codes (Flipper's Denon receiver files
+  give the codes our X2's receiver has, 368 for volume up).
 - More IR protocols in profiles, in irdb's device, subdevice and
   function: NECx (and Samsung32 as NECx), Sony12, Sony15, Sony20, JVC,
   RC6, Samsung20 and Panasonic, in the descriptor forms upstream found
