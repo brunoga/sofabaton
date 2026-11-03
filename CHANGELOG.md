@@ -16,6 +16,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `irsource`: irdb's and Flipper-IRDB's indexes of device files, to
+  search, and the files, to read with `irfile` (irdb through jsDelivr,
+  as it asks; Flipper-IRDB's list from GitHub, less its files converted
+  from irdb). `irsource.Credit` is the notice each asks for.
 - `irfile`: Flipper Zero's `.ir` files and irdb's `.csv` files of IR
   codes, read into device profiles. Codes in the protocols profiles
   render become commands, named the usual way ("Volume Up" for Vol_up
