@@ -73,6 +73,7 @@ differs.
 ```sh
 sbx templates                                  # the device templates sbx carries
 sbx new -template ir/denon/avr-x8500h -name Receiver -o receiver.yaml
+sbx import-ir -f Projector.ir -o projector.yaml   # from a Flipper .ir or irdb .csv file
 sbx export -device Receiver -o receiver.yaml   # write a device's profile
 sbx apply -f receiver.yaml -n                  # show what would change
 sbx apply -f receiver.yaml                     # change it (asks first)
@@ -96,8 +97,11 @@ power: {on: Main Zone On, off: Main Zone Off}
 
 Renaming a device or a command keeps the activities and keys that use it.
 After any change `apply` syncs the device to the remote. IR codes can be
-given as NEC, Denon-K or Denon (Sharp) codes, or as the hub's own
-descriptors. [docs/profiles.md](docs/profiles.md) has the whole format;
+given as NEC, Denon-K or Denon (Sharp) codes, in irdb's protocols (NECx,
+Sony12/15/20, JVC, RC6, Samsung20, Panasonic), or as the hub's own
+descriptors. `import-ir` reads Flipper Zero's `.ir` files and irdb's
+`.csv` files, leaving out (and listing) raw timings and protocols the X2
+is not known to send yet. [docs/profiles.md](docs/profiles.md) has the whole format;
 [templates/](templates) holds the templates, by transport and maker (the
 AWOL Vision Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos
 AM6B Plus media player).
@@ -132,6 +136,7 @@ is how the protocol behind every write above was learned.
 | `wire/`, `record/` | Pure protocol code: frames, paging, the hub's records |
 | `transport/`, `session/`, `hub/` | Discovery, the hub connection, the public client |
 | `profile/` | YAML device profiles, IR protocols, plans and their application, restore |
+| `irfile/` | Flipper `.ir` and irdb `.csv` files of IR codes, read into profiles |
 | `dump/` | Lossless dumps of a hub, served back as a simulated hub |
 | `proxy/`, `capture/`, `hubsim/` | Official-app proxy, traffic captures, a simulated hub for tests |
 | `cmd/sbx/` | Command-line tool |
