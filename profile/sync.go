@@ -168,6 +168,9 @@ type syncer struct {
 	opts    ApplyOptions
 	skipped map[string]bool // devices and activities skipped, by lower-case name
 	settled map[string]bool // devices and activities as in Base, by lower-case name
+	// unedited are the devices as in Base, by lower-case name, whatever
+	// their activities.
+	unedited map[string]bool
 }
 
 // settle finds the devices and activities cfg left as they are in Base.
@@ -198,6 +201,7 @@ func (s *syncer) settle() {
 			}
 		}
 	}
+	s.unedited = devs
 	for name, ok := range devs {
 		for _, a := range s.cfg.Activities {
 			for _, m := range a.Devices {
@@ -390,7 +394,9 @@ func (s *syncer) delete(e *record.Entity, what string, del func(context.Context,
 // device applies d to its match on the hub, or creates it. again is the
 // second pass, for the device's macros.
 func (s *syncer) device(d *Device, again bool) error {
-	if s.settled[strings.ToLower(d.Name)] {
+	// A device as in Base whose activities changed has only its macros'
+	// copies in them to write: the second pass does that.
+	if s.settled[strings.ToLower(d.Name)] || !again && s.unedited[strings.ToLower(d.Name)] {
 		if !again {
 			s.say("device %q (%d): matches", d.Name, d.ID)
 		}
@@ -534,7 +540,7 @@ func (s *syncer) activity(a *Activity, hold bool) (pending bool, err error) {
 		s.say("activity %q: created as %d", a.Name, id)
 		return held, nil
 	}
-	st, err := ReadActivity(s.ctx, s.c, match.ID)
+	st, err := readActivity(s.ctx, s.c, match.ID, a.deviceNames())
 	if err != nil {
 		return false, fmt.Errorf("profile: activity %q: %w", a.Name, err)
 	}

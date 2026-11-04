@@ -222,7 +222,9 @@ frame by frame by `capture.TestX2Activity`).
    (its input: the step's duration is the input's ordinal in the device's
    inputs page, 0 for none) and a pause. POWER_OFF (`C7`): per member its
    `C7` step and a pause. Each acked by `0x12 [key]`. The hub takes the
-   members from POWER_ON.
+   members from POWER_ON: until it is written, the activity has none
+   (`0x6C [activity]` is answered status `07`, not found), whatever
+   step 2 confirmed (our X2, 2026-11-04).
 5. Keys (`0x3E`, entity = the activity): the app copied the main
    device's keys (the Ugoos's) and the audio device's volume and mute keys
    (the receiver's).

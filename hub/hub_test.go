@@ -159,7 +159,9 @@ func TestActivityWrites(t *testing.T) {
 	if err != nil || id != 0x66 {
 		t.Fatalf("create: %d %v", id, err)
 	}
-	if members, err := c.Members(ctx, id); err != nil || len(members) != 2 {
+	// The hub has no members for a new activity until its POWER_ON
+	// macro is written.
+	if members, err := c.Members(ctx, id); !errors.Is(err, hub.ErrNotFound) {
 		t.Fatalf("members: %v %v", members, err)
 	}
 	seq, _ := record.NewMacro(wire.X2, id, 0, "Lights")
