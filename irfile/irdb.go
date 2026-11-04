@@ -149,3 +149,22 @@ func irdbSignal(name, proto, device, subdevice, function string) Signal {
 	s.Code = uint16(f)
 	return s
 }
+
+// writeIRDB writes an irdb file. It holds protocols' codes only: raw
+// signals are left out.
+func writeIRDB(w io.Writer, _ string, signals []Signal) ([]Skipped, error) {
+	cw := csv.NewWriter(w)
+	// Errors are the writer's, which Flush keeps for Error.
+	_ = cw.Write([]string{"functionname", "protocol", "device", "subdevice", "function"})
+	var skipped []Skipped
+	for _, s := range signals {
+		proto, d, sub, f, ok := irdbParams(s)
+		if !ok {
+			skipped = append(skipped, Skipped{Name: s.Source, Why: "irdb files hold protocols' codes, not timings"})
+			continue
+		}
+		_ = cw.Write([]string{s.Name, proto, strconv.Itoa(d), strconv.Itoa(sub), strconv.Itoa(f)})
+	}
+	cw.Flush()
+	return skipped, cw.Error()
+}

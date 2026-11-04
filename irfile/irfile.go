@@ -1,15 +1,18 @@
 // Package irfile reads files of IR codes that other tools and databases
-// publish into device profiles: Flipper Zero's .ir files, irdb's .csv,
-// Home Assistant SmartIR's .json (Broadlink codes), LIRC's lircd.conf,
-// IrScrutinizer's Girr, and codes one a line (Pronto, Global Caché's
-// sendir, Broadlink's, Unfolded Circle's).
+// publish into device profiles, and writes profiles' codes as them:
+// Flipper Zero's .ir files, irdb's .csv, Home Assistant SmartIR's .json
+// (Broadlink codes), LIRC's lircd.conf, IrScrutinizer's Girr, and codes
+// one a line (Pronto, Global Caché's sendir, Broadlink's, Unfolded
+// Circle's).
 //
 // A file's signals become commands in the protocols profiles render for
 // the X2 (profile.IR), or, for raw timings and protocols the X2 has no
 // descriptor for, raw IR the hub sends as it is (package irgen); signals
-// in protocols neither covers are left out and listed, each with why. Command names are made the usual
-// ones ("Volume Up", "Channel Down", "OK"), so that apps can put them on
-// the remote's keys.
+// in protocols neither covers are left out and listed, each with why.
+// Command names are made the usual ones ("Volume Up", "Channel Down",
+// "OK"), so that apps can put them on the remote's keys. Writing goes the
+// other way (Signals, Format.Write): codes are written as codes where the
+// format has their protocol, else as timings (Signal.Timings).
 package irfile
 
 import (
@@ -141,8 +144,8 @@ func init() {
 		"Power Off":    {"power off", "poweroff", "off", "pwr off", "discrete off"},
 		"Volume Up":    {"vol up", "vol+", "vol +", "volume up", "volume +", "volume+", "volumeup", "vol plus", "volume plus"},
 		"Volume Down":  {"vol dn", "vol down", "vol-", "vol -", "volume down", "volume -", "volume-", "volumedown", "vol minus", "volume minus"},
-		"Channel Up":   {"ch next", "ch up", "ch+", "ch +", "channel up", "channel +", "channel+", "channelup", "chan up", "program up", "prog+", "p+"},
-		"Channel Down": {"ch prev", "ch dn", "ch down", "ch-", "ch -", "channel down", "channel -", "channel-", "channeldown", "chan down", "program down", "prog-", "p-"},
+		"Channel Up":   {"ch next", "ch up", "ch+", "ch +", "channel up", "channel +", "channel+", "channelup", "chan up", "program up", "prog+", "p+", "next channel", "nextchannel"},
+		"Channel Down": {"ch prev", "ch dn", "ch down", "ch-", "ch -", "channel down", "channel -", "channel-", "channeldown", "chan down", "program down", "prog-", "p-", "previous channel", "previouschannel", "prev channel"},
 		"Mute":         {"mute", "muting"},
 		"OK":           {"ok", "enter", "select", "confirm"},
 		"Up":           {"up", "arrow up", "cursor up", "nav up", "navigate up"},

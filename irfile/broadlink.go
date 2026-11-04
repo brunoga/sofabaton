@@ -148,3 +148,64 @@ func ReadSmartIR(r io.Reader) ([]Signal, error) {
 	walk(nil, cmds)
 	return out, nil
 }
+
+// broadlinkCode is a signal as a Broadlink code in base64, sent once.
+func broadlinkCode(s Signal) (string, error) {
+	r, err := s.Timings()
+	if err != nil {
+		return "", err
+	}
+	var body []byte
+	for _, v := range pairs(r) {
+		n := max(int(float64(v)*1000/broadlinkTick+0.5), 1)
+		if n < 256 {
+			body = append(body, byte(n))
+			continue
+		}
+		n = min(n, 0xFFFF)
+		body = append(body, 0, byte(n>>8), byte(n))
+	}
+	b := append([]byte{0x26, 0, byte(len(body)), byte(len(body) >> 8)}, body...)
+	// Broadlink's codes are padded to 16 bytes.
+	b = append(b, make([]byte, (16-len(b)%16)%16)...)
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+// smartIROut is the SmartIR file writeSmartIR writes.
+type smartIROut struct {
+	Manufacturer string            `json:"manufacturer"`
+	Models       []string          `json:"supportedModels"`
+	Controller   string            `json:"supportedController"`
+	Encoding     string            `json:"commandsEncoding"`
+	Commands     map[string]string `json:"commands"`
+}
+
+// smartIRKeys are the keys SmartIR's media players send, by the usual
+// names of commands.
+var smartIRKeys = map[string]string{
+	"Power Off": "off", "Power On": "on", "Volume Up": "volumeUp", "Volume Down": "volumeDown",
+	"Mute": "mute", "Channel Up": "nextChannel", "Channel Down": "previousChannel",
+}
+
+// writeSmartIR writes a SmartIR device file of Broadlink codes in base64:
+// the commands a media player sends by its keys, the others by their
+// names.
+func writeSmartIR(w io.Writer, name string, signals []Signal) ([]Skipped, error) {
+	f := smartIROut{Manufacturer: name, Models: []string{name}, Controller: "Broadlink", Encoding: "Base64", Commands: map[string]string{}}
+	var skipped []Skipped
+	for _, s := range signals {
+		c, err := broadlinkCode(s)
+		if err != nil {
+			skipped = append(skipped, Skipped{Name: s.Source, Why: err.Error()})
+			continue
+		}
+		key := s.Name
+		if k, ok := smartIRKeys[s.Name]; ok {
+			key = k
+		}
+		f.Commands[key] = c
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return skipped, enc.Encode(f)
+}

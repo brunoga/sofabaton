@@ -243,9 +243,9 @@ func protocolNamed(name string) (*irProtocol, error) {
 	return nil, fmt.Errorf("profile: ir protocol %q is not supported (%s)", name, strings.Join(names, ", "))
 }
 
-// parseCode returns the device IR parameters and code a descriptor stands
+// ParseCode returns the device IR parameters and code a descriptor stands
 // for, in any protocol a profile can express.
-func parseCode(desc string) (IR, uint16, bool) {
+func ParseCode(desc string) (IR, uint16, bool) {
 	for _, p := range protocols {
 		if ir, code, ok := p.parse(desc); ok {
 			return ir, code, true

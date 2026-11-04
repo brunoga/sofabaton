@@ -32,7 +32,7 @@ func TestFieldProtocols(t *testing.T) {
 		if got := p.render(&tc.ir, tc.f); got != tc.want {
 			t.Errorf("%s renders %q", tc.want, got)
 		}
-		ir, f, ok := parseCode(tc.want)
+		ir, f, ok := ParseCode(tc.want)
 		if !ok || !ir.same(tc.ir) || f != tc.f {
 			t.Errorf("%s parses as %+v %d %v", tc.want, ir, f, ok)
 		}
@@ -45,7 +45,7 @@ func TestFieldProtocols(t *testing.T) {
 		"P:Sony12 R:40000 D:40 F:116 MUL:2",
 		"P:Samsung32 R:38000 D:7 S:7 F:2",
 	} {
-		if _, _, ok := parseCode(desc); ok {
+		if _, _, ok := ParseCode(desc); ok {
 			t.Errorf("%s parses", desc)
 		}
 	}

@@ -199,3 +199,81 @@ func flipperValue(v string) (uint32, error) {
 	}
 	return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24, nil
 }
+
+// writeFlipper writes a Flipper Zero IR file: codes in protocols Flipper
+// parses as parsed signals, the others as raw ones.
+func writeFlipper(w io.Writer, _ string, signals []Signal) ([]Skipped, error) {
+	var b strings.Builder
+	b.WriteString("Filetype: IR signals file\nVersion: 1\n")
+	var skipped []Skipped
+	for _, s := range signals {
+		if proto, a, c, ok := flipperParsed(s); ok {
+			fmt.Fprintf(&b, "#\nname: %s\ntype: parsed\nprotocol: %s\naddress: %s\ncommand: %s\n", s.Name, proto, flipperHex(a), flipperHex(c))
+			continue
+		}
+		r, err := s.Timings()
+		if err != nil {
+			skipped = append(skipped, Skipped{Name: s.Source, Why: err.Error()})
+			continue
+		}
+		t := make([]string, len(r.Timings))
+		for i, v := range r.Timings {
+			t[i] = strconv.FormatUint(uint64(v), 10)
+		}
+		fmt.Fprintf(&b, "#\nname: %s\ntype: raw\nfrequency: %d\nduty_cycle: 0.330000\ndata: %s\n", s.Name, r.Carrier, strings.Join(t, " "))
+	}
+	_, err := io.WriteString(w, b.String())
+	return skipped, err
+}
+
+// flipperParsed is a code as Flipper's parsed signal, the reverse of
+// flipperSignal's reading, if Flipper has its protocol.
+func flipperParsed(s Signal) (proto string, a, c uint32, ok bool) {
+	if s.Raw != nil {
+		return "", 0, 0, false
+	}
+	ir := s.IR
+	var d, sub uint32
+	if ir.Device != nil {
+		d = uint32(*ir.Device)
+	}
+	if ir.Subdevice != nil {
+		sub = uint32(*ir.Subdevice)
+	}
+	code := uint32(s.Code)
+	switch strings.ToLower(ir.Protocol) {
+	case "nec":
+		hi, lo := uint32(ir.System>>8), uint32(ir.System&0xFF)
+		if lo == ^hi&0xFF {
+			return "NEC", hi, code, true
+		}
+		return "NECext", hi | lo<<8, code | (^code&0xFF)<<8, true
+	case "necx":
+		if d != sub {
+			return "", 0, 0, false // Flipper's Samsung32 has one address byte
+		}
+		return "Samsung32", d, code, true
+	case "sony12":
+		return "SIRC", d, code, true
+	case "sony15":
+		return "SIRC15", d, code, true
+	case "sony20":
+		return "SIRC20", d | sub<<5, code, true
+	case "rc6":
+		return "RC6", d, code, true
+	case "panasonic":
+		if d&0xF != 0 {
+			return "", 0, 0, false // not a genre over the vendor's parity
+		}
+		cmd := sub>>4 | (code&0x3F)<<4
+		return "Kaseikyo", (code>>6&3)<<24 | 0x2002<<8 | d | sub&0xF, cmd, true
+	case "denonk":
+		return "Kaseikyo", (code>>10&3)<<24 | 0x3254<<8 | d<<4 | sub, code & 0x3FF, true
+	}
+	return "", 0, 0, false
+}
+
+// flipperHex is a Flipper value: four bytes in hex, little-endian.
+func flipperHex(v uint32) string {
+	return fmt.Sprintf("%02X %02X %02X %02X", byte(v), byte(v>>8), byte(v>>16), byte(v>>24))
+}

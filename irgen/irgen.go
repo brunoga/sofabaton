@@ -1,10 +1,12 @@
-// Package irgen renders IR protocols the X2 has no descriptor for as raw
-// timings (record.RawIR), which it sends as they are: RC5 and RC5X, NEC
-// with 16-bit commands, NEC42, Pioneer, RCA and Kaseikyo of any vendor.
-// The timings follow the protocols' published definitions (IRP notation,
-// as in IrpTransmogrifier's protocol list); each signal is one frame and
-// its trailing gap, but for RC5's, sent twice with the same toggle as a
-// remote does for a short press.
+// Package irgen renders IR protocols as raw timings (record.RawIR): those
+// the X2 has no descriptor for, which it sends as they are (RC5 and RC5X,
+// NEC with 16-bit commands, NEC42, Pioneer, RCA and Kaseikyo of any
+// vendor), and those it has, for files of timings (NEC, NECx, Sony, JVC,
+// RC6, Samsung20, Panasonic, Denon and Denon-K). The timings follow the
+// protocols' published definitions (IRP notation, as in
+// IrpTransmogrifier's protocol list); each signal is one frame and its
+// trailing gap, but for RC5's, sent twice with the same toggle, and
+// Sony's, three times, as remotes do for a short press.
 package irgen
 
 import "github.com/brunoga/sofabaton/record"
@@ -94,8 +96,14 @@ func RC5(device, function uint8, toggle bool) record.RawIR {
 // 16 and space of 8, the bits (a mark of 1, a space of 1 for 0 or 3 for
 // 1), a stop mark, and a gap to 108 ms.
 func nec(carrier int, bits uint64, n int) record.RawIR {
+	return necLead(carrier, 16, bits, n)
+}
+
+// necLead is nec with a leading mark of lead units: 16 for NEC's, 8 for
+// Samsung's.
+func necLead(carrier int, lead uint32, bits uint64, n int) record.RawIR {
 	var f frame
-	f.add(true, 16*564)
+	f.add(true, lead*564)
 	f.add(false, 8*564)
 	f.pulseDistance(bits, n, 564, 564, 3*564, false)
 	f.add(true, 564)
@@ -170,4 +178,130 @@ func KaseikyoFrame(vendor uint16, genre1, genre2 uint8, command uint16, id uint8
 	b3 := genre2&0xF | byte(command&0xF)<<4
 	b4 := byte(command>>4&0x3F) | id<<6
 	return [6]byte{byte(vendor), byte(vendor >> 8), b2, b3, b4, b2 ^ b3 ^ b4}
+}
+
+// NEC is an NEC1 signal, as the X2's NEC descriptor (38.4 kHz): an 8-bit
+// device and subdevice (a system code's high and low bytes), an 8-bit
+// function and its complement.
+func NEC(device, subdevice, function uint8) record.RawIR {
+	f := uint64(function)
+	return nec(38400, uint64(device)|uint64(subdevice)<<8|f<<16|(^f&0xFF)<<24, 32)
+}
+
+// NECx is Samsung's NEC (NECx2): NEC with a leading mark of half the
+// length.
+func NECx(device, subdevice, function uint8) record.RawIR {
+	f := uint64(function)
+	return necLead(38400, 8, uint64(device)|uint64(subdevice)<<8|f<<16|(^f&0xFF)<<24, 32)
+}
+
+// Samsung20 is Samsung's 20-bit code: NECx's lead, a 6-bit device and
+// subdevice and an 8-bit function, without a complement.
+func Samsung20(device, subdevice, function uint8) record.RawIR {
+	v := uint64(device&0x3F) | uint64(subdevice&0x3F)<<6 | uint64(function)<<12
+	return necLead(38400, 8, v, 20)
+}
+
+// Sony is a Sony (SIRC) signal of n bits, 12, 15 or 20: 40 kHz, in units
+// of 600 µs, a mark of 4, then the 7-bit function and the device (5 bits;
+// 8 for 15 bits; 5 and an 8-bit subdevice for 20), least significant
+// first, each bit a space of 1 and a mark of 1 (0) or 2 (1), framed to
+// 45 ms; sent three times.
+func Sony(n int, device, subdevice, function uint8) record.RawIR {
+	v := uint64(function & 0x7F)
+	switch n {
+	case 12:
+		v |= uint64(device&0x1F) << 7
+	case 15:
+		v |= uint64(device) << 7
+	default:
+		v |= uint64(device&0x1F)<<7 | uint64(subdevice)<<12
+	}
+	var one frame
+	one.add(true, 4*600)
+	for i := range n {
+		one.add(false, 600)
+		one.add(true, uint32(600*(1+v>>i&1)))
+	}
+	one.to(45000, 600)
+	var t []uint32
+	for range 3 {
+		t = append(t, one.t...)
+	}
+	return record.RawIR{Carrier: 40000, Timings: t}
+}
+
+// JVC is a JVC signal: 38 kHz, in units of 525 µs, a mark of 16 and space
+// of 8, an 8-bit device and function as NEC's bits, a stop mark, framed
+// to 59.08 ms.
+func JVC(device, function uint8) record.RawIR {
+	var f frame
+	f.add(true, 16*525)
+	f.add(false, 8*525)
+	f.pulseDistance(uint64(device)|uint64(function)<<8, 16, 525, 525, 3*525, false)
+	f.add(true, 525)
+	f.to(59080, 10000)
+	return record.RawIR{Carrier: 38000, Timings: f.t}
+}
+
+// RC6 is an RC6 mode 0 signal: 36 kHz, in units of 444 µs, a mark of 6
+// and space of 2, a start bit of 1, mode 0 in three bits, the toggle in a
+// bit twice as long, then the 8-bit device and function, most
+// significant first, as Manchester bits (1 a mark then a space), framed
+// to 107 ms.
+func RC6(device, function uint8, toggle bool) record.RawIR {
+	const u = 444
+	var f frame
+	f.add(true, 6*u)
+	f.add(false, 2*u)
+	bit := func(b uint8, w uint32) {
+		f.add(b == 1, w)
+		f.add(b == 0, w)
+	}
+	bit(1, u)
+	for range 3 {
+		bit(0, u)
+	}
+	t := uint8(0)
+	if toggle {
+		t = 1
+	}
+	bit(t, 2*u)
+	v := uint16(device)<<8 | uint16(function)
+	for i := 15; i >= 0; i-- {
+		bit(uint8(v>>i&1), u)
+	}
+	f.to(107000, 2*u)
+	return record.RawIR{Carrier: 36000, Timings: f.t}
+}
+
+// Panasonic is Panasonic's Kaseikyo: vendor 0x2002, then the device,
+// subdevice and function, and their parity.
+func Panasonic(device, subdevice, function uint8) record.RawIR {
+	return Kaseikyo([6]byte{0x02, 0x20, device, subdevice, function, device ^ subdevice ^ function})
+}
+
+// DenonK is Denon's Kaseikyo: vendor 0x3254, a 4-bit device and
+// subdevice (genres) and a 12-bit function (the command and id).
+func DenonK(device, subdevice uint8, function uint16) record.RawIR {
+	return Kaseikyo(KaseikyoFrame(0x3254, device&0xF, subdevice&0xF, function&0x3FF, uint8(function>>10&3)))
+}
+
+// Denon is a Denon 15-bit signal (Sharp's format): 38 kHz, in units of
+// 264 µs, a 5-bit address, an 8-bit function and two extension bits of 0,
+// least significant first, as a mark of 1 and a space of 3 (0) or 7 (1),
+// a stop mark and a space of 165; then the same with the function and
+// the extension inverted.
+func Denon(address, function uint8) record.RawIR {
+	const u = 264
+	var f frame
+	half := func(fn uint8, ext uint64) {
+		v := uint64(address&0x1F) | uint64(fn)<<5 | ext<<13
+		f.pulseDistance(v, 15, u, 3*u, 7*u, false)
+		f.add(true, u)
+		f.add(false, 165*u)
+	}
+	half(function, 0)
+	half(^function, 3)
+	return record.RawIR{Carrier: 38000, Timings: f.t}
 }

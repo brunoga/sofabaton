@@ -313,13 +313,13 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 	var best IR
 	most := 0
 	for _, c := range d.Commands {
-		ir, _, ok := parseCode(c.Descriptor)
+		ir, _, ok := ParseCode(c.Descriptor)
 		if !ok {
 			continue
 		}
 		n := 0
 		for _, o := range d.Commands {
-			if oir, _, ok := parseCode(o.Descriptor); ok && oir.same(ir) {
+			if oir, _, ok := ParseCode(o.Descriptor); ok && oir.same(ir) {
 				n++
 			}
 		}
@@ -331,7 +331,7 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		d.IR = &best
 		p, _ := protocolNamed(best.Protocol)
 		for i, c := range d.Commands {
-			ir, code, ok := parseCode(c.Descriptor)
+			ir, code, ok := ParseCode(c.Descriptor)
 			if !ok {
 				continue
 			}

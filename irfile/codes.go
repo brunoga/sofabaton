@@ -165,3 +165,33 @@ func Pronto(code string) (record.RawIR, error) {
 	}
 	return r, nil
 }
+
+// prontoCode is a signal as a Pronto code of learned form, all of it the
+// once sequence.
+func prontoCode(s Signal) (string, error) {
+	r, err := s.Timings()
+	if err != nil {
+		return "", err
+	}
+	t := pairs(r)
+	cw := (prontoClock + r.Carrier/2) / r.Carrier
+	period := 1e6 / (float64(prontoClock) / float64(cw))
+	w := []string{"0000", fmt.Sprintf("%04X", cw), fmt.Sprintf("%04X", len(t)/2), "0000"}
+	for _, v := range t {
+		w = append(w, fmt.Sprintf("%04X", min(max(int(float64(v)/period+0.5), 1), 0xFFFF)))
+	}
+	return strings.Join(w, " "), nil
+}
+
+// sendirCode is a signal as a Global Caché sendir command, sent once.
+func sendirCode(s Signal) (string, error) {
+	r, err := s.Timings()
+	if err != nil {
+		return "", err
+	}
+	w := []string{"sendir", "1:1", "1", strconv.Itoa(r.Carrier), "1", "1"}
+	for _, v := range pairs(r) {
+		w = append(w, strconv.Itoa(min(max(int((int64(v)*int64(r.Carrier)+500000)/1000000), 1), 0xFFFF)))
+	}
+	return strings.Join(w, ","), nil
+}

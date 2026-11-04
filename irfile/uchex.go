@@ -125,6 +125,15 @@ func ucHexSignal(s Signal, code string) Signal {
 			s.Code = uint16(b[4])
 			return s
 		}
+		if b[0] == 0x54 && b[1] == 0x32 && b[2]&0xF == 0 {
+			// Denon's: Denon-K, if its bytes are the ones it makes.
+			d, sub, f := b[2]>>4, b[3]&0xF, uint16(b[3]>>4)|uint16(b[4])<<4
+			if irgen.KaseikyoFrame(0x3254, d, sub, f&0x3FF, uint8(f>>10)) == [6]byte(b) {
+				s.IR = profile.IR{Protocol: "DenonK", Device: &d, Subdevice: &sub}
+				s.Code = f
+				return s
+			}
+		}
 		return s.raw(irgen.Kaseikyo([6]byte(b)))
 	case 50: // PIONEER: two NEC frames, a preamble and the code
 		if n != 64 {
@@ -147,4 +156,63 @@ func ucHexSignal(s Signal, code string) Signal {
 		return unfit(fmt.Sprintf("protocol %s: not supported yet", m[1]))
 	}
 	return s
+}
+
+// ucHexCode is a code as an Unfolded Circle hex code, the reverse of
+// ucHexSignal's reading, for protocols both have; raw signals have none.
+func ucHexCode(s Signal) (string, error) {
+	ir := s.IR
+	var d, sub uint8
+	if ir.Device != nil {
+		d = *ir.Device
+	}
+	if ir.Subdevice != nil {
+		sub = *ir.Subdevice
+	}
+	f := uint8(s.Code)
+	// sent is bytes sent least significant bit first, as the value holds
+	// them.
+	sent := func(b ...uint8) uint64 {
+		var v uint64
+		for _, x := range b {
+			v = v<<8 | uint64(bits.Reverse8(x))
+		}
+		return v
+	}
+	code := func(proto int, v uint64, n int) (string, error) {
+		return fmt.Sprintf("%d;0x%X;%d;0", proto, v, n), nil
+	}
+	if s.Raw == nil {
+		switch strings.ToLower(ir.Protocol) {
+		case "nec":
+			return code(3, sent(uint8(ir.System>>8), uint8(ir.System), f, ^f), 32)
+		case "necx":
+			return code(7, sent(d, sub, f, ^f), 32)
+		case "sony12", "sony15", "sony20":
+			n, addr := 12, uint64(d&0x1F)
+			switch strings.ToLower(ir.Protocol) {
+			case "sony15":
+				n, addr = 15, uint64(d)
+			case "sony20":
+				n, addr = 20, uint64(d&0x1F)|uint64(sub)<<5
+			}
+			return code(4, bits.Reverse64(uint64(f&0x7F)|addr<<7)>>(64-n), n)
+		case "rc6":
+			return code(2, uint64(d)<<8|uint64(f), 20)
+		case "panasonic":
+			return code(5, sent(0x02, 0x20, d, sub, f, d^sub^f), 48)
+		case "denonk":
+			b := irgen.KaseikyoFrame(0x3254, d&0xF, sub&0xF, s.Code&0x3FF, uint8(s.Code>>10&3))
+			return code(5, sent(b[:]...), 48)
+		}
+	}
+	return "", fmt.Errorf("no Unfolded Circle hex codes for %s", ucKind(s))
+}
+
+// ucKind names a signal's kind for why Unfolded Circle's codes lack it.
+func ucKind(s Signal) string {
+	if s.Raw != nil {
+		return "learned (raw) codes"
+	}
+	return s.IR.Protocol + " codes"
 }

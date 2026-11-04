@@ -489,3 +489,43 @@ command: 02 00 00 00
 		t.Errorf("stderr: %s", errs.String())
 	}
 }
+
+// export-ir writes a profile's codes in a format, told by -o's
+// extension, saying what it left out.
+func TestExportIR(t *testing.T) {
+	dir := t.TempDir()
+	file := dir + "/tv.yaml"
+	if err := os.WriteFile(file, []byte(`device: TV
+ir:
+  protocol: NEC
+  system: 0x04FB
+commands:
+  - name: Power
+    code: 0x08
+  - name: Pair
+    data: "0102"
+`), 0o666); err != nil {
+		t.Fatal(err)
+	}
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"export-ir", "-f", file, "-o", dir + "/tv.ir"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(dir + "/tv.ir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), "name: Power\ntype: parsed\nprotocol: NEC\naddress: 04 00 00 00\ncommand: 08 00 00 00") {
+		t.Errorf("file:\n%s", b)
+	}
+	if !strings.Contains(errs.String(), "left out Pair: not an IR code") {
+		t.Errorf("stderr: %s", errs.String())
+	}
+	out.Reset()
+	if err := run(context.Background(), strings.NewReader(""), []string{"export-ir", "-f", file, "-format", "pronto"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "Power: 0000 006C 0022 0000 ") {
+		t.Errorf("pronto:\n%s", out.String())
+	}
+}
