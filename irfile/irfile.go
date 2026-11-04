@@ -3,14 +3,16 @@
 // profiles.
 //
 // A file's signals become commands in the protocols profiles render for
-// the X2 (profile.IR); signals in other protocols, and raw timings, are
-// left out and listed, each with why. Command names are made the usual
+// the X2 (profile.IR), or, for raw timings and protocols the X2 has no
+// descriptor for, raw IR the hub sends as it is (package irgen); signals
+// in protocols neither covers are left out and listed, each with why. Command names are made the usual
 // ones ("Volume Up", "Channel Down", "OK"), so that apps can put them on
 // the remote's keys.
 package irfile
 
 import (
 	"bufio"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -18,17 +20,30 @@ import (
 	"unicode"
 
 	"github.com/brunoga/sofabaton/profile"
+	"github.com/brunoga/sofabaton/record"
 )
 
 // Signal is one signal of a file: a command in a protocol profiles can
-// render, or one left out (Skip says why).
+// render, raw IR, or one left out (Skip says why).
 type Signal struct {
 	// Name is the command's name, made the usual one where it is a known
 	// key ("Volume Up" for Vol_up); Source is its name in the file.
 	Name, Source string
 	IR           profile.IR
 	Code         uint16
-	Skip         string
+	// Raw, when set, is the signal as timings, instead of IR and Code.
+	Raw  *record.RawIR
+	Skip string
+}
+
+// raw is s carrying r as its signal, or left out if r cannot be sent.
+func (s Signal) raw(r record.RawIR) Signal {
+	if _, err := r.Encode(); err != nil {
+		s.Skip = err.Error()
+		return s
+	}
+	s.Raw = &r
+	return s
 }
 
 // Skipped is a signal left out of a device, and why.
@@ -56,6 +71,11 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 			skipped = append(skipped, Skipped{Name: s.Source, Why: "another signal has the same name"})
 			continue
 		}
+		if s.Raw != nil {
+			seen[strings.ToLower(s.Name)] = true
+			kept = append(kept, s)
+			continue
+		}
 		cmd := profile.Command{Name: s.Name, Code: &profile.Code{Value: s.Code, Decimal: decimal(s.IR.Protocol)}}
 		ir := s.IR
 		if _, err := cmd.Signal(&profile.Device{IR: &ir}); err != nil {
@@ -73,6 +93,11 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 		}
 	}
 	for _, s := range kept {
+		if s.Raw != nil {
+			data, _ := s.Raw.Encode() // checked by Signal.raw
+			d.Commands = append(d.Commands, profile.Command{Name: s.Name, Data: hex.EncodeToString(data)})
+			continue
+		}
 		cmd := profile.Command{Name: s.Name, Code: &profile.Code{Value: s.Code, Decimal: decimal(s.IR.Protocol)}}
 		if irKey(s.IR) == best {
 			if d.IR == nil {
@@ -189,8 +214,9 @@ func commandName(source string) string {
 	return strings.Join(words, " ")
 }
 
-// Read reads a file of IR codes in either format, told by its name's
-// extension (.ir is Flipper's, .csv irdb's) or else by its first line.
+// Read reads a file of IR codes in any of the formats, told by its
+// name's extension (.ir is Flipper's, .csv irdb's) or else by its
+// content: Flipper's header, Pronto codes, or irdb's.
 func Read(name string, r io.Reader) ([]Signal, error) {
 	br := bufio.NewReader(r)
 	switch strings.ToLower(filepath.Ext(name)) {
@@ -199,9 +225,12 @@ func Read(name string, r io.Reader) ([]Signal, error) {
 	case ".csv":
 		return ReadIRDB(br)
 	}
-	head, _ := br.Peek(64)
-	if strings.HasPrefix(strings.TrimSpace(string(head)), "Filetype:") {
+	head, _ := br.Peek(4096)
+	switch {
+	case strings.HasPrefix(strings.TrimSpace(string(head)), "Filetype:"):
 		return ReadFlipper(br)
+	case prontoCode.Match(head):
+		return ReadPronto(br)
 	}
 	return ReadIRDB(br)
 }

@@ -445,14 +445,19 @@ func (s *syncer) createDevice(d *Device) error {
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}
+	// Learned (raw) IR data is created like codes; other data (a
+	// Bluetooth command's) cannot be.
 	var data []string
 	for _, c := range d.Commands {
-		if c.Data != "" {
+		if c.Data == "" {
+			continue
+		}
+		if sig, err := c.Signal(d); err != nil || !record.IsIR(sig) {
 			data = append(data, c.Name)
 		}
 	}
 	if len(data) > 0 {
-		s.say("device %q: skipped: commands without a code or descriptor cannot be created yet (%s)", d.Name, strings.Join(data, ", "))
+		s.say("device %q: skipped: commands that are not IR cannot be created yet (%s)", d.Name, strings.Join(data, ", "))
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}

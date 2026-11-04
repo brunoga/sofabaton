@@ -312,8 +312,8 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			}
 			continue
 		}
-		if c.Data != "" {
-			return nil, nil, fmt.Errorf("profile: %q: only commands with a code or a descriptor can be added; data is for keeping existing ones", c.Name)
+		if c.Data != "" && !record.IsIR(signals[i]) {
+			return nil, nil, fmt.Errorf("profile: %q: only IR commands can be added (a code, a descriptor, or raw IR data); other data is for keeping existing ones", c.Name)
 		}
 		id, err := hub.NextCommandID(used)
 		if err != nil {

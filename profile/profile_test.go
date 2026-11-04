@@ -5,6 +5,7 @@ import (
 
 	"bytes"
 	"context"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"slices"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/hubsim"
+	"github.com/brunoga/sofabaton/irgen"
 	"github.com/brunoga/sofabaton/profile"
 	"github.com/brunoga/sofabaton/record"
 	"github.com/brunoga/sofabaton/wire"
@@ -1053,5 +1055,35 @@ func TestUnbind(t *testing.T) {
 	}
 	if err := c.UnbindKey(ctx, 1, record.Button(0x05)); err == nil {
 		t.Fatal("unbound a favorite slot as a key")
+	}
+}
+
+// A device of raw IR commands (learned, or from timings) is created like
+// any other; a command of other data (Bluetooth) is refused.
+func TestCreateRaw(t *testing.T) {
+	ctx := context.Background()
+	c := simulated(t)
+	raw, err := irgen.RC5(0, 12, false).Encode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := &profile.Device{Name: "ZZ Raw", Commands: []profile.Command{{Name: "Power", Data: hex.EncodeToString(raw)}}}
+	id, err := profile.Create(ctx, c, d, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st, err := profile.Read(ctx, c, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(st.Commands) != 1 || st.Commands[0].Type != record.ClassIR || !bytes.Equal(st.Data[st.Commands[0].ID], raw) {
+		t.Fatalf("on the hub: %+v", st.Commands)
+	}
+	if changes, _, err := profile.Plan(d, st, true); err != nil || len(changes) != 0 {
+		t.Fatalf("after the create: %v %v", changes, err)
+	}
+	bt := &profile.Device{Name: "ZZ BT", Commands: []profile.Command{{Name: "Home", Data: "0c0111"}}}
+	if _, err := profile.Create(ctx, c, bt, nil); err == nil {
+		t.Error("created a device of Bluetooth data")
 	}
 }

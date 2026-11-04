@@ -81,29 +81,34 @@ yet: each will be once a device of ours speaks it.
 ## Learned (raw) codes `[X2✓]`
 
 The Projector/Google TV device (a Bluetooth device, deleted since) had
-one learned IR command, "Power (IR)": command type `0x0D` (13), code all
-zeros, and as its signal 1,132 bytes of timings
-(`testdata/x2/bluetooth-projector.yaml`, from `dump-2026-11-01.json`):
+one learned IR command, "Power (IR)": command type `0x0D` (the IR class,
+as descriptor commands), code all zeros, and as its signal 1,132 bytes of
+timings (`testdata/x2/bluetooth-projector.yaml`, from
+`dump-2026-11-01.json`). The layout is upstream's, which it validated by
+playing codes on one hub and learning them on another
+(`blob_decoders.build_raw_ir_blob_body`):
 
 | Offset | Bytes | Value | Meaning |
 |---|---|---|---|
-| 0 | `04 60` | 1120 | length of what follows the first 12 bytes `[guess]` |
-| 2 | `00 00` | 0 | `[unknown]` |
-| 4 | u32 BE | 26445 | carrier period in ns: 37.8 kHz |
+| 0 | u16 BE | 1120 | the timings' length in bytes |
+| 2 | `00 00 00 00` | 0 | format field (a descriptor has `00 00 11 00` here) |
+| 6 | u16 BE | 26445 | carrier in Hz (a descriptor has 38000 here) |
 | 8 | u32 BE each | 7525, 4503, 453, 557, … | mark, space, mark, space… in µs |
-| end | u32 BE | 200000, 0 | the last gap, 200 ms, and a zero |
+| end | `00 00 00 00` | | terminator |
 
 280 timings: an NEC-like frame (a 7.5 ms mark, 4.5 ms space, then bits of
-about 450-560 µs marks and 557 or 1,688 µs spaces) and its repeats.
+about 450-560 µs marks and 557 or 1,688 µs spaces) and its repeats,
+ending in a 200 ms space; upstream gives a signal ending on a mark a 40
+ms one.
 
-Written back unchanged to a new device with `WriteCommand` (type 13,
-label "Power (IR)"), the hub took it, read it back byte for byte, and,
-sent with `Run`, turned the projector on (2026-11-04). So a raw code is
-written like any other command, with this signal: the X2 needs no
-descriptor for codes it has no protocol for, and learned codes can be
-restored and raw-timing files (Flipper's `type: raw`, Pronto) converted.
-Open: the two bytes at offset 2, and whether the hub requires the 200 ms
-gap and the closing zero.
+Written back unchanged to a new device with `WriteCommand` (the IR
+class, label "Power (IR)"), the hub took it, read it back byte for byte,
+and, sent with `Run`, turned the projector on (2026-11-04). So raw codes
+are written like any other command, with this signal: `record.RawIR`
+encodes them, `irgen` renders protocols the X2 has no descriptor for
+(RC5, RCA, Pioneer, NEC42, NEC with 16-bit commands, Kaseikyo of other
+vendors) as timings, and `irfile` reads Flipper's raw signals and Pronto
+codes into them.
 
 ## Why this matters
 
@@ -112,7 +117,7 @@ on the cloud catalog for "known" devices (limitation L3, research R3).
 
 ## TODO
 
-- [x] Raw blob byte layout (see Learned codes; offset 2 still open)
+- [x] Raw blob byte layout (see Learned codes)
 - [ ] Save pages (family `0x0E`) incl. trailing checksum
 - [ ] Replay (family `0x0F`) — note: plays ignore X2 emitter routing `[ref]`
 - [ ] Token/field table for `P:` with our own verification status

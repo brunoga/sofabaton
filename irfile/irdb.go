@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/brunoga/sofabaton/irgen"
 	"github.com/brunoga/sofabaton/profile"
 )
 
@@ -121,6 +122,26 @@ func irdbSignal(name, proto, device, subdevice, function string) Signal {
 			return s
 		}
 		two("DenonK", 0)
+	case "RC5":
+		if !noSub || d > 31 || f > 127 {
+			s.Skip = "RC5 beyond a 5-bit device and 7-bit function, or with a subdevice"
+			return s
+		}
+		return s.raw(irgen.RC5(dv, uint8(f), false))
+	case "RCA":
+		if !noSub || d > 15 || f > 255 {
+			s.Skip = "RCA beyond a 4-bit device and 8-bit function, or with a subdevice"
+			return s
+		}
+		return s.raw(irgen.RCA(dv, uint8(f)))
+	case "PIONEER":
+		// The subdevice, when given, must be the device's complement:
+		// Pioneer's second byte.
+		if (!noSub && sv != ^dv) || f > 255 {
+			s.Skip = "Pioneer with a subdevice other than the device's complement"
+			return s
+		}
+		return s.raw(irgen.Pioneer(dv, uint8(f)))
 	default:
 		s.Skip = fmt.Sprintf("protocol %s: not one the X2 is known to send yet", proto)
 		return s
