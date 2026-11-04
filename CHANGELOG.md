@@ -7,6 +7,16 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Applying an activity reads the commands and inputs of the devices it
+  refers to only, not of every device, and once instead of twice when
+  creating it; a device left as in `ApplyOptions.Base` whose activities
+  changed is read once, to write its macros' copies. On our X2, adding
+  an activity took 11 s instead of 31.
+
+- The simulated hub has no members for a new activity until its
+  POWER_ON macro is written, as our X2 does: it answered the members
+  confirmed before the create.
+
 - `ApplyOptions.Base` compares profiles as written: a config copied
   through YAML, as an editor's, lost a hidden field, and every device and
   activity counted as edited and was read again.

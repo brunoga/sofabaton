@@ -780,7 +780,8 @@ func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(s
 		}
 	}
 	// Check every name before creating anything.
-	st, _, err := readDevices(ctx, c)
+	names := a.deviceNames()
+	st, _, err := readDevices(ctx, c, func(d *record.Entity) bool { return names[strings.ToLower(d.Name)] })
 	if err != nil {
 		return 0, err
 	}
@@ -817,7 +818,7 @@ func CreateActivity(ctx context.Context, c *hub.Client, a *Activity, done func(s
 		return 0, err
 	}
 	report(fmt.Sprintf("created activity %d %q", id, a.Name))
-	if st, err = ReadActivity(ctx, c, id); err != nil {
+	if st, err = readActivity(ctx, c, id, names); err != nil {
 		return id, err
 	}
 	st.fresh = true

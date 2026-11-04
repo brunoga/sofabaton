@@ -56,8 +56,12 @@ func FromModel(m *Model) *Hub {
 		return entityRows(wire.FamActivityRow, m.Activities)
 	})
 	h.Handle(wire.FamReqActivityMap, func(req wire.Frame) []wire.Frame {
+		ids, ok := m.Members[req.Payload[0]]
+		if !ok {
+			return []wire.Frame{Status(NotFound)}
+		}
 		var members []*record.Entity
-		for _, id := range m.Members[req.Payload[0]] {
+		for _, id := range ids {
 			for _, d := range m.Devices {
 				if d.ID == id {
 					members = append(members, d)
@@ -435,10 +439,10 @@ func FromModel(m *Model) *Hub {
 		e.ID = freeEntityID(m.Activities, record.MinActivityID)
 		e.Sort = byte(len(m.Activities) + 1)
 		m.Activities = append(m.Activities, e)
-		if m.Members == nil {
-			m.Members = map[byte][]byte{}
-		}
-		m.Members[e.ID], confirmed = confirmed, nil
+		// The members confirmed are not its members yet: the hub has
+		// none for a new activity (its map is not found) until its
+		// POWER_ON macro is written (our X2, 2026-11-04).
+		confirmed = nil
 		return []wire.Frame{{Family: wire.FamCreateActAck, Payload: []byte{e.ID}}}
 	})
 	h.Handle(wire.FamWriteActivity, func(req wire.Frame) []wire.Frame {

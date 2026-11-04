@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -201,39 +202,67 @@ type ActivityState struct {
 	fresh bool
 }
 
-// ReadActivity fetches an activity's state from the hub.
+// ReadActivity fetches an activity's state from the hub, with the
+// commands and inputs of the devices it refers to.
 func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityState, error) {
-	st, acts, err := readDevices(ctx, c)
+	return readActivity(ctx, c, activity, nil)
+}
+
+// readActivity is ReadActivity, also reading the devices named (by
+// lower-case name): those a profile to plan for the activity refers to.
+func readActivity(ctx context.Context, c *hub.Client, activity byte, named map[string]bool) (*ActivityState, error) {
+	acts, err := c.Activities(ctx)
+	if err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
+	}
+	var e *record.Entity
+	for _, a := range acts {
+		if a.ID == activity {
+			e = a
+		}
+	}
+	if e == nil {
+		return nil, fmt.Errorf("profile: %w: activity %d", hub.ErrNotFound, activity)
+	}
+	var own ActivityState
+	if own.Members, err = c.Members(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
+	}
+	if own.Keymap, err = c.Keymap(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
+	}
+	if own.Macros, err = c.Macros(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
+	}
+	if own.Order, err = c.Order(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
+		return nil, err
+	}
+	// The devices the activity refers to on the hub, and those named.
+	used := map[byte]bool{}
+	for _, m := range own.Members {
+		used[m.ID] = true
+	}
+	for _, b := range own.Keymap {
+		used[b.Short.Device], used[b.Long.Device] = true, true
+	}
+	for _, m := range own.Macros {
+		for _, s := range m.Steps {
+			used[s.Device] = true
+		}
+	}
+	st, _, err := readDevices(ctx, c, func(d *record.Entity) bool { return used[d.ID] || named[strings.ToLower(d.Name)] })
 	if err != nil {
 		return nil, err
 	}
-	for _, e := range acts {
-		if e.ID == activity {
-			st.Entity = e
-		}
-	}
-	if st.Entity == nil {
-		return nil, fmt.Errorf("profile: %w: activity %d", hub.ErrNotFound, activity)
-	}
-	if st.Members, err = c.Members(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
-		return nil, err
-	}
-	if st.Keymap, err = c.Keymap(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
-		return nil, err
-	}
-	if st.Macros, err = c.Macros(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
-		return nil, err
-	}
-	if st.Order, err = c.Order(ctx, activity); err != nil && !errors.Is(err, hub.ErrNotFound) {
-		return nil, err
-	}
+	st.Entity = e
+	st.Members, st.Keymap, st.Macros, st.Order = own.Members, own.Keymap, own.Macros, own.Order
 	return st, nil
 }
 
-// readDevices fetches the devices with their commands and inputs, which
-// an activity's keys and steps name, and the activities with the copies
-// of devices' macros in them.
-func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, []*record.Entity, error) {
+// readDevices fetches the devices, with the commands and inputs of those
+// need picks (which an activity's keys and steps name), and the
+// activities with the copies of devices' macros in them.
+func readDevices(ctx context.Context, c *hub.Client, need func(*record.Entity) bool) (*ActivityState, []*record.Entity, error) {
 	devs, err := c.Devices(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -241,6 +270,9 @@ func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, []*record.
 	st := &ActivityState{Commands: map[byte][]*record.Command{}, Inputs: map[byte]*record.Inputs{}, Names: map[byte]string{}, DeviceMacros: map[byte][]*record.Macro{}}
 	for _, d := range devs {
 		st.Names[d.ID] = d.Name
+		if !need(d) {
+			continue
+		}
 		if st.Commands[d.ID], err = c.Commands(ctx, d.ID); err != nil && !errors.Is(err, hub.ErrNotFound) {
 			return nil, nil, err
 		}
@@ -269,6 +301,18 @@ func readDevices(ctx context.Context, c *hub.Client) (*ActivityState, []*record.
 		}
 	}
 	return st, acts, nil
+}
+
+// deviceNames is the devices the activity refers to, by lower-case name.
+func (a *Activity) deviceNames() map[string]bool {
+	names := map[string]bool{}
+	cp := *a
+	cp.Buttons = maps.Clone(a.Buttons)
+	cp.refs(func(dev, cmd string) (string, string, bool) {
+		names[strings.ToLower(dev)] = true
+		return dev, cmd, true
+	})
+	return names
 }
 
 // ActivityFromHub builds an activity's profile from its state (see
