@@ -16,6 +16,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `profile.ApplyOptions.Base`: the configuration as read, so
+  `ApplyConfig` leaves the devices and activities that were not edited
+  alone instead of reading each from the hub first. On our X2 those reads
+  took 86 s before any write, whatever the edit.
+
 - `irsource`: irdb's and Flipper-IRDB's indexes of device files, to
   search, and the files, to read with `irfile` (irdb through jsDelivr,
   as it asks; Flipper-IRDB's list from GitHub, less its files converted
