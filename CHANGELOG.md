@@ -49,6 +49,19 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (IrScrutinizer's XML: protocols, timings or Pronto), and, one a line,
   Global Caché's `sendir`, Broadlink's codes and Unfolded Circle's hex
   codes (checked against upstream's vectors).
+- Export of a device's IR codes for other tools: `irfile.Signals` and
+  `Format.Write`, `sbx export-ir`. Flipper Zero (codes in Flipper's
+  protocols as parsed signals, the rest raw), irdb and Girr (protocols'
+  codes; Girr adds every signal's timings), SmartIR (Broadlink),
+  LIRC (raw codes), and, one a line, Pronto, Global Caché's `sendir`,
+  Broadlink's and Unfolded Circle's codes. Each format reads back to the
+  same signals.
+- `irgen`: the protocols the X2 has descriptors for (NEC, NECx, Sony,
+  JVC, RC6, Samsung20, Panasonic, Denon, Denon-K) rendered as timings, for
+  formats of timings; NEC, NECx, Sony, RC6 and Panasonic match the
+  Unfolded Circle vectors' timings.
+- `irfile`: an Unfolded Circle Kaseikyo code of Denon's vendor is read
+  as Denon-K.
 
 - `dump.RefreshSome`: a refresh that reads only the devices and
   activities known to have changed (as after writing to them), keeping

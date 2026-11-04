@@ -74,6 +74,7 @@ differs.
 sbx templates                                  # the device templates sbx carries
 sbx new -template ir/denon/avr-x8500h -name Receiver -o receiver.yaml
 sbx import-ir -f Projector.ir -o projector.yaml   # from a file of IR codes (Flipper, irdb, LIRC…)
+sbx export-ir -f projector.yaml -o Projector.ir   # its codes for other tools (any of those formats)
 sbx export -device Receiver -o receiver.yaml   # write a device's profile
 sbx apply -f receiver.yaml -n                  # show what would change
 sbx apply -f receiver.yaml                     # change it (asks first)
@@ -105,7 +106,8 @@ as timings). `import-ir` reads Flipper Zero's `.ir` files, irdb's `.csv`,
 Home Assistant SmartIR's `.json` (Broadlink codes), LIRC's `lircd.conf`,
 IrScrutinizer's Girr, and codes one a line (Pronto, Global Caché's
 `sendir`, Broadlink's, Unfolded Circle's), leaving out (and listing) the
-codes it cannot send. [docs/profiles.md](docs/profiles.md) has the whole format;
+codes it cannot send; `export-ir` writes a profile's codes in any of
+those formats, for other remotes and tools. [docs/profiles.md](docs/profiles.md) has the whole format;
 [templates/](templates) holds the templates, by transport and maker (the
 AWOL Vision Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos
 AM6B Plus media player).
@@ -140,7 +142,7 @@ is how the protocol behind every write above was learned.
 | `wire/`, `record/` | Pure protocol code: frames, paging, the hub's records |
 | `transport/`, `session/`, `hub/` | Discovery, the hub connection, the public client |
 | `profile/` | YAML device profiles, IR protocols, plans and their application, restore |
-| `irfile/`, `irgen/` | Files of IR codes (Flipper, irdb, SmartIR, LIRC, Girr, Pronto…) read into profiles; protocols rendered as raw timings |
+| `irfile/`, `irgen/` | Files of IR codes (Flipper, irdb, SmartIR, LIRC, Girr, Pronto…) read into profiles and written from them; protocols rendered as raw timings |
 | `dump/` | Lossless dumps of a hub, served back as a simulated hub |
 | `proxy/`, `capture/`, `hubsim/` | Official-app proxy, traffic captures, a simulated hub for tests |
 | `cmd/sbx/` | Command-line tool |

@@ -260,3 +260,57 @@ func (rm *lircRemote) render(c lircCode) (record.RawIR, error) {
 	}
 	return r, nil
 }
+
+// writeLIRC writes a LIRC configuration of raw codes: a remote for each
+// carrier the signals use, its gap the longest of their last spaces.
+func writeLIRC(w io.Writer, name string, signals []Signal) ([]Skipped, error) {
+	type code struct {
+		name string
+		t    []uint32
+	}
+	var carriers []int
+	byCarrier := map[int][]code{}
+	gaps := map[int]uint32{}
+	var skipped []Skipped
+	for _, s := range signals {
+		r, err := s.Timings()
+		if err != nil {
+			skipped = append(skipped, Skipped{Name: s.Source, Why: err.Error()})
+			continue
+		}
+		t := pairs(r)
+		if _, ok := byCarrier[r.Carrier]; !ok {
+			carriers = append(carriers, r.Carrier)
+		}
+		gaps[r.Carrier] = max(gaps[r.Carrier], t[len(t)-1])
+		// LIRC's raw codes end on a mark: the remote's gap follows.
+		byCarrier[r.Carrier] = append(byCarrier[r.Carrier], code{lircName(s.Name), t[:len(t)-1]})
+	}
+	var b strings.Builder
+	for _, c := range carriers {
+		rn := lircName(name)
+		if len(carriers) > 1 {
+			rn = fmt.Sprintf("%s_%d", rn, c)
+		}
+		fmt.Fprintf(&b, "begin remote\n  name  %s\n  flags RAW_CODES\n  eps 30\n  aeps 100\n  frequency %d\n  gap %d\n\n  begin raw_codes\n", rn, c, gaps[c])
+		for _, cd := range byCarrier[c] {
+			fmt.Fprintf(&b, "    name %s\n", cd.name)
+			for i := 0; i < len(cd.t); i += 6 {
+				line := make([]string, 0, 6)
+				for _, v := range cd.t[i:min(i+6, len(cd.t))] {
+					line = append(line, fmt.Sprintf("%7d", v))
+				}
+				fmt.Fprintf(&b, "      %s\n", strings.Join(line, " "))
+			}
+		}
+		b.WriteString("  end raw_codes\nend remote\n\n")
+	}
+	_, err := io.WriteString(w, b.String())
+	return skipped, err
+}
+
+// lircName is a name as LIRC's: KEY_ and its words in capitals, joined by
+// underscores (KEY_VOLUME_UP), which ReadLIRC reads back as the name.
+func lircName(n string) string {
+	return "KEY_" + strings.ToUpper(strings.Join(strings.Fields(n), "_"))
+}
