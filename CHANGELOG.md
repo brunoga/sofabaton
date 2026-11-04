@@ -16,6 +16,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `session.Session.Watch`: see the frames of a session already open,
+  until stopped, to record what an operation exchanged.
+
 - `profile.ApplyOptions.Base`: the configuration as read, so
   `ApplyConfig` leaves the devices and activities that were not edited
   alone instead of reading each from the hub first. On our X2 those reads
