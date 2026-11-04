@@ -88,6 +88,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   profiles render. `irsource.Search` also matches a model pattern
   (Sofabaton's model numbers), ranking a model named before one covered
   by a pattern.
+- `irfile`: a Sofabaton code set's learned codes (timings in µs, `pulse`,
+  at the carrier `fre`) are raw IR instead of being left out, and
+  `irfile.SofabatonPower` names the commands its power data says switch
+  the device on and off (discrete keys, or its toggle).
 - `irgen`'s Denon and Denon-K match the 394 codes of the chart's main
   zone, Zone 2 and Zone 3 sheets (five kept as test data).
 

@@ -375,3 +375,34 @@ func TestReadSofabaton(t *testing.T) {
 		t.Errorf("device %+v, skipped %+v", d.Commands, skipped)
 	}
 }
+
+// A Sofabaton code set's timings are raw IR, and its power keys are the
+// commands that switch it: discrete keys, a toggle for both, or a toggle
+// for the side without a key.
+func TestSofabatonPower(t *testing.T) {
+	hexOf := func(s string) string { return fmt.Sprintf("%X", s) }
+	keys := fmt.Sprintf(`"keys": [
+		{"fid": 1, "keyname": "Power", "format": "1", "irCode": %q},
+		{"fid": 5907, "keyname": "Power on", "format": "1", "fre": "37825", "irCode": "", "pulse": "2249,612,550,75871"},
+		{"fid": 5912, "keyname": "Power off", "format": "1", "irCode": %q}]`,
+		hexOf("P:NEC R:38400 D:4 S:251 F:8"), hexOf("P:NEC R:38400 D:4 S:251 F:197"))
+	sigs, err := irfile.ReadSofabaton(strings.NewReader("{" + keys + "}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := sigs[1].Raw; r == nil || r.Carrier != 37825 || !slices.Equal(r.Timings, []uint32{2249, 612, 550, 75871}) {
+		t.Errorf("timings: %+v", sigs[1])
+	}
+	for _, c := range []struct{ power, on, off string }{
+		{`{"type": 2, "on": [{"fid": 5907}], "off": [{"fid": 5912}]}`, "Power On", "Power Off"},
+		{`{"type": 1, "on": [{"fid": 1}], "off": [{"fid": 1}]}`, "Power", "Power"},
+		{`{"type": 2, "on": [], "off": [{"fid": 5912}]}`, "Power", "Power Off"},
+		{`{"type": 2, "on": [{"fid": 777}], "off": [{"fid": 5912}]}`, "Power", "Power Off"},
+		{`{"type": 0, "on": [], "off": []}`, "", ""},
+	} {
+		on, off, err := irfile.SofabatonPower(strings.NewReader(`{` + keys + `, "power": ` + c.power + `}`))
+		if err != nil || on != c.on || off != c.off {
+			t.Errorf("%s: %q, %q, %v; want %q, %q", c.power, on, off, err, c.on, c.off)
+		}
+	}
+}
