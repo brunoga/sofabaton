@@ -1,11 +1,13 @@
 package profile
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
+
+	"go.yaml.in/yaml/v3"
 
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/record"
@@ -178,7 +180,7 @@ func (s *syncer) settle() {
 	for _, d := range s.cfg.Devices {
 		for _, b := range base.Devices {
 			if s.same(d.ID, b.ID, d.Name, b.Name) {
-				devs[strings.ToLower(d.Name)] = reflect.DeepEqual(d, b)
+				devs[strings.ToLower(d.Name)] = sameProfile(d, b)
 				break
 			}
 		}
@@ -187,7 +189,7 @@ func (s *syncer) settle() {
 	for _, a := range s.cfg.Activities {
 		for _, b := range base.Activities {
 			if s.same(a.ID, b.ID, a.Name, b.Name) {
-				ok := reflect.DeepEqual(a, b)
+				ok := sameProfile(a, b)
 				for _, m := range a.Devices {
 					ok = ok && devs[strings.ToLower(m.Device)]
 				}
@@ -209,6 +211,14 @@ func (s *syncer) settle() {
 	for name, ok := range acts {
 		s.settled[name] = ok
 	}
+}
+
+// sameProfile reports whether two profiles say the same, as written: a
+// copy made through YAML (as an editor's) is the same profile.
+func sameProfile(a, b any) bool {
+	x, err1 := yaml.Marshal(a)
+	y, err2 := yaml.Marshal(b)
+	return err1 == nil && err2 == nil && bytes.Equal(x, y)
 }
 
 // same reports whether a profile and one of Base are the same device or

@@ -7,6 +7,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- `ApplyOptions.Base` compares profiles as written: a config copied
+  through YAML, as an editor's, lost a hidden field, and every device and
+  activity counted as edited and was read again.
+- The simulated hub gives a new device or activity the lowest free id,
+  as our X2 does (it gave id 1, freed by a delete), not the highest plus
+  one.
+
 - A dump stops at the first failure that is not the hub refusing a
   request (a lost connection, a hub that stopped answering), and
   `dump.ReadProgress` and `sbx dump` report it. It used to carry on,

@@ -290,12 +290,7 @@ func FromModel(m *Model) *Hub {
 		if err != nil || e.ID != record.NewID {
 			return []wire.Frame{Status(Rejected)}
 		}
-		e.ID = 1
-		for _, d := range m.Devices {
-			if d.ID >= e.ID {
-				e.ID = d.ID + 1
-			}
-		}
+		e.ID = freeEntityID(m.Devices, 1)
 		m.Devices = append(m.Devices, e)
 		return []wire.Frame{{Family: wire.FamCreateDeviceAck, Payload: []byte{e.ID}}}
 	})
@@ -437,12 +432,7 @@ func FromModel(m *Model) *Hub {
 		if err != nil || e.ID != record.NewID {
 			return []wire.Frame{Status(Rejected)}
 		}
-		e.ID = record.MinActivityID
-		for _, a := range m.Activities {
-			if a.ID >= e.ID {
-				e.ID = a.ID + 1
-			}
-		}
+		e.ID = freeEntityID(m.Activities, record.MinActivityID)
 		e.Sort = byte(len(m.Activities) + 1)
 		m.Activities = append(m.Activities, e)
 		if m.Members == nil {
@@ -521,6 +511,21 @@ func entityRows(fam wire.Family, entities []*record.Entity) []wire.Frame {
 		recs = append(recs, body[3:])
 	}
 	return Reply(fam, recs...)
+}
+
+// freeEntityID is the lowest id from first that no entity has: the id the
+// hub gives a new device or activity (our X2 gave a new device id 1, freed
+// by a delete, with devices up to 5 in use).
+func freeEntityID(ents []*record.Entity, first byte) byte {
+	used := map[byte]bool{}
+	for _, e := range ents {
+		used[e.ID] = true
+	}
+	id := first
+	for used[id] {
+		id++
+	}
+	return id
 }
 
 // freeID is the lowest id an entity's new macro or favorite gets: an

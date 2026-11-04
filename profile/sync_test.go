@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"go.yaml.in/yaml/v3"
+
 	"github.com/brunoga/sofabaton/profile"
 )
 
@@ -145,7 +147,15 @@ func TestApplyConfigBase(t *testing.T) {
 		}
 		return cfg
 	}
-	cfg, base := snap(), snap()
+	// The config edited is a copy made through YAML, as an editor's: it
+	// loses what YAML does not carry, and is the same profile still.
+	var cfg profile.Config
+	if b, err := yaml.Marshal(snap()); err != nil {
+		t.Fatal(err)
+	} else if err := yaml.Unmarshal(b, &cfg); err != nil {
+		t.Fatal(err)
+	}
+	base := snap()
 	behind := snap()
 	if err := behind.RenameCommand("TV", "Back", "Return"); err != nil {
 		t.Fatal(err)
@@ -168,7 +178,7 @@ commands:
 	var log []string
 	opts.Base = base
 	opts.Report = func(s string) { log = append(log, s) }
-	if err := profile.ApplyConfig(ctx, c, cfg, opts); err != nil {
+	if err := profile.ApplyConfig(ctx, c, &cfg, opts); err != nil {
 		t.Fatal(err)
 	}
 	got := export(t, c)
@@ -181,7 +191,7 @@ commands:
 		t.Fatal(err)
 	}
 	log = nil
-	if err := profile.ApplyConfig(ctx, c, cfg, opts); err != nil {
+	if err := profile.ApplyConfig(ctx, c, &cfg, opts); err != nil {
 		t.Fatal(err)
 	}
 	got = export(t, c)
