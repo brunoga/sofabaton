@@ -74,8 +74,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `category:` in device profiles: the device's kind in the app (the
   record's type byte), by name (TV, Blu-ray, Projector, Receiver: those
   the X2 app was seen to write) or number. `export` reads it, `apply`
-  changes it, a create sets it (a TV when left out, as before). The
-  receiver and projector templates have theirs.
+  changes it, a create sets it (a TV when left out, as before). The names
+  are the device types of Kookong's IR database, which the app uses (its
+  `com.hzy.tvmao.ir.Device`: Set-top box 1, TV 2, Media player 3,
+  Blu-ray 4, Projector 6, Receiver 7…), and the app's own 15 (Bluetooth)
+  and 16 (Wi-Fi). The receiver, projector and media player templates
+  have theirs.
 - `irgen`'s Denon and Denon-K match the 394 codes of the chart's main
   zone, Zone 2 and Zone 3 sheets (five kept as test data).
 

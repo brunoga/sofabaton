@@ -166,8 +166,11 @@ app's own backup are the safety net for live write testing.
   device_type, icon, input_mode, power_style, share_mode, default keymap.
   Known from our X2's app-made devices: type 2 TV, 4 Blu-ray, 6
   projector, 7 receiver (15 on the Bluetooth projector); profiles carry
-  them as `category:` (2026-11-04). The other categories, and what the
-  type changes, still need the captures.
+  them as `category:` (2026-11-04). The app's APK (4.1.6) gives the rest:
+  IR devices take Kookong's device types (`com.hzy.tvmao.ir.Device`: 1
+  STB, 2 TV, 3 box, 4 DVD, 5 AC, 6 projector, 7 amplifier, 8 fan…),
+  Bluetooth devices 15 and Wi-Fi ones 16 (its SelectDeviceTypeActivity).
+  What the type changes still needs the captures.
 - **R6 Per-device sequences**: devices already carry macros: the app
   writes `POWER_ON`/`POWER_OFF` as macros of the device itself (`12` with
   the device id and keys `C6`/`C7`), and activity POWER_ON/POWER_OFF

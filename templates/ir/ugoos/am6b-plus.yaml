@@ -19,6 +19,7 @@
 # maintainer's box with this file as /storage/.config/remote.conf.
 template: Ugoos AM6B Plus
 brand: Ugoos
+category: Media player
 ir: {protocol: NEC, system: 0x00FF}
 commands:
   - {name: Power, code: 0x14, comment: 'KEY_POWER'}
