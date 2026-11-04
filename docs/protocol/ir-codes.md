@@ -78,6 +78,33 @@ Samsung-SMT-G, Logitech, DirecTV1, Bose (`F` alone), Sharp (odd D, as
 guessed Kaseikyo form sent nothing. None of these are verified on our X2
 yet: each will be once a device of ours speaks it.
 
+## Learned (raw) codes `[X2✓]`
+
+The Projector/Google TV device (a Bluetooth device, deleted since) had
+one learned IR command, "Power (IR)": command type `0x0D` (13), code all
+zeros, and as its signal 1,132 bytes of timings
+(`testdata/x2/bluetooth-projector.yaml`, from `dump-2026-11-01.json`):
+
+| Offset | Bytes | Value | Meaning |
+|---|---|---|---|
+| 0 | `04 60` | 1120 | length of what follows the first 12 bytes `[guess]` |
+| 2 | `00 00` | 0 | `[unknown]` |
+| 4 | u32 BE | 26445 | carrier period in ns: 37.8 kHz |
+| 8 | u32 BE each | 7525, 4503, 453, 557, … | mark, space, mark, space… in µs |
+| end | u32 BE | 200000, 0 | the last gap, 200 ms, and a zero |
+
+280 timings: an NEC-like frame (a 7.5 ms mark, 4.5 ms space, then bits of
+about 450-560 µs marks and 557 or 1,688 µs spaces) and its repeats.
+
+Written back unchanged to a new device with `WriteCommand` (type 13,
+label "Power (IR)"), the hub took it, read it back byte for byte, and,
+sent with `Run`, turned the projector on (2026-11-04). So a raw code is
+written like any other command, with this signal: the X2 needs no
+descriptor for codes it has no protocol for, and learned codes can be
+restored and raw-timing files (Flipper's `type: raw`, Pronto) converted.
+Open: the two bytes at offset 2, and whether the hub requires the 200 ms
+gap and the closing zero.
+
 ## Why this matters
 
 Generating either form locally from open IR databases removes the dependency
@@ -85,7 +112,7 @@ on the cloud catalog for "known" devices (limitation L3, research R3).
 
 ## TODO
 
-- [ ] Raw blob byte layout and trailing-byte normalization
+- [x] Raw blob byte layout (see Learned codes; offset 2 still open)
 - [ ] Save pages (family `0x0E`) incl. trailing checksum
 - [ ] Replay (family `0x0F`) — note: plays ignore X2 emitter routing `[ref]`
 - [ ] Token/field table for `P:` with our own verification status
