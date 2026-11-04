@@ -7,6 +7,7 @@
 package dump
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"encoding/json"
@@ -115,10 +116,82 @@ func RefreshSome(ctx context.Context, c *hub.Client, old *File, stale func(id by
 	if old.Info.ID != hex.EncodeToString(i.ID[:]) {
 		return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
 	}
-	return read(ctx, c, tool, log, progress, old, stale)
+	return read(ctx, c, tool, log, progress, old, func(e *record.Entity) bool { return stale(e.ID) })
 }
 
-func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(id byte) bool) (*File, error) {
+// RefreshRows is RefreshSome for a hub that may have changed in any way
+// since old was read: the devices and activities whose row in the hub's
+// lists is new or differs from old's are read, the others are taken from
+// old. A row holds an entity's name, brand, icon, color and class but not
+// its commands, keys or macros: a change to those alone is not seen. The
+// hub cannot be changed while c is connected, so reading those of an
+// entity once a connection, before showing or editing it, is enough.
+func RefreshRows(ctx context.Context, c *hub.Client, old *File, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
+	if old == nil {
+		return nil, fmt.Errorf("dump: refresh: no old dump")
+	}
+	i := c.Info()
+	if old.Info.ID != hex.EncodeToString(i.ID[:]) {
+		return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
+	}
+	was := map[byte]*record.Entity{}
+	for _, e := range append(rows(c.Variant(), old.Devices), rows(c.Variant(), old.Activities)...) {
+		was[e.ID] = e
+	}
+	return read(ctx, c, tool, log, progress, old, func(e *record.Entity) bool {
+		o := was[e.ID]
+		return o == nil || !sameRow(o, e)
+	})
+}
+
+// RefreshOnly is RefreshSome without reading the hub's lists: old's are
+// kept, as after RefreshRows on the same connection. Only the devices and
+// activities stale picks are read.
+func RefreshOnly(ctx context.Context, c *hub.Client, old *File, stale func(id byte) bool, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
+	if old == nil {
+		return nil, fmt.Errorf("dump: refresh: no old dump")
+	}
+	i := c.Info()
+	if old.Info.ID != hex.EncodeToString(i.ID[:]) {
+		return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
+	}
+	return readLists(ctx, c, tool, log, progress, old, func(e *record.Entity) bool { return stale(e.ID) }, true)
+}
+
+// rows is the entities of a list's reply, from its raw records: a dump
+// loaded from a file has its decoded views as JSON.
+func rows(v wire.Variant, list *Reply) []*record.Entity {
+	if list == nil {
+		return nil
+	}
+	var out []*record.Entity
+	for _, h := range list.Raw {
+		b, err := hex.DecodeString(h)
+		if err != nil {
+			continue
+		}
+		if e, err := record.ParseEntity(v, b); err == nil {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// sameRow reports whether a and b are the same row but for what the hub
+// changes on its own: the device's power state and the list's order.
+func sameRow(a, b *record.Entity) bool {
+	return a.Kind == b.Kind && a.ID == b.ID && a.Icon == b.Icon && a.Class == b.Class &&
+		a.Type == b.Type && a.CodeID == b.CodeID && a.Hide == b.Hide && a.InputFlag == b.InputFlag &&
+		a.Channel == b.Channel && a.Name == b.Name && a.Brand == b.Brand && bytes.Equal(a.Tail, b.Tail)
+}
+
+func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(e *record.Entity) bool) (*File, error) {
+	return readLists(ctx, c, tool, log, progress, old, stale, false)
+}
+
+// readLists is read, taking the lists from old instead of reading them
+// when keep is set.
+func readLists(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(e *record.Entity) bool, keep bool) (*File, error) {
 	i := c.Info()
 	d := &File{
 		Tool: tool,
@@ -127,13 +200,18 @@ func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progre
 	}
 	v := c.Variant()
 	r := &reader{ctx: ctx, c: c, log: log}
-	d.Devices = r.reply("devices", wire.Frame{Family: wire.FamReqDevices}, wire.FamDeviceRow,
-		func(bodies [][]byte) (any, error) { return entities(v, bodies) })
-	d.Activities = r.reply("activities", wire.Frame{Family: wire.FamReqActivities}, wire.FamActivityRow,
-		func(bodies [][]byte) (any, error) { return entities(v, bodies) })
-
-	devs, _ := d.Devices.Decoded.([]*record.Entity)
-	acts, _ := d.Activities.Decoded.([]*record.Entity)
+	var devs, acts []*record.Entity
+	if keep {
+		d.Devices, d.Activities = old.Devices, old.Activities
+		devs, acts = rows(v, old.Devices), rows(v, old.Activities)
+	} else {
+		d.Devices = r.reply("devices", wire.Frame{Family: wire.FamReqDevices}, wire.FamDeviceRow,
+			func(bodies [][]byte) (any, error) { return entities(v, bodies) })
+		d.Activities = r.reply("activities", wire.Frame{Family: wire.FamReqActivities}, wire.FamActivityRow,
+			func(bodies [][]byte) (any, error) { return entities(v, bodies) })
+		devs, _ = d.Devices.Decoded.([]*record.Entity)
+		acts, _ = d.Activities.Decoded.([]*record.Entity)
+	}
 	done, total := 0, len(devs)+len(acts)
 	for _, ents := range [][]*record.Entity{devs, acts} {
 		for _, e := range ents {
@@ -147,7 +225,7 @@ func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progre
 				progress(done, total, e.Name)
 			}
 			done++
-			if stale != nil && !stale(e.ID) {
+			if stale != nil && !stale(e) {
 				if kept := old.entity(e.ID); kept != nil {
 					cp := *kept
 					cp.Name = e.Name
