@@ -232,4 +232,90 @@ func TestRefreshSome(t *testing.T) {
 	if commands(got, 1) != 2 || commands(got, 2) != 1 {
 		t.Errorf("TV has %d commands, AVR %d; want 2 and 1 (as kept)", commands(got, 1), commands(got, 2))
 	}
+
+	// RefreshOnly does the same without reading the lists again.
+	write(2, 3, "Guide")
+	before = len(h.Requests())
+	got, err = dump.RefreshOnly(ctx, c, got, func(id byte) bool { return id == 2 }, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range h.Requests()[before:] {
+		if r.Family == wire.FamReqDevices || r.Family == wire.FamReqActivities {
+			t.Errorf("read the list %v", r.Family)
+		}
+		if len(r.Payload) > 0 && r.Payload[0] == 1 {
+			t.Errorf("read %v of the TV", r.Family)
+		}
+	}
+	if commands(got, 1) != 2 || commands(got, 2) != 3 {
+		t.Errorf("TV has %d commands, AVR %d; want 2 (as kept) and 3", commands(got, 1), commands(got, 2))
+	}
+}
+
+func TestRefreshRows(t *testing.T) {
+	ctx := context.Background()
+	var ents []*record.Entity
+	for id, name := range map[byte]string{1: "TV", 2: "AVR"} {
+		e, _ := record.NewEntity(wire.X2)
+		e.ID, e.Name, e.Class = id, name, record.ClassIR
+		ents = append(ents, e)
+	}
+	h := hubsim.FromModel(&hubsim.Model{
+		Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 9, Name: "X2 HUB"},
+		Devices: ents,
+	})
+	c, err := hub.Open(ctx, hubsim.Pipe(h), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	write := func(dev, id byte, label string) {
+		t.Helper()
+		cmd, _ := record.NewCommand(wire.X2)
+		cmd.Device, cmd.ID, cmd.Type, cmd.Label = dev, id, record.ClassIR, label
+		data, _ := record.Descriptor("P:NEC R:38400 D:0 S:206 F:1")
+		if err := c.WriteCommand(ctx, cmd, data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(1, 1, "Power")
+	write(2, 1, "Power")
+	old, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The TV's row stays as it was; the AVR's changes with its name.
+	write(1, 2, "Menu")
+	write(2, 2, "Menu")
+	devs, err := c.Devices(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range devs {
+		if e.ID == 2 {
+			e.Name = "Receiver"
+			if err := c.UpdateDevice(ctx, e); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	got, err := dump.RefreshRows(ctx, c, old, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	commands := func(d *dump.File, id byte) (string, int) {
+		for _, e := range d.Entities {
+			if e.ID == id {
+				return e.Name, len(e.Data)
+			}
+		}
+		return "", -1
+	}
+	if name, n := commands(got, 1); name != "TV" || n != 1 {
+		t.Errorf("TV: %q with %d commands, want TV with 1 (as kept)", name, n)
+	}
+	if name, n := commands(got, 2); name != "Receiver" || n != 2 {
+		t.Errorf("AVR: %q with %d commands, want Receiver with 2 (read again)", name, n)
+	}
 }

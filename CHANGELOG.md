@@ -37,6 +37,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   activities known to have changed (as after writing to them), keeping
   the others from the old dump.
 
+- `dump.RefreshRows`: a refresh that reads only the devices and
+  activities whose row in the hub's lists is new or changed (a rename, a
+  new icon), as an app connecting with a cached copy does; their
+  commands, keys and macros are for it to read before showing them, as
+  the official app does each time a screen opens. `dump.RefreshOnly`
+  reads those without reading the lists again.
+
 - `session.Session.Watch`: see the frames of a session already open,
   until stopped, to record what an operation exchanged.
 
