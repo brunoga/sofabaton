@@ -198,3 +198,25 @@ func TestSessionEnds(t *testing.T) {
 		t.Fatalf("Err = %v", s.Err())
 	}
 }
+
+// A watcher sees the frames of the exchanges while it watches.
+func TestWatch(t *testing.T) {
+	h := hubsim.New()
+	h.Handle(wire.FamRemoteSync, func(wire.Frame) []wire.Frame { return []wire.Frame{hubsim.Status(0)} })
+	s := start(t, h)
+	var mu sync.Mutex
+	var seen []wire.Direction
+	stop := s.Watch(func(d wire.Direction, _ wire.Frame) { mu.Lock(); seen = append(seen, d); mu.Unlock() })
+	if err := s.Exchange(ctx(t), wire.Frame{Family: wire.FamRemoteSync}, session.Status()); err != nil {
+		t.Fatal(err)
+	}
+	stop()
+	if err := s.Exchange(ctx(t), wire.Frame{Family: wire.FamRemoteSync}, session.Status()); err != nil {
+		t.Fatal(err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(seen) != 2 || seen[0] != wire.ToHub || seen[1] != wire.FromHub {
+		t.Errorf("seen %v", seen)
+	}
+}

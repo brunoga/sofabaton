@@ -48,6 +48,10 @@ type Session struct {
 	unsolicited func(wire.Frame)
 	tap         func(wire.Direction, wire.Frame)
 
+	watchMu  sync.Mutex
+	watchers map[int]func(wire.Direction, wire.Frame)
+	watchID  int
+
 	slot chan struct{} // held by the exchange in progress
 
 	mu     sync.Mutex
@@ -84,9 +88,7 @@ func (s *Session) read() {
 			close(s.done)
 			return
 		}
-		if s.tap != nil {
-			s.tap(wire.FromHub, f)
-		}
+		s.see(wire.FromHub, f)
 		s.mu.Lock()
 		x := s.active
 		s.mu.Unlock()
@@ -164,15 +166,44 @@ func (s *Session) Send(ctx context.Context, f wire.Frame) error {
 	return s.write(f)
 }
 
+// Watch has h see every frame sent and received, as a tap does (see
+// WithTap), until stop is called: to record what an operation exchanged
+// on a session already open.
+func (s *Session) Watch(h func(wire.Direction, wire.Frame)) (stop func()) {
+	s.watchMu.Lock()
+	defer s.watchMu.Unlock()
+	if s.watchers == nil {
+		s.watchers = map[int]func(wire.Direction, wire.Frame){}
+	}
+	s.watchID++
+	id := s.watchID
+	s.watchers[id] = h
+	return func() {
+		s.watchMu.Lock()
+		defer s.watchMu.Unlock()
+		delete(s.watchers, id)
+	}
+}
+
+// see shows f to the tap and the watchers.
+func (s *Session) see(d wire.Direction, f wire.Frame) {
+	if s.tap != nil {
+		s.tap(d, f)
+	}
+	s.watchMu.Lock()
+	defer s.watchMu.Unlock()
+	for _, h := range s.watchers {
+		h(d, f)
+	}
+}
+
 func (s *Session) write(f wire.Frame) error {
 	select {
 	case <-s.done:
 		return s.err
 	default:
 	}
-	if s.tap != nil {
-		s.tap(wire.ToHub, f)
-	}
+	s.see(wire.ToHub, f)
 	if err := s.conn.WriteFrame(f); err != nil {
 		return fmt.Errorf("session: sending %v: %w", f.Opcode(), err)
 	}
