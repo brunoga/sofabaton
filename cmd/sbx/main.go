@@ -10,7 +10,7 @@
 //	sbx remove-ir ...     delete a command of a device
 //	sbx send ...          send a device's command now
 //	sbx export ...        write a device's profile (YAML)
-//	sbx import-ir ...     make a device's profile from a Flipper or irdb file
+//	sbx import-ir ...     make a device's profile from a file of IR codes
 //	sbx apply ...         make a device match a profile, or create it
 //	sbx remove-device ... delete a device
 //	sbx remove-activity . delete an activity
@@ -92,8 +92,10 @@ commands:
   new        make a device's profile from a template, to edit and apply
              (-template NAME [-name NAME] [-o file])
   import-ir  make a device's profile from a file of IR codes: Flipper's
-             .ir or irdb's .csv (-f file [-name NAME] [-o file]); codes
-             the X2 cannot send yet are left out, saying why
+             .ir, irdb's .csv, SmartIR's .json, LIRC's lircd.conf, Girr,
+             or codes one a line (Pronto, sendir, Broadlink, Unfolded
+             Circle) (-f file [-name NAME] [-o file]); codes the X2
+             cannot send are left out, saying why
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
