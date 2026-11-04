@@ -67,6 +67,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   them; others become timings (`irgen.Sharp`, its bits as the vectors').
   LIRC's RC6 remotes are rendered as lircd sends them (codes inverted,
   the toggle twice as long where `rc6_mask` or `toggle_bit` says).
+- Templates for the Denon AVR-X8500H's Zone 2 and Zone 3, from Denon's IR
+  chart (Denon-K subdevices 3 and 5; Zone 3's power, volume and older
+  inputs are the chart's 15-bit codes). Every code renders to the
+  chart's own Pronto code; not yet tested on a receiver.
+- `irgen`'s Denon and Denon-K match the 394 codes of the chart's main
+  zone, Zone 2 and Zone 3 sheets (five kept as test data).
 
 - `dump.RefreshSome`: a refresh that reads only the devices and
   activities known to have changed (as after writing to them), keeping
