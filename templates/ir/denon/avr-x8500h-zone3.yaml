@@ -11,6 +11,7 @@
 # CBL/SAT"). Not yet tested on a receiver.
 template: Denon AVR-X8500H Zone 3
 brand: Denon
+category: Receiver
 ir: {protocol: DenonK, device: 4, subdevice: 5}
 commands:
   # Power

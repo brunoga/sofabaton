@@ -488,7 +488,8 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		}
 		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
 		reiconed := d.Icon != 0 && byte(d.Icon) != e.Icon
-		if want != t || renamed || reiconed {
+		recategorized := d.Category != 0 && byte(d.Category) != e.Type
+		if want != t || renamed || reiconed || recategorized {
 			ne := *e
 			ne.Tail = append([]byte(nil), e.Tail...)
 			if err := ne.SetDeviceTail(want); err != nil {
@@ -501,7 +502,12 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			if d.Icon != 0 {
 				ne.Icon = byte(d.Icon)
 			}
-			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name, Look: lookChange(Icon(e.Icon), Icon(ne.Icon), Color(t.Color), Color(want.Color))})
+			look := lookChange(Icon(e.Icon), Icon(ne.Icon), Color(t.Color), Color(want.Color))
+			if recategorized {
+				ne.Type = byte(d.Category)
+				look += fmt.Sprintf(", category %v -> %v", Category(e.Type), d.Category)
+			}
+			changes = append(changes, Change{Kind: Record, Entity: &ne, Renamed: renamed, Name: e.Name, Look: look})
 		}
 	}
 	// The remotes keep their own copy of the device and do not see edits

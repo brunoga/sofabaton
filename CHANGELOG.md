@@ -71,6 +71,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   chart (Denon-K subdevices 3 and 5; Zone 3's power, volume and older
   inputs are the chart's 15-bit codes). Every code renders to the
   chart's own Pronto code; not yet tested on a receiver.
+- `category:` in device profiles: the device's kind in the app (the
+  record's type byte), by name (TV, Blu-ray, Projector, Receiver: those
+  the X2 app was seen to write) or number. `export` reads it, `apply`
+  changes it, a create sets it (a TV when left out, as before). The
+  receiver and projector templates have theirs.
 - `irgen`'s Denon and Denon-K match the 394 codes of the chart's main
   zone, Zone 2 and Zone 3 sheets (five kept as test data).
 

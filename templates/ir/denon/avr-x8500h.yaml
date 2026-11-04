@@ -16,6 +16,7 @@
 # chart's Main Zone Off (2/122), and its Power On did nothing.
 template: Denon AVR-X8500H
 brand: Denon
+category: Receiver
 ir: {protocol: DenonK, device: 4, subdevice: 1}
 commands:
   # Power

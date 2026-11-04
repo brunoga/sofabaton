@@ -51,6 +51,8 @@ type Device struct {
 	// stay.
 	Icon  Icon  `yaml:"icon,omitempty"`
 	Color Color `yaml:"color,omitempty"`
+	// Category is the device's kind in the app; left out, the hub's stays.
+	Category Category `yaml:"category,omitempty"`
 	// IR, when set, lets commands give just a code.
 	IR *IR `yaml:"ir,omitempty"`
 	// Commands are in the order the remote lists them on the device's
@@ -280,7 +282,7 @@ func (h *Hex16) UnmarshalYAML(n *yaml.Node) error {
 // when every command is an NEC code of one system code, they become codes
 // of the device's IR protocol.
 func FromHub(dev *record.Entity, st *State) (*Device, error) {
-	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID, Icon: Icon(dev.Icon), class: dev.Class}
+	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID, Icon: Icon(dev.Icon), Category: Category(dev.Type), class: dev.Class}
 	if t, err := dev.DeviceTail(); err == nil {
 		d.Color = Color(t.Color)
 	}

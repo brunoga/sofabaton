@@ -42,6 +42,9 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 	if d.Icon != 0 {
 		e.Icon = byte(d.Icon)
 	}
+	if d.Category != 0 {
+		e.Type = byte(d.Category)
+	}
 	newTail := record.NewIRDeviceTail()
 	if d.Color != 0 {
 		newTail.Color = byte(d.Color)

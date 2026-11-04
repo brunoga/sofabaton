@@ -6,6 +6,7 @@
 # keys; the rest are marked "not in Sofabaton's profile".
 template: AWOL Vision Aetherion
 brand: AWOL Vision
+category: Projector
 ir: {protocol: NEC, system: 0x00CE}
 commands:
   # Power
