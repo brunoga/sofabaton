@@ -164,6 +164,10 @@ app's own backup are the safety net for live write testing.
   → patched APK or rooted phone). Personal-interop only; decide later.
 - **R5 Category semantics**: create one device per app category; tabulate
   device_type, icon, input_mode, power_style, share_mode, default keymap.
+  Known from our X2's app-made devices: type 2 TV, 4 Blu-ray, 6
+  projector, 7 receiver (15 on the Bluetooth projector); profiles carry
+  them as `category:` (2026-11-04). The other categories, and what the
+  type changes, still need the captures.
 - **R6 Per-device sequences**: devices already carry macros: the app
   writes `POWER_ON`/`POWER_OFF` as macros of the device itself (`12` with
   the device id and keys `C6`/`C7`), and activity POWER_ON/POWER_OFF

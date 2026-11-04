@@ -43,6 +43,9 @@ from: ir/awol-vision/aetherion   # the template it was made from, if any
 id: 4                       # the device's id on the hub (or -device)
 icon: Projector             # the remote's icon and color, by name or
 color: grey                 # number; left out, the hub's stay
+category: Projector         # the device's kind in the app: TV, Blu-ray,
+                            # Projector, Receiver, or a number; left out,
+                            # the hub's stays (a TV for a new device)
 ir: {protocol: NEC, system: 0x00CE}   # lets commands give just a code
 commands:
   - {name: Power On, code: 0xE5}

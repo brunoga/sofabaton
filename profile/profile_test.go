@@ -1087,3 +1087,65 @@ func TestCreateRaw(t *testing.T) {
 		t.Error("created a device of Bluetooth data")
 	}
 }
+
+// A device's category reads and writes by name or number, is exported,
+// changed by apply and set by create.
+func TestCategory(t *testing.T) {
+	var d profile.Device
+	if err := yaml.Unmarshal([]byte("device: R\ncategory: receiver\ncommands: []\n"), &d); err != nil || d.Category != 7 {
+		t.Fatalf("category %d, %v", d.Category, err)
+	}
+	if err := yaml.Unmarshal([]byte("device: R\ncategory: Toaster\ncommands: []\n"), &d); err == nil {
+		t.Error("an unknown category's name read")
+	}
+	if out, _ := yaml.Marshal(&profile.Device{Name: "P", Category: 6}); !strings.Contains(string(out), "category: Projector\n") {
+		t.Errorf("written:\n%s", out)
+	}
+	if out, _ := yaml.Marshal(&profile.Device{Name: "P", Category: 15}); !strings.Contains(string(out), "category: 15\n") {
+		t.Errorf("written:\n%s", out)
+	}
+
+	ctx := context.Background()
+	c := simulated(t)
+	ds, err := profile.Read(ctx, c, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dev, err := profile.FromHub(ds.Entity, ds)
+	if err != nil || dev.Category != profile.Category(ds.Entity.Type) {
+		t.Fatalf("exported category %d, the hub's %d: %v", dev.Category, ds.Entity.Type, err)
+	}
+	old := dev.Category
+	dev.Category = 7
+	changes, _, err := profile.Plan(dev, ds, false)
+	want := fmt.Sprintf(", category %v -> Receiver", old)
+	if err != nil || len(changes) != 2 || !strings.HasSuffix(changes[0].String(), want) {
+		t.Fatalf("plan %v %v, want %s", changes, err, want)
+	}
+	if err := profile.Apply(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	ds, _ = profile.Read(ctx, c, 4)
+	if ds.Entity.Type != 7 {
+		t.Fatalf("type %d after apply", ds.Entity.Type)
+	}
+	if changes, _, _ := profile.Plan(dev, ds, false); len(changes) != 0 {
+		t.Fatalf("applied, still %v", changes)
+	}
+
+	nd, err := profile.Load(strings.NewReader(aetherion))
+	if err != nil {
+		t.Fatal(err)
+	}
+	nd.Name, nd.Category = "ZZ Test", 6
+	id, err := profile.Create(ctx, c, nd, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	devs, _ := c.Devices(ctx)
+	for _, e := range devs {
+		if e.ID == id && e.Type != 6 {
+			t.Errorf("created with type %d", e.Type)
+		}
+	}
+}

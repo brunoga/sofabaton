@@ -8,6 +8,7 @@
 # second names ("SAT / CBL/SAT"). Not yet tested on a receiver.
 template: Denon AVR-X8500H Zone 2
 brand: Denon
+category: Receiver
 ir: {protocol: DenonK, device: 4, subdevice: 3}
 commands:
   # Power
