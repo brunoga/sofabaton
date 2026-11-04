@@ -264,15 +264,16 @@ func TestCreate(t *testing.T) {
 	d.Name, d.Power.Off = "ZZ Test", "OK"
 	var steps []string
 	id, err := profile.Create(ctx, c, d, func(s string) { steps = append(steps, s) })
-	if err != nil || id != 5 {
+	// The hub gives the lowest free id: 1 on this one, as on our X2.
+	if err != nil || id != 1 {
 		t.Fatalf("created %d: %v", id, err)
 	}
-	if steps[0] != `created device 5 "ZZ Test"` || steps[len(steps)-1] != "sync        device 5 to the remotes" || len(steps) != 1+4+3+2+1+3 || steps[len(steps)-3] != `inputs      ["Disney+" "Focus"]` {
+	if steps[0] != `created device 1 "ZZ Test"` || steps[len(steps)-1] != "sync        device 1 to the remotes" || len(steps) != 1+4+3+2+1+3 || steps[len(steps)-3] != `inputs      ["Disney+" "Focus"]` {
 		t.Fatalf("steps:\n%s", strings.Join(steps, "\n"))
 	}
 	devs, _ := c.Devices(ctx)
 	dev := devs[len(devs)-1]
-	if tail, _ := dev.DeviceTail(); dev.ID != 5 || dev.Name != "ZZ Test" || tail.Marker != 1 || tail.PowerMode != 1 || tail.InputMode != 1 {
+	if tail, _ := dev.DeviceTail(); dev.ID != 1 || dev.Name != "ZZ Test" || tail.Marker != 1 || tail.PowerMode != 1 || tail.InputMode != 1 {
 		t.Fatalf("device %+v, tail %+v", dev, tail)
 	}
 	st, err := profile.Read(ctx, c, id)
