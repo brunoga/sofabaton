@@ -79,7 +79,7 @@ func Read(ctx context.Context, c *hub.Client, tool string, log io.Writer) *File 
 // being read; reading a real hub takes about two seconds for each. ctx
 // cancels it between them, with ctx's error.
 func ReadProgress(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
-	return read(ctx, c, tool, log, progress, nil)
+	return read(ctx, c, tool, log, progress, nil, nil)
 }
 
 // Refresh is ReadProgress for a hub read before into old: a command whose
@@ -100,10 +100,25 @@ func Refresh(ctx context.Context, c *hub.Client, old *File, tool string, log io.
 			return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
 		}
 	}
-	return read(ctx, c, tool, log, progress, old)
+	return read(ctx, c, tool, log, progress, old, nil)
 }
 
-func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File) (*File, error) {
+// RefreshSome is Refresh for a hub that changed since old was read only in
+// the devices and activities stale picks, by id: as after writing to them.
+// The others are taken from old whole, without reading them; the lists
+// of devices and activities are read again.
+func RefreshSome(ctx context.Context, c *hub.Client, old *File, stale func(id byte) bool, tool string, log io.Writer, progress func(done, total int, name string)) (*File, error) {
+	if old == nil {
+		return nil, fmt.Errorf("dump: refresh: no old dump")
+	}
+	i := c.Info()
+	if old.Info.ID != hex.EncodeToString(i.ID[:]) {
+		return nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
+	}
+	return read(ctx, c, tool, log, progress, old, stale)
+}
+
+func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(id byte) bool) (*File, error) {
 	i := c.Info()
 	d := &File{
 		Tool: tool,
@@ -132,6 +147,14 @@ func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progre
 				progress(done, total, e.Name)
 			}
 			done++
+			if stale != nil && !stale(e.ID) {
+				if kept := old.entity(e.ID); kept != nil {
+					cp := *kept
+					cp.Name = e.Name
+					d.Entities = append(d.Entities, &cp)
+					continue
+				}
+			}
 			de := &Entity{ID: e.ID, Name: e.Name}
 			id := e.ID
 			if record.IsActivityID(id) {
@@ -195,6 +218,16 @@ func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progre
 		progress(total, total, "")
 	}
 	return d, nil
+}
+
+// entity is the entity with the id in d, or nil.
+func (d *File) entity(id byte) *Entity {
+	for _, e := range d.Entities {
+		if e.ID == id {
+			return e
+		}
+	}
+	return nil
 }
 
 // cmdKey is what identifies a command's signal: a command with the same

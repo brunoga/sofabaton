@@ -174,3 +174,62 @@ func TestRefresh(t *testing.T) {
 		t.Error("refreshed from another hub's dump")
 	}
 }
+
+// RefreshSome reads only the entities it is told changed, and keeps the
+// others from the old dump, even where the hub has changed them.
+func TestRefreshSome(t *testing.T) {
+	ctx := context.Background()
+	var ents []*record.Entity
+	for id, name := range map[byte]string{1: "TV", 2: "AVR"} {
+		e, _ := record.NewEntity(wire.X2)
+		e.ID, e.Name, e.Class = id, name, record.ClassIR
+		ents = append(ents, e)
+	}
+	h := hubsim.FromModel(&hubsim.Model{
+		Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 9, Name: "X2 HUB"},
+		Devices: ents,
+	})
+	c, err := hub.Open(ctx, hubsim.Pipe(h), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	write := func(dev, id byte, label string) {
+		t.Helper()
+		cmd, _ := record.NewCommand(wire.X2)
+		cmd.Device, cmd.ID, cmd.Type, cmd.Label = dev, id, record.ClassIR, label
+		data, _ := record.Descriptor("P:NEC R:38400 D:0 S:206 F:1")
+		if err := c.WriteCommand(ctx, cmd, data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(1, 1, "Power")
+	write(2, 1, "Power")
+	old, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(1, 2, "Menu")
+	write(2, 2, "Menu")
+	before := len(h.Requests())
+	got, err := dump.RefreshSome(ctx, c, old, func(id byte) bool { return id == 1 }, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range h.Requests()[before:] {
+		if len(r.Payload) > 0 && r.Payload[0] == 2 {
+			t.Errorf("read %v of the AVR", r.Family)
+		}
+	}
+	commands := func(d *dump.File, id byte) int {
+		for _, e := range d.Entities {
+			if e.ID == id {
+				return len(e.Data)
+			}
+		}
+		return -1
+	}
+	if commands(got, 1) != 2 || commands(got, 2) != 1 {
+		t.Errorf("TV has %d commands, AVR %d; want 2 and 1 (as kept)", commands(got, 1), commands(got, 2))
+	}
+}
