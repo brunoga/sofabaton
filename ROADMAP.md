@@ -14,8 +14,11 @@ the design and the phases behind it; [docs/](docs) has the protocol.
   re-code, remove and reorder commands, bind keys short and long, power
   sequences, inputs, renaming the device); creating a device from scratch;
   deleting one; syncing the remote.
-- IR codes as NEC, Denon-K and Denon (Sharp) codes, or the hub's own
-  descriptors.
+- IR codes as NEC, NECx, Denon-K, Denon (Sharp), Sony, JVC, RC6,
+  Samsung20 and Panasonic codes, or the hub's own descriptors.
+- Device files of IR codes: Flipper Zero's `.ir` and irdb's `.csv` read
+  into profiles (`irfile`, `sbx import-ir`), and irdb and Flipper-IRDB
+  searched, browsed by type and maker, and fetched (`irsource`).
 - Sending a device's command.
 - Device macros: in device profiles, copied into every activity with the
   device (the remote cannot show a device's own), kept in step, and run
@@ -44,8 +47,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Later
 
-- More IR protocols for profile codes (NECx, Sony, RC5/RC6, Samsung,
-  Panasonic …) and import from open IR databases (PLAN P7, R3).
+- IR codes the X2 does not take as descriptors yet: raw timings (2,700
+  of Flipper-IRDB's A/V files), RC5, RCA, Pioneer (PLAN P7, R3). Needs a
+  capture of the app adding a device of raw codes.
 - Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).
