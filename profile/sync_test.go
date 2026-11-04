@@ -132,3 +132,63 @@ func TestConfigValidate(t *testing.T) {
 		}
 	}
 }
+
+// With Base, what the config left as read is not read again: a change
+// made on the hub behind its back stays, until the device is edited.
+func TestApplyConfigBase(t *testing.T) {
+	ctx := context.Background()
+	c := populated(t)
+	snap := func() *profile.Config {
+		cfg, err := profile.Snapshot(ctx, c, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return cfg
+	}
+	cfg, base := snap(), snap()
+	behind := snap()
+	if err := behind.RenameCommand("TV", "Back", "Return"); err != nil {
+		t.Fatal(err)
+	}
+	behind.Activities[0].Macros[0].Name = "Menus"
+	opts := profile.ApplyOptions{ByID: true, Prune: true, Delete: true}
+	if err := profile.ApplyConfig(ctx, c, behind, opts); err != nil {
+		t.Fatal(err)
+	}
+
+	projector, err := profile.Load(strings.NewReader(`device: Projector
+ir: {protocol: NEC, system: 0x00CE}
+commands:
+  - {name: Power On, code: 0x40}
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Devices = append(cfg.Devices, projector)
+	var log []string
+	opts.Base = base
+	opts.Report = func(s string) { log = append(log, s) }
+	if err := profile.ApplyConfig(ctx, c, cfg, opts); err != nil {
+		t.Fatal(err)
+	}
+	got := export(t, c)
+	if _, ok := got["Projector"]; !ok || !strings.Contains(got["TV"], "Return") || !strings.Contains(got["Watch TV"], "Menus") {
+		t.Errorf("TV:\n%s\nWatch TV:\n%s\nlog:\n%s", got["TV"], got["Watch TV"], strings.Join(log, "\n"))
+	}
+
+	// Editing the TV reads it, and its activity, again.
+	if err := cfg.RenameCommand("TV", "Menu", "Home"); err != nil {
+		t.Fatal(err)
+	}
+	log = nil
+	if err := profile.ApplyConfig(ctx, c, cfg, opts); err != nil {
+		t.Fatal(err)
+	}
+	got = export(t, c)
+	if tv := got["TV"]; strings.Contains(tv, "Return") || !strings.Contains(tv, "Home") {
+		t.Errorf("TV:\n%s\nlog:\n%s", tv, strings.Join(log, "\n"))
+	}
+	if !strings.Contains(got["Watch TV"], "Both Menus") {
+		t.Errorf("Watch TV:\n%s\nlog:\n%s", got["Watch TV"], strings.Join(log, "\n"))
+	}
+}

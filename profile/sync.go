@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/brunoga/sofabaton/hub"
@@ -101,6 +102,13 @@ type ApplyOptions struct {
 	DryRun bool
 	// Report, if not nil, gets a line per change, as it is made.
 	Report func(string)
+	// Base, if not nil, is the configuration the hub held when cfg was
+	// read from it. The devices and activities cfg left as they were are
+	// taken to be on the hub as they are, and not read: reading a device
+	// takes the hub seconds. An activity counts as left only if its
+	// devices are, and a device only if its activities are (its macros
+	// live in copies in them).
+	Base *Config
 }
 
 // ApplyConfig makes the hub c is connected to hold cfg: each device and
@@ -119,7 +127,8 @@ func ApplyConfig(ctx context.Context, c *hub.Client, cfg *Config, opts ApplyOpti
 	if err := cfg.Validate(); err != nil {
 		return err
 	}
-	s := syncer{ctx: ctx, c: c, cfg: cfg, opts: opts, skipped: map[string]bool{}}
+	s := syncer{ctx: ctx, c: c, cfg: cfg, opts: opts, skipped: map[string]bool{}, settled: map[string]bool{}}
+	s.settle()
 	return s.run()
 }
 
@@ -156,6 +165,59 @@ type syncer struct {
 	cfg     *Config
 	opts    ApplyOptions
 	skipped map[string]bool // devices and activities skipped, by lower-case name
+	settled map[string]bool // devices and activities as in Base, by lower-case name
+}
+
+// settle finds the devices and activities cfg left as they are in Base.
+func (s *syncer) settle() {
+	base := s.opts.Base
+	if base == nil {
+		return
+	}
+	devs := map[string]bool{}
+	for _, d := range s.cfg.Devices {
+		for _, b := range base.Devices {
+			if s.same(d.ID, b.ID, d.Name, b.Name) {
+				devs[strings.ToLower(d.Name)] = reflect.DeepEqual(d, b)
+				break
+			}
+		}
+	}
+	acts := map[string]bool{}
+	for _, a := range s.cfg.Activities {
+		for _, b := range base.Activities {
+			if s.same(a.ID, b.ID, a.Name, b.Name) {
+				ok := reflect.DeepEqual(a, b)
+				for _, m := range a.Devices {
+					ok = ok && devs[strings.ToLower(m.Device)]
+				}
+				acts[strings.ToLower(a.Name)] = ok
+				break
+			}
+		}
+	}
+	for name, ok := range devs {
+		for _, a := range s.cfg.Activities {
+			for _, m := range a.Devices {
+				if strings.EqualFold(m.Device, name) {
+					ok = ok && acts[strings.ToLower(a.Name)]
+				}
+			}
+		}
+		s.settled[name] = ok
+	}
+	for name, ok := range acts {
+		s.settled[name] = ok
+	}
+}
+
+// same reports whether a profile and one of Base are the same device or
+// activity, matched as on the hub (see match).
+func (s *syncer) same(id, baseID byte, name, baseName string) bool {
+	if s.opts.ByID && id != 0 {
+		return id == baseID
+	}
+	return strings.EqualFold(name, baseName)
 }
 
 func (s *syncer) say(format string, args ...any) {
@@ -318,6 +380,12 @@ func (s *syncer) delete(e *record.Entity, what string, del func(context.Context,
 // device applies d to its match on the hub, or creates it. again is the
 // second pass, for the device's macros.
 func (s *syncer) device(d *Device, again bool) error {
+	if s.settled[strings.ToLower(d.Name)] {
+		if !again {
+			s.say("device %q (%d): matches", d.Name, d.ID)
+		}
+		return nil
+	}
 	devs, err := s.devices()
 	if err != nil {
 		return err
@@ -426,6 +494,12 @@ func (s *syncer) activity(a *Activity, hold bool) (pending bool, err error) {
 			s.skipped[strings.ToLower(a.Name)] = true
 			return false, nil
 		}
+	}
+	if s.settled[strings.ToLower(a.Name)] {
+		if hold {
+			s.say("activity %q (%d): matches", a.Name, a.ID)
+		}
+		return false, nil
 	}
 	reduced, held := a, false
 	if hold {
