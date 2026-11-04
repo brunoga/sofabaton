@@ -80,6 +80,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Blu-ray 4, Projector 6, Receiver 7…), and the app's own 15 (Bluetooth)
   and 16 (Wi-Fi). The receiver, projector and media player templates
   have theirs.
+- `irsource.SofabatonDB`: Sofabaton's own catalog of IR code sets (the
+  one its app searches: 7,000 brands, models by number, each a set of X2
+  descriptors), reached with the key its app encrypts with, which callers
+  supply: it is not in the library. `irfile.ReadSofabaton` reads its code
+  sets; `irfile.Signal.Descriptor` carries a descriptor in no protocol
+  profiles render. `irsource.Search` also matches a model pattern
+  (Sofabaton's model numbers), ranking a model named before one covered
+  by a pattern.
 - `irgen`'s Denon and Denon-K match the 394 codes of the chart's main
   zone, Zone 2 and Zone 3 sheets (five kept as test data).
 

@@ -34,7 +34,8 @@ const (
 	Flipper Source = "Flipper-IRDB"
 )
 
-// Sources are the databases, in the order to show them.
+// Sources are the public databases, in the order to show them (Index and
+// Fetch reach them); Sofabaton's catalog is reached with SofabatonDB.
 var Sources = []Source{Flipper, IRDB}
 
 // Where the databases are; tests point them at their own servers.
@@ -54,6 +55,8 @@ func Credit(s Source) string {
 		return "Contains/accesses irdb by Simon Peter and contributors, used under permission. For licensing details and for information on how to contribute to the database, see https://github.com/probonopd/irdb"
 	case Flipper:
 		return "Accesses Flipper-IRDB, a collection of IR files for the Flipper Zero by its maintainers and contributors: https://github.com/Lucaslhm/Flipper-IRDB"
+	case Sofabaton:
+		return "Accesses Sofabaton's own catalog of IR codes, the one its app uses: undocumented and not offered for other apps, so it may change or stop answering at any time."
 	}
 	return ""
 }
@@ -69,6 +72,9 @@ type Entry struct {
 	Model string `json:"model"`
 	// Path is the file's path in the source.
 	Path string `json:"path"`
+	// Pattern, when set, is a regular expression of the model numbers
+	// the entry covers (Sofabaton's), which Search matches words against.
+	Pattern string `json:"pattern,omitempty"`
 }
 
 // Name is a name for the device the entry is the file of.
@@ -159,6 +165,9 @@ func words(s string) string {
 // Fetch is an entry's file.
 func Fetch(ctx context.Context, c *http.Client, e Entry) ([]byte, error) {
 	base := map[Source]string{IRDB: irdbBase, Flipper: flipperBase}[e.Source]
+	if e.Source == Sofabaton {
+		return nil, errors.New("irsource: Sofabaton's code sets are fetched with SofabatonDB.Fetch")
+	}
 	if base == "" {
 		return nil, fmt.Errorf("irsource: no source %q", e.Source)
 	}
@@ -192,42 +201,53 @@ func get(ctx context.Context, c *http.Client, u string) ([]byte, error) {
 }
 
 // Search is the entries that have every word of query in their maker,
-// kind or model, the closest first: those whose maker is a word of the
-// query, then by maker and model. At most max are returned (all for 0).
+// kind or model, or covered by their model pattern, the closest first:
+// those whose maker is a word of the query, those whose model is, those
+// found without a pattern, then by maker and model. At most max are
+// returned (all for 0).
 func Search(entries []Entry, query string, max int) []Entry {
 	words := strings.Fields(strings.ToLower(query))
 	if len(words) == 0 {
 		return nil
 	}
 	type hit struct {
-		e     Entry
-		brand bool
+		e                       Entry
+		brand, model, byPattern bool
 	}
 	var hits []hit
 	for _, e := range entries {
 		text := strings.ToLower(e.Brand + " " + e.Kind + " " + e.Model)
-		all := true
+		all, byPattern := true, false
 		for _, w := range words {
-			if !strings.Contains(text, w) {
+			if strings.Contains(text, w) {
+				continue
+			}
+			if !matchPattern(e.Pattern, w) {
 				all = false
 				break
 			}
+			byPattern = true
 		}
 		if !all {
 			continue
 		}
-		brand := false
+		h := hit{e: e, byPattern: byPattern}
 		for _, w := range words {
-			if w == strings.ToLower(e.Brand) {
-				brand = true
-			}
+			h.brand = h.brand || w == strings.ToLower(e.Brand)
+			h.model = h.model || w == strings.ToLower(e.Model)
 		}
-		hits = append(hits, hit{e, brand})
+		hits = append(hits, h)
 	}
 	sort.SliceStable(hits, func(i, j int) bool {
 		a, b := hits[i], hits[j]
 		if a.brand != b.brand {
 			return a.brand
+		}
+		if a.model != b.model {
+			return a.model
+		}
+		if a.byPattern != b.byPattern {
+			return b.byPattern
 		}
 		if a.e.Brand != b.e.Brand {
 			return strings.ToLower(a.e.Brand) < strings.ToLower(b.e.Brand)
@@ -274,8 +294,20 @@ var typeWords = []struct {
 	{"Climate", []string{"ac", "acs", "air", "fan", "heater", "humidifier", "purifier", "fireplace", "climate"}},
 }
 
+// sofabatonTypes are the types of Sofabaton's kinds of device.
+var sofabatonTypes = map[string]string{
+	"set top box": "Cable/satellite", "tv": "TV", "stream box": "Media player",
+	"dvd&blu-ray": "Video player", "projector": "Projector", "audio": "Receiver",
+}
+
 // Type is the kind of device the entry is the file of, one of Types.
 func (e Entry) Type() string {
+	if e.Source == Sofabaton {
+		if t, ok := sofabatonTypes[strings.ToLower(e.Kind)]; ok {
+			return t
+		}
+		return "Other"
+	}
 	k := " " + strings.Join(strings.FieldsFunc(strings.ToLower(e.Kind), func(r rune) bool {
 		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
 	}), " ") + " "

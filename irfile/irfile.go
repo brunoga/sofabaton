@@ -37,8 +37,11 @@ type Signal struct {
 	IR           profile.IR
 	Code         uint16
 	// Raw, when set, is the signal as timings, instead of IR and Code.
-	Raw  *record.RawIR
-	Skip string
+	Raw *record.RawIR
+	// Descriptor, when set, is the signal as the X2's descriptor, for
+	// those in no protocol profiles render (Sofabaton's code sets).
+	Descriptor string
+	Skip       string
 }
 
 // raw is s carrying r as its signal, or left out if r cannot be sent.
@@ -76,7 +79,7 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 			skipped = append(skipped, Skipped{Name: s.Source, Why: "another signal has the same name"})
 			continue
 		}
-		if s.Raw != nil {
+		if s.Raw != nil || s.Descriptor != "" {
 			seen[strings.ToLower(s.Name)] = true
 			kept = append(kept, s)
 			continue
@@ -101,6 +104,10 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 		if s.Raw != nil {
 			data, _ := s.Raw.Encode() // checked by Signal.raw
 			d.Commands = append(d.Commands, profile.Command{Name: s.Name, Data: hex.EncodeToString(data)})
+			continue
+		}
+		if s.Descriptor != "" {
+			d.Commands = append(d.Commands, profile.Command{Name: s.Name, Descriptor: s.Descriptor})
 			continue
 		}
 		cmd := profile.Command{Name: s.Name, Code: &profile.Code{Value: s.Code, Decimal: decimal(s.IR.Protocol)}}
@@ -147,7 +154,7 @@ func init() {
 		"Channel Up":   {"ch next", "ch up", "ch+", "ch +", "channel up", "channel +", "channel+", "channelup", "chan up", "program up", "prog+", "p+", "next channel", "nextchannel"},
 		"Channel Down": {"ch prev", "ch dn", "ch down", "ch-", "ch -", "channel down", "channel -", "channel-", "channeldown", "chan down", "program down", "prog-", "p-", "previous channel", "previouschannel", "prev channel"},
 		"Mute":         {"mute", "muting"},
-		"OK":           {"ok", "enter", "select", "confirm"},
+		"OK":           {"ok", "enter", "select", "confirm", "ok/select"},
 		"Up":           {"up", "arrow up", "cursor up", "nav up", "navigate up"},
 		"Down":         {"down", "arrow down", "cursor down", "nav down", "navigate down"},
 		"Left":         {"left", "arrow left", "cursor left", "nav left", "navigate left"},
@@ -238,6 +245,8 @@ func Read(name string, r io.Reader) ([]Signal, error) {
 		return ReadGirr(br)
 	case ".txt":
 		return ReadCodes(br)
+	case ".sofabaton":
+		return ReadSofabaton(br)
 	}
 	head, _ := br.Peek(4096)
 	text := strings.TrimSpace(string(head))
