@@ -104,8 +104,9 @@ The capture is kept locally (it carries the account), not in the repo.
   `furrykid.com` and `kookong.com` (`--allow-hosts`) fixes it.
 - **Payloads** (`https://api.furrykid.com/pro/app/…`): a multipart form of
   one field, `data`, holding JSON encrypted with AES-128-ECB, PKCS#5
-  padding, key `2021062809370000` (ASCII; `www.thl.mvp.base.AesEncodeUtil`),
-  in base64; responses are the same, `{"code":0,"data":…,"msg":"ok"}`.
+  padding, with a 16-character key the app holds
+  (`www.thl.mvp.base.AesEncodeUtil`; not written here: `irsource`
+  takes it from its user), in base64; responses are the same, `{"code":0,"data":…,"msg":"ok"}`.
   Every request carries the app version, the hub's name and id (its MAC),
   firmware and hardware codes, the account's email and the phone model;
   there is no session token.
@@ -113,7 +114,11 @@ The capture is kept locally (it carries the account), not in the repo.
   Box, 2 TV, 3 Stream Box, 4 DVD&Blu-ray, 6 Projector, 7 Audio, with icons
   on S3: the record's type byte, as `profile.Category` names them.
 - **Brands and models** come whole: `app/getAllXBrands` (1.2 MB) and
-  `app/getAllModels` (0.9 MB), searched on the phone.
+  `app/getAllModels` (0.9 MB, a brand's: `brand_id`), searched on the
+  phone. None of the catalog's requests needs the account, the hub or a
+  session: `{"brand_id": …}` and `{"ecode_id": …}` alone are answered, and
+  so is a request encrypted with another key (with an error, encrypted
+  with the catalog's). `irsource.SofabatonDB` reaches it.
 - **Code sets**: `GET https://api.furrykid.com/api/decode_keys/<ecode_id>
   ?data=<JSON: etype_id, brand_id, emodel_id, ecode_id, …>`, neither
   encrypted. The answer lists the keys: `keyname`, `fid` (the function

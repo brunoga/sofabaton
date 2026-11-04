@@ -3,6 +3,7 @@ package irfile_test
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"os"
 	"slices"
 	"strings"
@@ -344,5 +345,33 @@ func TestGirr(t *testing.T) {
 	}
 	if sigs[3].Raw != nil || !strings.Contains(sigs[3].Skip, "Weird") {
 		t.Errorf("text: %+v", sigs[3])
+	}
+}
+
+// A Sofabaton code set's descriptors become codes where profiles render
+// their protocol, and stay descriptors where not.
+func TestReadSofabaton(t *testing.T) {
+	hexOf := func(s string) string { return fmt.Sprintf("%X", s) }
+	set := fmt.Sprintf(`{"keys": [
+		{"keyname": "Power on", "format": "1", "irCode": %q},
+		{"keyname": "Ok/select", "format": "1", "irCode": %q},
+		{"keyname": "\nSimp link", "format": "2", "irCode": ""}]}`,
+		hexOf("P:NEC R:38400 D:4 S:251 F:196"), hexOf("P:RC5 R:36000 D:0 F:12"))
+	sigs, err := irfile.Read("c1.sofabaton", strings.NewReader(set))
+	if err != nil || len(sigs) != 3 {
+		t.Fatalf("%+v, %v", sigs, err)
+	}
+	if s := sigs[0]; s.Name != "Power On" || s.IR.Protocol != "NEC" || s.IR.System != 0x04FB || s.Code != 196 {
+		t.Errorf("Power on: %+v", s)
+	}
+	if s := sigs[1]; s.Name != "OK" || s.Descriptor != "P:RC5 R:36000 D:0 F:12" {
+		t.Errorf("OK: %+v", s)
+	}
+	if s := sigs[2]; s.Source != "Simp link" || !strings.Contains(s.Skip, "format 2") {
+		t.Errorf("Simp link: %+v", s)
+	}
+	d, skipped := irfile.Device("LG", sigs)
+	if len(d.Commands) != 2 || d.Commands[1].Descriptor != "P:RC5 R:36000 D:0 F:12" || len(skipped) != 1 {
+		t.Errorf("device %+v, skipped %+v", d.Commands, skipped)
 	}
 }
