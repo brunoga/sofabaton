@@ -1,6 +1,8 @@
 // Package irfile reads files of IR codes that other tools and databases
-// publish, Flipper Zero's .ir files and irdb's .csv files, into device
-// profiles.
+// publish into device profiles: Flipper Zero's .ir files, irdb's .csv,
+// Home Assistant SmartIR's .json (Broadlink codes), LIRC's lircd.conf,
+// IrScrutinizer's Girr, and codes one a line (Pronto, Global Caché's
+// sendir, Broadlink's, Unfolded Circle's).
 //
 // A file's signals become commands in the protocols profiles render for
 // the X2 (profile.IR), or, for raw timings and protocols the X2 has no
@@ -215,8 +217,9 @@ func commandName(source string) string {
 }
 
 // Read reads a file of IR codes in any of the formats, told by its
-// name's extension (.ir is Flipper's, .csv irdb's) or else by its
-// content: Flipper's header, Pronto codes, or irdb's.
+// name's extension (.ir Flipper's, .csv irdb's, .json SmartIR's, .conf
+// or .lircd LIRC's, .girr or .xml Girr's, .txt codes one a line) or else
+// by its content.
 func Read(name string, r io.Reader) ([]Signal, error) {
 	br := bufio.NewReader(r)
 	switch strings.ToLower(filepath.Ext(name)) {
@@ -224,13 +227,33 @@ func Read(name string, r io.Reader) ([]Signal, error) {
 		return ReadFlipper(br)
 	case ".csv":
 		return ReadIRDB(br)
+	case ".json":
+		return ReadSmartIR(br)
+	case ".conf", ".lircd", ".lirc":
+		return ReadLIRC(br)
+	case ".girr", ".xml":
+		return ReadGirr(br)
+	case ".txt":
+		return ReadCodes(br)
 	}
 	head, _ := br.Peek(4096)
+	text := strings.TrimSpace(string(head))
 	switch {
-	case strings.HasPrefix(strings.TrimSpace(string(head)), "Filetype:"):
+	case strings.HasPrefix(text, "Filetype:"):
 		return ReadFlipper(br)
-	case prontoCode.Match(head):
-		return ReadPronto(br)
+	case strings.HasPrefix(text, "{"):
+		return ReadSmartIR(br)
+	case strings.HasPrefix(text, "<"):
+		return ReadGirr(br)
+	case strings.Contains(strings.ToLower(text), "begin remote"):
+		return ReadLIRC(br)
+	}
+	for _, f := range codeForms {
+		for _, line := range strings.Split(text, "\n") {
+			if f.re.MatchString(strings.TrimSpace(line)) {
+				return ReadCodes(br)
+			}
+		}
 	}
 	return ReadIRDB(br)
 }

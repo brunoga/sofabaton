@@ -47,9 +47,8 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Later
 
-- More files of IR codes now that raw timings work: Broadlink's base64
-  codes (Home Assistant's SmartIR), LIRC's lircd.conf, Global Caché's
-  sendir and Unfolded Circle's hex.
+- Exporting a device's codes in the formats `irfile` reads.
+- Sharp (Unfolded Circle's protocol 14) and RC6 in LIRC files.
 - Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).

@@ -13,10 +13,11 @@ import (
 )
 
 // importIR writes the profile of a device made of a file of IR codes
-// (Flipper's .ir, irdb's .csv), saying which codes it left out and why.
+// (see irfile.Read for the formats), saying which codes it left out and
+// why.
 func importIR(args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("import-ir", flag.ContinueOnError)
-	file := fs.String("f", "", "a Flipper .ir or irdb .csv file (required)")
+	file := fs.String("f", "", "a file of IR codes: Flipper .ir, irdb .csv, SmartIR .json, LIRC .conf, Girr, or codes one a line (required)")
 	name := fs.String("name", "", "the device's name (default: the file's name)")
 	out := fs.String("o", "", "write to this file instead of stdout")
 	if err := fs.Parse(args); err != nil {

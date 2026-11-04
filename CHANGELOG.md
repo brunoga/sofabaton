@@ -43,6 +43,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `irfile`: Flipper's raw signals and the protocols above become
   commands instead of being left out; Pronto codes (learned form, `0000`)
   are read too, one a line after their names.
+- `irfile`: Home Assistant SmartIR's `.json` files (Broadlink's codes in
+  base64 or hex, and Pronto), LIRC's `lircd.conf` (raw codes, and
+  pulse-distance and RC5 remotes rendered from their timings), Girr
+  (IrScrutinizer's XML: protocols, timings or Pronto), and, one a line,
+  Global Caché's `sendir`, Broadlink's codes and Unfolded Circle's hex
+  codes (checked against upstream's vectors).
 
 - `dump.RefreshSome`: a refresh that reads only the devices and
   activities known to have changed (as after writing to them), keeping
