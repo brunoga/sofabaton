@@ -8,7 +8,7 @@ capture file in `testdata/captures/`, conclusion, and which doc was updated.
 | R1 | Bluetooth device create: what goes into code_id / tail byte 23 / keymaps? | one real Bluetooth record read (2026-10-30) |
 | R2 | RF device create: class code and record shapes | not started |
 | R3 | Local IR catalog → raw + `P:` generation | not started |
-| R4 | App ↔ cloud catalog API (optional) | endpoints read from the APK (2026-11-04) |
+| R4 | App ↔ cloud catalog API (optional) | captured with mitmproxy, decoded (2026-11-04) |
 | R5 | Device category semantics (type, icon, input_mode, power_style) | type values read from the APK (2026-11-04); semantics open |
 
 ## Capture procedure (once P5 exists)
@@ -89,3 +89,34 @@ the app's session is untested.
 (`HttpsUtils.getSslSocketFactory()` without arguments, and
 `UnSafeHostnameVerifier`), so an intercepting proxy (mitmproxy) sees its
 catalog traffic without a patched APK or a CA on the phone.
+
+### 2026-11-04 — the app's cloud catalog, captured
+
+App 4.1.6 on our phone, its global proxy set to mitmproxy over `adb`
+(`settings put global http_proxy`); adding an LG TV from the database.
+The capture is kept locally (it carries the account), not in the repo.
+
+- **Interception works as the APK said**: the app's HTTP client (OkGo)
+  trusts any certificate, so mitmproxy decrypts its HTTPS with no CA on
+  the phone. Its image loader does check certificates: with every host
+  intercepted, the types' icons (`sofabaton.s3.us-west-2.amazonaws.com`)
+  failed and the app said it found no model. Intercepting only
+  `furrykid.com` and `kookong.com` (`--allow-hosts`) fixes it.
+- **Payloads** (`https://api.furrykid.com/pro/app/…`): a multipart form of
+  one field, `data`, holding JSON encrypted with AES-128-ECB, PKCS#5
+  padding, key `2021062809370000` (ASCII; `www.thl.mvp.base.AesEncodeUtil`),
+  in base64; responses are the same, `{"code":0,"data":…,"msg":"ok"}`.
+  Every request carries the app version, the hub's name and id (its MAC),
+  firmware and hardware codes, the account's email and the phone model;
+  there is no session token.
+- **Device types** (`app/getTypesByBrandId`, LG): `etype_id` 1 Set Top
+  Box, 2 TV, 3 Stream Box, 4 DVD&Blu-ray, 6 Projector, 7 Audio, with icons
+  on S3: the record's type byte, as `profile.Category` names them.
+- **Brands and models** come whole: `app/getAllXBrands` (1.2 MB) and
+  `app/getAllModels` (0.9 MB), searched on the phone.
+- **Code sets**: `GET https://api.furrykid.com/api/decode_keys/<ecode_id>
+  ?data=<JSON: etype_id, brand_id, emodel_id, ecode_id, …>`, neither
+  encrypted. The answer lists the keys: `keyname`, `fid` (the function
+  id), `fre` (carrier), `type`, `format`, and `irCode`, the X2's own
+  descriptor in hex ASCII (`503A4E4543…` is `P:NEC R:38400 D:4 S:251
+  F:11`): the cloud serves descriptors ready to write.
