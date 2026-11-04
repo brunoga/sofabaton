@@ -33,6 +33,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `dump.RefreshSome`: a refresh that reads only the devices and
+  activities known to have changed (as after writing to them), keeping
+  the others from the old dump.
+
 - `session.Session.Watch`: see the frames of a session already open,
   until stopped, to record what an operation exchanged.
 
