@@ -2,12 +2,15 @@ package profile_test
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/brunoga/sofabaton/irgen"
 	"github.com/brunoga/sofabaton/profile"
 )
 
@@ -200,5 +203,29 @@ commands:
 	}
 	if !strings.Contains(got["Watch TV"], "Both Menus") {
 		t.Errorf("Watch TV:\n%s\nlog:\n%s", got["Watch TV"], strings.Join(log, "\n"))
+	}
+}
+
+// A device of learned codes is created on restore; one with a Bluetooth
+// command is still skipped.
+func TestApplyConfigRaw(t *testing.T) {
+	ctx := context.Background()
+	c := simulated(t)
+	raw, _ := irgen.Pioneer(1, 2).Encode()
+	cfg := &profile.Config{Devices: []*profile.Device{
+		{Name: "ZZ Learned", Commands: []profile.Command{{Name: "Power", Data: hex.EncodeToString(raw)}}},
+		{Name: "ZZ Paired", Commands: []profile.Command{{Name: "Home", Data: "0c0111"}}},
+	}}
+	var out strings.Builder
+	if err := profile.ApplyConfig(ctx, c, cfg, profile.ApplyOptions{Report: func(s string) { out.WriteString(s + "\n") }}); err != nil {
+		t.Fatal(err)
+	}
+	devs, _ := c.Devices(ctx)
+	var names []string
+	for _, d := range devs {
+		names = append(names, d.Name)
+	}
+	if !slices.Contains(names, "ZZ Learned") || slices.Contains(names, "ZZ Paired") || !strings.Contains(out.String(), `"ZZ Paired": skipped`) {
+		t.Errorf("devices %v; report:\n%s", names, out.String())
 	}
 }

@@ -5,14 +5,17 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
+	"github.com/brunoga/sofabaton/irgen"
 	"github.com/brunoga/sofabaton/profile"
+	"github.com/brunoga/sofabaton/record"
 )
 
-// ReadFlipper reads a Flipper Zero IR file (.ir): its signals, those in
-// protocols profiles render as commands, the others (raw timings among
-// them) left out, saying why.
+// ReadFlipper reads a Flipper Zero IR file (.ir): its signals, parsed
+// ones in protocols profiles render, or as raw IR; raw ones as they are.
+// Those in other protocols are left out, saying why.
 //
 // A Flipper file is blocks of "key: value" lines, one per signal, after a
 // "Filetype: IR signals file" header; a parsed signal has a protocol, an
@@ -69,12 +72,12 @@ func ReadFlipper(r io.Reader) ([]Signal, error) {
 // flipperSignal is one signal of a Flipper file.
 func flipperSignal(f map[string]string) Signal {
 	s := Signal{Name: commandName(f["name"]), Source: f["name"]}
-	if t := f["type"]; t != "parsed" {
-		if t == "raw" {
-			s.Skip = "raw timings: not supported yet"
-		} else {
-			s.Skip = fmt.Sprintf("a signal of type %q", t)
-		}
+	switch t := f["type"]; t {
+	case "parsed":
+	case "raw":
+		return flipperRaw(s, f)
+	default:
+		s.Skip = fmt.Sprintf("a signal of type %q", t)
 		return s
 	}
 	a, err1 := flipperValue(f["address"])
@@ -97,8 +100,8 @@ func flipperSignal(f map[string]string) Signal {
 		// A 16-bit address, low byte first; the command is a byte and its
 		// complement, else a 16-bit command the hub's NEC cannot send.
 		if c>>8&0xFF != ^c&0xFF {
-			s.Skip = "an NEC command of 16 bits: not supported yet"
-			return s
+			// A 16-bit command: no descriptor sends it, raw timings do.
+			return s.raw(irgen.NEC16(uint16(a), uint16(c)))
 		}
 		s.IR = profile.IR{Protocol: "NEC", System: profile.Hex16(a&0xFF)<<8 | profile.Hex16(a>>8&0xFF)}
 		s.Code = uint16(c & 0xFF)
@@ -122,6 +125,16 @@ func flipperSignal(f map[string]string) Signal {
 		s.Code = uint16(c & 0xFF)
 	case "KASEIKYO":
 		return flipperKaseikyo(s, a, c)
+	case "NEC42":
+		return s.raw(irgen.NEC42(uint16(a&0x1FFF), uint8(c)))
+	case "RC5":
+		return s.raw(irgen.RC5(uint8(a&0x1F), uint8(c&0x3F), false))
+	case "RC5X":
+		return s.raw(irgen.RC5(uint8(a&0x1F), uint8(c&0x7F), false))
+	case "RCA":
+		return s.raw(irgen.RCA(uint8(a&0xF), uint8(c)))
+	case "PIONEER":
+		return s.raw(irgen.Pioneer(uint8(a), uint8(c)))
 	default:
 		s.Skip = fmt.Sprintf("protocol %s: not one the X2 is known to send yet", proto)
 	}
@@ -152,9 +165,30 @@ func flipperKaseikyo(s Signal, a, c uint32) Signal {
 		s.IR = profile.IR{Protocol: "DenonK", Device: &g1, Subdevice: &g2}
 		s.Code = uint16(cmd | id<<10)
 	default:
-		s.Skip = fmt.Sprintf("Kaseikyo of vendor 0x%04X: not supported yet", vendor)
+		// Other vendors' have no descriptor: raw timings.
+		return s.raw(irgen.Kaseikyo(irgen.KaseikyoFrame(uint16(vendor), g1, g2, uint16(cmd), uint8(id))))
 	}
 	return s
+}
+
+// flipperRaw is a raw signal of a Flipper file: its carrier frequency in
+// Hz, and its timings in µs, mark first.
+func flipperRaw(s Signal, f map[string]string) Signal {
+	freq, err := strconv.Atoi(f["frequency"])
+	if err != nil {
+		s.Skip = "a raw signal without a frequency"
+		return s
+	}
+	var t []uint32
+	for _, w := range strings.Fields(f["data"]) {
+		v, err := strconv.ParseUint(w, 10, 32)
+		if err != nil {
+			s.Skip = fmt.Sprintf("a raw signal's timing %q is not a number", w)
+			return s
+		}
+		t = append(t, uint32(v))
+	}
+	return s.raw(record.RawIR{Carrier: freq, Timings: t})
 }
 
 // flipperValue is a Flipper value: four bytes in hex, little-endian.

@@ -33,6 +33,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Raw IR: `record.RawIR` encodes and parses the timings the X2 learns
+  and sends (verified on our X2: a learned code written back turned the
+  projector on). Profiles add and create commands of raw IR data, and
+  restoring creates devices of learned codes; only data that is not IR
+  (Bluetooth) is still refused.
+- `irgen`: RC5 and RC5X, RCA, Pioneer, NEC42, NEC with 16-bit commands and
+  Kaseikyo of any vendor, rendered as raw timings.
+- `irfile`: Flipper's raw signals and the protocols above become
+  commands instead of being left out; Pronto codes (learned form, `0000`)
+  are read too, one a line after their names.
+
 - `dump.RefreshSome`: a refresh that reads only the devices and
   activities known to have changed (as after writing to them), keeping
   the others from the old dump.

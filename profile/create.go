@@ -27,8 +27,11 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 		return 0, err
 	}
 	for _, cmd := range d.Commands {
-		if cmd.Data != "" {
-			return 0, fmt.Errorf("profile: %q: a new device takes only commands with a code or a descriptor", cmd.Name)
+		if cmd.Data == "" {
+			continue
+		}
+		if data, err := cmd.Signal(d); err != nil || !record.IsIR(data) {
+			return 0, fmt.Errorf("profile: %q: a new device takes only IR commands (a code, a descriptor, or raw IR data)", cmd.Name)
 		}
 	}
 	e, err := record.NewEntity(c.Variant())

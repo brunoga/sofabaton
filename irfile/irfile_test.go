@@ -1,6 +1,7 @@
 package irfile_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -17,6 +18,11 @@ func descriptors(t *testing.T, d *profile.Device) map[string]string {
 		sig, err := c.Signal(d)
 		if err != nil {
 			t.Fatalf("%s: %v", c.Name, err)
+		}
+		if r, err := record.ParseRawIR(sig); err == nil {
+			// Raw IR, as its carrier and how many timings.
+			out[c.Name] = fmt.Sprintf("raw %d Hz, %d timings", r.Carrier, len(r.Timings))
+			continue
 		}
 		desc, err := record.ParseDescriptor(sig)
 		if err != nil {
@@ -130,6 +136,8 @@ func TestFlipperKaseikyo(t *testing.T) {
 		// Panasonic {128, 0, 74}, as Flipper keeps it: upstream's sample,
 		// byte for byte (less the MUL:1 the hub does not send).
 		"Netflix": "P:Panasonic R:37000 C0:2 C1:32 D:128 S:0 F:74 CHECKSUM:202",
+		// Another vendor's: raw timings, a header, 48 bits, a stop.
+		"Odd": "raw 37000 Hz, 100 timings",
 	}
 	got := descriptors(t, d)
 	for n, w := range want {
@@ -137,8 +145,8 @@ func TestFlipperKaseikyo(t *testing.T) {
 			t.Errorf("%s: %q, want %q", n, got[n], w)
 		}
 	}
-	if why := skipped(skip)["Odd"]; !strings.Contains(why, "vendor 0x0103") {
-		t.Errorf("Odd skipped for %q", why)
+	if len(skip) != 0 {
+		t.Errorf("skipped %v", skip)
 	}
 }
 
@@ -157,6 +165,9 @@ func TestFlipper(t *testing.T) {
 		"Input":     "P:NEC R:38400 D:4 S:251 F:11",
 		// 0x073A: device 26, subdevice 57.
 		"Sleep": "P:Sony20 R:40000 D:26 S:57 F:54 MUL:2",
+		// Raw timings as they are; RC5 rendered as timings.
+		"OK":   "raw 38000 Hz, 6 timings",
+		"Mute": "raw 36000 Hz, 48 timings",
 	}
 	got := descriptors(t, d)
 	if len(got) != len(want) {
@@ -168,7 +179,7 @@ func TestFlipper(t *testing.T) {
 		}
 	}
 	why := skipped(skip)
-	for n, w := range map[string]string{"Ok": "raw timings", "Mute": "protocol RC5", "Vol_up": "same name"} {
+	for n, w := range map[string]string{"Vol_up": "same name"} {
 		if !strings.Contains(why[n], w) {
 			t.Errorf("%s skipped for %q, want %q", n, why[n], w)
 		}
@@ -181,7 +192,8 @@ func TestFlipper(t *testing.T) {
 	}
 }
 
-// A made-up irdb file: NEC, a Sony key, RC5, and a function beyond NEC's.
+// A made-up irdb file: NEC, a Sony key, RC5 and RCA (as timings), and
+// a function beyond NEC's.
 const irdbFile = `functionname,protocol,device,subdevice,function
 POWER,NEC1,4,-1,8
 VOLUME +,NEC1,4,-1,2
@@ -189,7 +201,9 @@ KEY_VOLUMEDOWN,NEC1,4,-1,3
 HDMI_1,NEC1,4,-1,90
 SLEEP,Sony12,1,-1,54
 TEXT,RC5,0,-1,60
+GUIDE,RCA,15,-1,229
 BIG,NEC1,4,-1,300
+SUB,RC5,0,3,1
 `
 
 func TestIRDB(t *testing.T) {
@@ -204,6 +218,8 @@ func TestIRDB(t *testing.T) {
 		"Volume Down": "P:NEC R:38400 D:4 S:251 F:3",
 		"HDMI 1":      "P:NEC R:38400 D:4 S:251 F:90",
 		"Sleep":       "P:Sony12 R:40000 D:1 F:54 MUL:2",
+		"Text":        "raw 36000 Hz, 48 timings",
+		"Guide":       "raw 58000 Hz, 52 timings",
 	}
 	got := descriptors(t, d)
 	if len(got) != len(want) {
@@ -215,10 +231,35 @@ func TestIRDB(t *testing.T) {
 		}
 	}
 	why := skipped(skip)
-	if !strings.Contains(why["TEXT"], "protocol RC5") || !strings.Contains(why["BIG"], "300") {
+	if !strings.Contains(why["SUB"], "RC5") || !strings.Contains(why["BIG"], "300") {
 		t.Errorf("skipped %v", why)
 	}
 	if _, err := irfile.ReadIRDB(strings.NewReader("a,b\n1,2\n")); err == nil {
 		t.Error("a CSV that is not irdb's reads")
+	}
+}
+
+func TestPronto(t *testing.T) {
+	file := `# A receiver
+Power: 0000 006D 0002 0000 0157 00AC 0015 0689
+Volume Up
+0000 006D 0000 0002 0157 00AC 0015 0689
+Odd = 0100 006D 0000 0001 0157 00AC
+`
+	sigs, err := irfile.Read("receiver.txt", strings.NewReader(file))
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, skip := irfile.Device("Receiver", sigs)
+	got := descriptors(t, d)
+	if len(got) != 2 || got["Power"] != "raw 38029 Hz, 4 timings" || got["Volume Up"] != "raw 38029 Hz, 4 timings" {
+		t.Errorf("commands %v", got)
+	}
+	if why := skipped(skip)["Odd"]; !strings.Contains(why, "not of learned form") {
+		t.Errorf("Odd skipped for %q", why)
+	}
+	r, err := irfile.Pronto("0000 006D 0002 0000 0157 00AC 0015 0689")
+	if err != nil || r.Timings[0] != 9019 || r.Timings[1] != 4523 || r.Timings[2] != 552 || r.Timings[3] != 43993 {
+		t.Errorf("timings %v (%v)", r.Timings, err)
 	}
 }

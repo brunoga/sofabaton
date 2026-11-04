@@ -41,15 +41,15 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
    `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
-3. **Restore, the rest.** Devices of commands with raw data (learned or
-   from Sofabaton's database), Bluetooth devices, and the order of the
-   devices and activities.
+3. **Restore, the rest.** Bluetooth devices, and the order of the devices
+   and activities. (Devices of learned IR codes are restored since
+   2026-11-04.)
 
 ## Later
 
-- IR codes the X2 does not take as descriptors yet: raw timings (2,700
-  of Flipper-IRDB's A/V files), RC5, RCA, Pioneer (PLAN P7, R3). Needs a
-  capture of the app adding a device of raw codes.
+- More files of IR codes now that raw timings work: Broadlink's base64
+  codes (Home Assistant's SmartIR), LIRC's lircd.conf, Global Caché's
+  sendir and Unfolded Circle's hex.
 - Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).

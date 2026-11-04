@@ -450,7 +450,8 @@ func TestTemplates(t *testing.T) {
 	}
 }
 
-// import-ir makes a profile of a Flipper file, saying what it left out.
+// import-ir makes a profile of a Flipper file, raw signals included,
+// saying what it left out.
 func TestImportIR(t *testing.T) {
 	dir := t.TempDir()
 	file := dir + "/My_Projector.ir"
@@ -468,6 +469,12 @@ type: raw
 frequency: 38000
 duty_cycle: 0.330000
 data: 9000 4500
+#
+name: Eject
+type: parsed
+protocol: Samsung36
+address: 01 00 00 00
+command: 02 00 00 00
 `), 0o666); err != nil {
 		t.Fatal(err)
 	}
@@ -475,10 +482,10 @@ data: 9000 4500
 	if err := run(context.Background(), strings.NewReader(""), []string{"import-ir", "-f", file}, &out, &errs); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "device: My Projector") || !strings.Contains(out.String(), "name: Power") {
+	if !strings.Contains(out.String(), "device: My Projector") || !strings.Contains(out.String(), "name: Power") || !strings.Contains(out.String(), "name: OK") {
 		t.Errorf("profile:\n%s", out.String())
 	}
-	if !strings.Contains(errs.String(), "left out Ok: raw timings") {
+	if !strings.Contains(errs.String(), "left out Eject: protocol Samsung36") {
 		t.Errorf("stderr: %s", errs.String())
 	}
 }
