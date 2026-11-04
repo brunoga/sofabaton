@@ -47,7 +47,6 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Later
 
-- Sharp (Unfolded Circle's protocol 14) and RC6 in LIRC files.
 - Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).

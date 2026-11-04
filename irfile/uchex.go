@@ -152,6 +152,22 @@ func ucHexSignal(s Signal, code string) Signal {
 		pre, code := irgen.Pioneer(frames[0][0], frames[0][2]), irgen.Pioneer(frames[1][0], frames[1][2])
 		pre.Timings = append(pre.Timings, code.Timings...)
 		return s.raw(pre)
+	case 14: // SHARP: Denon's codes too, told by the extension bits
+		if n != 15 {
+			return unfit(fmt.Sprintf("Sharp of %d bits", n))
+		}
+		// Sent least significant first: address, function, extension.
+		logical := bits.Reverse64(v) >> (64 - 15)
+		addr, f, ext := uint8(logical&0x1F), uint8(logical>>5), logical>>13
+		switch ext {
+		case 0:
+			s.IR = profile.IR{Protocol: "Denon", Device: u8(addr)}
+			s.Code = uint16(f)
+		case 1:
+			return s.raw(irgen.Sharp(addr, f))
+		default:
+			return unfit(fmt.Sprintf("Sharp with extension bits %d", ext))
+		}
 	default:
 		return unfit(fmt.Sprintf("protocol %s: not supported yet", m[1]))
 	}
@@ -199,6 +215,9 @@ func ucHexCode(s Signal) (string, error) {
 			return code(4, bits.Reverse64(uint64(f&0x7F)|addr<<7)>>(64-n), n)
 		case "rc6":
 			return code(2, uint64(d)<<8|uint64(f), 20)
+		case "denon":
+			// Sharp's frame with Denon's extension bits, 0.
+			return code(14, bits.Reverse64(uint64(d&0x1F)|uint64(f)<<5)>>(64-15), 15)
 		case "panasonic":
 			return code(5, sent(0x02, 0x20, d, sub, f, d^sub^f), 48)
 		case "denonk":

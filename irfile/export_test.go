@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -62,7 +63,7 @@ func TestExport(t *testing.T) {
 		"flipper": {"Channel Down", "Play", "Stop", "Info", "Learned"},
 		"irdb":    {"Learned"},
 		"girr":    {"Learned"},
-		"uc":      {"Play", "Stop", "Info", "Learned"},
+		"uc":      {"Play", "Stop", "Learned"},
 	}
 	for _, f := range irfile.Formats {
 		t.Run(f.ID, func(t *testing.T) {
@@ -174,8 +175,22 @@ func TestTimingsVectors(t *testing.T) {
 	checked := 0
 	for _, v := range f.Vectors {
 		switch v.Name {
-		case "sharp", "nec-standard-repeat":
-			continue // no code, or NEC's repeat code, which we leave out
+		case "nec-standard-repeat":
+			continue // NEC's repeat code, which we leave out
+		case "sharp":
+			// IRremoteESP8266's Sharp has its own unit: the bits must
+			// match (a 1 a space over twice its mark).
+			bitsOf := func(t []uint32) (b []bool) {
+				for i := 1; i < len(t); i += 2 {
+					b = append(b, t[i] > 2*t[i-1])
+				}
+				return b
+			}
+			if got, want := bitsOf(irgen.Sharp(1, 1).Timings), bitsOf(v.Timings); !slices.Equal(got, want) {
+				t.Errorf("sharp: bits\n%v, want\n%v", got, want)
+			}
+			checked++
+			continue
 		case "rc6-toggle":
 			// Codes leave the toggle out: the encoder has it.
 			if r := irgen.RC6(1, 12, true); !near(r.Timings, v.Timings[:len(v.Timings)-1]) {
@@ -198,7 +213,7 @@ func TestTimingsVectors(t *testing.T) {
 		}
 		checked++
 	}
-	if checked < 8 {
+	if checked < 9 {
 		t.Errorf("%d vectors checked", checked)
 	}
 }
