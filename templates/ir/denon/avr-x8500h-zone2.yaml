@@ -1,0 +1,98 @@
+# Denon AVR-X8500H / AVR-X8500HA receiver, Zone 2.
+#
+# Source: Denon, "IR Command Chart", summer 2016
+# (assets.denon.com/documentmaster/us/denon_ir_commandchart_summer_2016.xls),
+# sheet "AVR Zone 2 ID#1": Denon-K device 4, subdevice 3 (the main zone's
+# is 1). Each code is the chart's function, its name the chart's in the
+# comment where they differ; the X8500H's input names follow the chart's
+# second names ("SAT / CBL/SAT"). Not yet tested on a receiver.
+template: Denon AVR-X8500H Zone 2
+brand: Denon
+ir: {protocol: DenonK, device: 4, subdevice: 3}
+commands:
+  # Power
+  - {name: Power Toggle, code: 5, comment: 'chart "Zone2 PowerOn/Off Toggle"'}
+  - {name: Zone 2 On, code: 6}
+  - {name: Zone 2 Off, code: 7}
+
+  # Volume
+  - {name: Volume Up, code: 368}
+  - {name: Volume Down, code: 369}
+  - {name: Mute, code: 370}
+  - {name: Volume 0 dB, code: 372, comment: 'chart "vol. preset1 (0db)"'}
+  - {name: Volume -20 dB, code: 373, comment: 'chart "vol. preset2 (-20db)"'}
+  - {name: Volume -40 dB, code: 374, comment: 'chart "vol. preset3 (-40db)"'}
+
+  # Inputs
+  - {name: Input CBL/SAT, code: 723, comment: 'chart "SAT / CBL/SAT"'}
+  - {name: Input Blu-ray, code: 721, comment: 'chart "HDP / Blu-Ray"'}
+  - {name: Input DVD, code: 720}
+  - {name: Input Game, code: 725, comment: 'chart "VCR / Game"'}
+  - {name: Input Media Player, code: 735, comment: 'chart "DVR / Media Player"'}
+  - {name: Input TV Audio, code: 722, comment: 'chart "TV/CBL / TV Audio (CEC)"'}
+  - {name: Input AUX1, code: 729}
+  - {name: Input AUX2, code: 730}
+  - {name: Input CD, code: 706}
+  - {name: Input Phono, code: 704}
+  - {name: Input Tuner, code: 719}
+  - {name: Input HEOS, code: 711, comment: 'chart "Net/USB / Online Music"'}
+  - {name: Input USB, code: 718}
+  - {name: Input Bluetooth, code: 751}
+  - {name: Input Pandora, code: 765}
+  - {name: Input SiriusXM, code: 714}
+  - {name: Input Internet Radio, code: 691}
+  - {name: Source, code: 692, comment: 'chart "Z2 Source"'}
+  - {name: Input Next, code: 787, comment: 'chart "Input Source Select Right"'}
+  - {name: Input Previous, code: 788, comment: 'chart "Input Source Select Left"'}
+
+  # Navigation
+  - {name: Up, code: 27}
+  - {name: Down, code: 28}
+  - {name: Left, code: 29}
+  - {name: Right, code: 30}
+  - {name: OK, code: 31, comment: 'chart "Enter"'}
+  - {name: Back, code: 34, comment: 'chart "Return"'}
+  - {name: Menu, code: 35}
+  - {name: Setup, code: 560, comment: 'chart "System Setup"'}
+  - {name: Status, code: 645, comment: 'chart "Status Request"'}
+
+  # Playback and presets
+  - {name: Play/Pause, code: 992}
+  - {name: Stop, code: 993}
+  - {name: Skip Forward, code: 996, comment: 'chart "Skip+ / Tune Up"'}
+  - {name: Skip Back, code: 995, comment: 'chart "Skip- / Tune Down"'}
+  - {name: Repeat, code: 956}
+  - {name: Shuffle, code: 957, comment: 'chart "Random/Shuffle"'}
+  - {name: Preset Up, code: 972}
+  - {name: Preset Down, code: 973}
+  - {name: Preset Shift, code: 974}
+  - {name: Favorite 1, code: 242}
+  - {name: Favorite 2, code: 243}
+  - {name: Favorite 3, code: 244, comment: 'the chart gives Favorite 4 the same code'}
+
+power: {on: Zone 2 On, off: Zone 2 Off}
+inputs: [Input Blu-ray, Input CBL/SAT, Input Game, Input TV Audio]
+
+buttons:
+  Power: Power Toggle
+  Up: Up
+  Left: Left
+  OK: OK
+  Right: Right
+  Down: Down
+  Back: Back
+  Exit: Back
+  Home: Setup
+  Menu: Menu
+  Guide: Status
+  Vol+: Volume Up
+  Vol-: Volume Down
+  Mute: Mute
+  Ch+: Preset Up
+  Ch-: Preset Down
+  Play: Play/Pause
+  Pause: Play/Pause
+  Rewind: Skip Back
+  Forward: Skip Forward
+  Power On: Zone 2 On
+  Power Off: Zone 2 Off

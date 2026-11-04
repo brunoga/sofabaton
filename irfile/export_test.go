@@ -11,6 +11,7 @@ import (
 	"github.com/brunoga/sofabaton/irfile"
 	"github.com/brunoga/sofabaton/irgen"
 	"github.com/brunoga/sofabaton/profile"
+	"github.com/brunoga/sofabaton/record"
 )
 
 // learned is the projector's learned power code (testdata/x2).
@@ -215,5 +216,40 @@ func TestTimingsVectors(t *testing.T) {
 	}
 	if checked < 9 {
 		t.Errorf("%d vectors checked", checked)
+	}
+}
+
+// TestDenonChart checks irgen's Denon and Denon-K against Denon's own
+// Pronto codes.
+func TestDenonChart(t *testing.T) {
+	f, err := os.Open("testdata/denon-chart.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	sigs, err := irfile.ReadCodes(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]record.RawIR{
+		"Zone 2 On":          irgen.DenonK(4, 3, 6),
+		"Zone 2 volume up":   irgen.DenonK(4, 3, 368),
+		"Zone 3 On":          irgen.Denon(2, 125),
+		"Zone 3 volume up":   irgen.Denon(2, 102),
+		"Zone 3 Volume Mute": irgen.DenonK(4, 5, 370),
+	}
+	for _, s := range sigs {
+		w, ok := want[s.Source]
+		if !ok || s.Raw == nil {
+			t.Errorf("%s: %+v", s.Source, s)
+			continue
+		}
+		delete(want, s.Source)
+		if len(s.Raw.Timings) != len(w.Timings) || !within(s.Raw.Timings, w.Timings) || s.Raw.Carrier/1000 != w.Carrier/1000 {
+			t.Errorf("%s: chart's\n%v, irgen's\n%v", s.Source, s.Raw.Timings, w.Timings)
+		}
+	}
+	for n := range want {
+		t.Errorf("%s: not read", n)
 	}
 }

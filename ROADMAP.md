@@ -50,7 +50,6 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - Device category (PLAN L5, R5).
 - RF devices (PLAN L2, R2) and Wi-Fi commands (IP, Roku, Hue, Sonos, MQTT;
   PLAN P9).
-- The Denon receiver's Zone 2 and Zone 3 codes.
 - A web UI over the library (PLAN P10).
 
 ## Unknown or untested

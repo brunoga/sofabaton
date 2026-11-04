@@ -109,7 +109,8 @@ IrScrutinizer's Girr, and codes one a line (Pronto, Global Caché's
 codes it cannot send; `export-ir` writes a profile's codes in any of
 those formats, for other remotes and tools. [docs/profiles.md](docs/profiles.md) has the whole format;
 [templates/](templates) holds the templates, by transport and maker (the
-AWOL Vision Aetherion projector, the Denon AVR-X8500H receiver, the Ugoos
+AWOL Vision Aetherion projector, the Denon AVR-X8500H receiver and its
+Zone 2 and Zone 3, the Ugoos
 AM6B Plus media player).
 
 ### Single commands

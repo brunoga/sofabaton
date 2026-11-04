@@ -1,0 +1,91 @@
+# Denon AVR-X8500H / AVR-X8500HA receiver, Zone 3.
+#
+# Source: Denon, "IR Command Chart", summer 2016
+# (assets.denon.com/documentmaster/us/denon_ir_commandchart_summer_2016.xls),
+# sheet "AVR Zone 3 ID#1": Denon-K device 4, subdevice 5 (the main zone's
+# is 1). The sheet gives Zone 3's power, volume and older inputs only as
+# 15-bit codes (ir: {protocol: Denon, device: 2}), which the X8500H also
+# obeys; they are taken as they are, not inferred in Denon-K. Each code is
+# the chart's function, its name the chart's in the comment where they
+# differ; the older inputs are named as Zone 2's sheet maps them ("SAT /
+# CBL/SAT"). Not yet tested on a receiver.
+template: Denon AVR-X8500H Zone 3
+brand: Denon
+ir: {protocol: DenonK, device: 4, subdevice: 5}
+commands:
+  # Power
+  - {name: Power Toggle, code: 5, comment: 'chart "Power"'}
+  - {name: Zone 3 On, code: 125, ir: {protocol: Denon, device: 2}}
+  - {name: Zone 3 Off, code: 126, ir: {protocol: Denon, device: 2}}
+
+  # Volume
+  - {name: Volume Up, code: 102, ir: {protocol: Denon, device: 2}}
+  - {name: Volume Down, code: 101, ir: {protocol: Denon, device: 2}}
+  - {name: Mute, code: 370, comment: 'chart "Zone3 Volume Mute"'}
+
+  # Inputs
+  - {name: Input CBL/SAT, code: 83, ir: {protocol: Denon, device: 2}, comment: 'chart "Zone3 SAT"'}
+  - {name: Input Blu-ray, code: 721, comment: 'chart "Z3 BD"'}
+  - {name: Input DVD, code: 78, ir: {protocol: Denon, device: 2}}
+  - {name: Input Game, code: 84, ir: {protocol: Denon, device: 2}, comment: 'chart "Zone3 VCR"'}
+  - {name: Input Media Player, code: 85, ir: {protocol: Denon, device: 2}, comment: 'chart "Zone3 DVR"'}
+  - {name: Input TV Audio, code: 82, ir: {protocol: Denon, device: 2}, comment: 'chart "Zone3 TV/CBL"'}
+  - {name: Input AUX1, code: 729, comment: 'chart "V.Aux"'}
+  - {name: Input CD, code: 74, ir: {protocol: Denon, device: 2}}
+  - {name: Input Phono, code: 73, ir: {protocol: Denon, device: 2}}
+  - {name: Input Tuner, code: 72, ir: {protocol: Denon, device: 2}}
+  - {name: Input HEOS, code: 711, comment: 'chart "Net/USB"'}
+  - {name: Input USB, code: 718}
+  - {name: Input Bluetooth, code: 751}
+  - {name: Input SiriusXM, code: 714, comment: 'chart "XM"'}
+  - {name: Input HD Radio, code: 715}
+
+  # Navigation
+  - {name: Up, code: 27}
+  - {name: Down, code: 28}
+  - {name: Left, code: 29}
+  - {name: Right, code: 30}
+  - {name: OK, code: 31, comment: 'chart "Enter"'}
+  - {name: Back, code: 34, comment: 'chart "Return"'}
+  - {name: Menu, code: 35}
+  - {name: Status, code: 645, comment: 'chart "Status Request"'}
+
+  # Playback and presets
+  - {name: Play/Pause, code: 992}
+  - {name: Stop, code: 993}
+  - {name: Skip Forward, code: 996, comment: 'chart "Skip+ / Tune Up"'}
+  - {name: Skip Back, code: 995, comment: 'chart "Skip- / Tune Down"'}
+  - {name: Repeat, code: 956}
+  - {name: Shuffle, code: 957, comment: 'chart "Random/Shuffle"'}
+  - {name: Preset Up, code: 972}
+  - {name: Preset Down, code: 973}
+  - {name: Preset Shift, code: 974}
+  - {name: Favorite 1, code: 242}
+  - {name: Favorite 2, code: 243}
+  - {name: Favorite 3, code: 244, comment: 'the chart gives Favorite 4 the same code'}
+
+power: {on: Zone 3 On, off: Zone 3 Off}
+inputs: [Input Blu-ray, Input CBL/SAT, Input Game, Input TV Audio]
+
+buttons:
+  Power: Power Toggle
+  Up: Up
+  Left: Left
+  OK: OK
+  Right: Right
+  Down: Down
+  Back: Back
+  Exit: Back
+  Menu: Menu
+  Guide: Status
+  Vol+: Volume Up
+  Vol-: Volume Down
+  Mute: Mute
+  Ch+: Preset Up
+  Ch-: Preset Down
+  Play: Play/Pause
+  Pause: Play/Pause
+  Rewind: Skip Back
+  Forward: Skip Forward
+  Power On: Zone 3 On
+  Power Off: Zone 3 Off
