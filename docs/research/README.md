@@ -124,4 +124,11 @@ The capture is kept locally (it carries the account), not in the repo.
   encrypted. The answer lists the keys: `keyname`, `fid` (the function
   id), `fre` (carrier), `type`, `format`, and `irCode`, the X2's own
   descriptor in hex ASCII (`503A4E4543…` is `P:NEC R:38400 D:4 S:251
-  F:11`): the cloud serves descriptors ready to write.
+  F:11`): the cloud serves descriptors ready to write. A key without one
+  has `pulse`, its learned timings in µs, mark first, comma-separated, at
+  `fre` Hz (2% of 4,038 keys in 80 sets; some sets are all timings).
+  `power` says how the device switches: `type` 0 not at all, 1 a toggle
+  (on and off the function `fid` 1, "Power"), 2 discrete keys (`on` and
+  `off`, usually 5907 "Power on" and 5912 "Power off", either list
+  sometimes empty). `input` was empty in all 80 sets, and `repulse`,
+  `flippulse` and any `format` but 1 unused.
