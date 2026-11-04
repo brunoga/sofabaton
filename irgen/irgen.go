@@ -1,7 +1,7 @@
 // Package irgen renders IR protocols as raw timings (record.RawIR): those
 // the X2 has no descriptor for, which it sends as they are (RC5 and RC5X,
-// NEC with 16-bit commands, NEC42, Pioneer, RCA and Kaseikyo of any
-// vendor), and those it has, for files of timings (NEC, NECx, Sony, JVC,
+// NEC with 16-bit commands, NEC42, Pioneer, RCA, Sharp and Kaseikyo of
+// any vendor), and those it has, for files of timings (NEC, NECx, Sony, JVC,
 // RC6, Samsung20, Panasonic, Denon and Denon-K). The timings follow the
 // protocols' published definitions (IRP notation, as in
 // IrpTransmogrifier's protocol list); each signal is one frame and its
@@ -293,6 +293,18 @@ func DenonK(device, subdevice uint8, function uint16) record.RawIR {
 // a stop mark and a space of 165; then the same with the function and
 // the extension inverted.
 func Denon(address, function uint8) record.RawIR {
+	return sharp(address, function, 0)
+}
+
+// Sharp is a Sharp signal: Denon's, but for its extension bits, 1 in the
+// first frame (2 in the second).
+func Sharp(address, function uint8) record.RawIR {
+	return sharp(address, function, 1)
+}
+
+// sharp is a frame of Sharp's format with the extension bits ext, then
+// one with the function and extension inverted.
+func sharp(address, function uint8, ext uint64) record.RawIR {
 	const u = 264
 	var f frame
 	half := func(fn uint8, ext uint64) {
@@ -301,7 +313,7 @@ func Denon(address, function uint8) record.RawIR {
 		f.add(true, u)
 		f.add(false, 165*u)
 	}
-	half(function, 0)
-	half(^function, 3)
+	half(function, ext)
+	half(^function, ^ext&3)
 	return record.RawIR{Carrier: 38000, Timings: f.t}
 }

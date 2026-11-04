@@ -32,9 +32,9 @@ type lircCode struct {
 
 // ReadLIRC reads a LIRC configuration (lircd.conf, as in LIRC's remotes
 // database): its remotes' codes, all of them, as raw IR. Remotes of
-// pulse-distance (SPACE_ENC) and bi-phase (RC5, SHIFT_ENC) codes are
-// rendered from their timings; raw ones are taken as they are; others
-// (RC6, RCMM…) are left out, saying why.
+// pulse-distance (SPACE_ENC) and bi-phase (RC5, SHIFT_ENC, RC6) codes are
+// rendered from their timings, as lircd sends them; raw ones are taken
+// as they are; others (RCMM…) are left out, saying why.
 func ReadLIRC(r io.Reader) ([]Signal, error) {
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 64*1024), 4*1024*1024)
@@ -166,8 +166,8 @@ func (rm *lircRemote) render(c lircCode) (record.RawIR, error) {
 	freq := int(rm.num["frequency"])
 	switch {
 	case freq != 0:
-	case rm.flags["RC5"] || rm.flags["SHIFT_ENC"]:
-		freq = 36000 // RC5's, which its remotes' files leave out
+	case rm.flags["RC5"] || rm.flags["SHIFT_ENC"] || rm.flags["RC6"]:
+		freq = 36000 // RC5's and RC6's, which their remotes' files leave out
 	default:
 		freq = 38000
 	}
@@ -182,9 +182,18 @@ func (rm *lircRemote) render(c lircCode) (record.RawIR, error) {
 			gap = 100000
 		}
 		f.add(false, gap)
-	case rm.flags["SPACE_ENC"] || rm.flags["RC5"] || rm.flags["SHIFT_ENC"]:
+	case rm.flags["SPACE_ENC"] || rm.flags["RC5"] || rm.flags["SHIFT_ENC"] || rm.flags["RC6"]:
 		biphase := !rm.flags["SPACE_ENC"]
 		one, zero := rm.pair["one"], rm.pair["zero"]
+		// RC6's double-width bit (its toggle) is the one rc6_mask marks,
+		// counted over all the bits from the first sent; files that give
+		// toggle_bit instead (counted from 1) have it there.
+		all := rm.num["pre_data_bits"] + rm.num["bits"] + rm.num["post_data_bits"]
+		rc6 := rm.num["rc6_mask"]
+		if tb := rm.num["toggle_bit"]; rm.flags["RC6"] && rc6 == 0 && tb > 0 && tb <= all {
+			rc6 = 1 << (all - tb)
+		}
+		var sent uint64
 		bits := func(v uint64, n uint64) {
 			for i := int(n) - 1; i >= 0; i-- {
 				k := uint64(i)
@@ -192,13 +201,21 @@ func (rm *lircRemote) render(c lircCode) (record.RawIR, error) {
 					k = n - 1 - uint64(i)
 				}
 				b := v>>k&1 == 1
+				// As lircd: a bi-phase 1 is a space then a pulse, a 0 a
+				// pulse then a space (RC6's files write its codes
+				// inverted), each twice as long where rc6_mask says.
+				w := uint32(1)
+				if all > sent && rc6>>(all-1-sent)&1 == 1 {
+					w = 2
+				}
+				sent++
 				switch {
 				case biphase && b:
-					f.add(false, one[0])
-					f.add(true, one[1])
+					f.add(false, w*one[1])
+					f.add(true, w*one[0])
 				case biphase:
-					f.add(true, zero[0])
-					f.add(false, zero[1])
+					f.add(true, w*zero[0])
+					f.add(false, w*zero[1])
 				case b:
 					f.add(true, one[0])
 					f.add(false, one[1])

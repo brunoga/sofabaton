@@ -92,7 +92,7 @@ func TestUCHex(t *testing.T) {
 			t.Fatalf("%s: %v", v.Name, err)
 		}
 		if v.Name == "sharp" {
-			continue // not supported: checked below
+			continue // its timings are IRremoteESP8266's own: checked below
 		}
 		got, raw := sig(t, sigs, "Key")
 		switch {
@@ -108,9 +108,15 @@ func TestUCHex(t *testing.T) {
 			t.Errorf("%s: timings %v, want %v", v.Name, raw.Timings, v.Timings)
 		}
 	}
-	sigs, _ := irfile.Read("codes.txt", strings.NewReader("Sharp: 14;0x4202;15;0\n"))
-	if !strings.Contains(sigs[0].Skip, "not supported") {
+	// Sharp's address 1, function 1, as timings; with Denon's extension
+	// bits, a Denon code.
+	sigs, _ := irfile.Read("codes.txt", strings.NewReader("Sharp: 14;0x4202;15;0\nDenon: 14;0x4200;15;0\n"))
+	want := irgen.Sharp(1, 1)
+	if r := sigs[0].Raw; r == nil || !slices.Equal(r.Timings, want.Timings) {
 		t.Errorf("Sharp: %+v", sigs[0])
+	}
+	if s := sigs[1]; s.IR.Protocol != "Denon" || *s.IR.Device != 1 || s.Code != 1 {
+		t.Errorf("Denon: %+v", s)
 	}
 }
 
@@ -212,12 +218,30 @@ begin remote
   end raw_codes
 end remote
 
+# RC6 mode 0 as LIRC's files have it: the start bit, mode and toggle in
+# pre_data, all inverted, the toggle twice as long.
 begin remote
   name  rc6
   bits 16
   flags RC6|CONST_LENGTH
+  header 2667 889
+  one 444 444
+  zero 444 444
+  pre_data_bits 5
+  pre_data 0xF
+  gap 107000
+  rc6_mask 0x10000
   begin codes
-    KEY_MENU 0x1
+    KEY_MENU 0xFBF3
+  end codes
+end remote
+
+begin remote
+  name  rcmm
+  bits 24
+  flags RCMM
+  begin codes
+    KEY_INFO 0x1
   end codes
 end remote
 `
@@ -259,9 +283,13 @@ func TestLIRC(t *testing.T) {
 	if _, eject := sig(t, sigs, "Eject"); eject == nil || !slices.Equal(eject.Timings, []uint32{100, 200, 300, 400, 500, 50000}) {
 		t.Errorf("Eject: %+v", eject)
 	}
+	// Device 4, function 12.
+	if _, menu := sig(t, sigs, "Menu"); menu == nil || menu.Carrier != 36000 || !near(menu.Timings, irgen.RC6(4, 12, false).Timings) {
+		t.Errorf("Menu: %v, want %v", menu, irgen.RC6(4, 12, false))
+	}
 	for _, s := range sigs {
-		if s.Source == "KEY_MENU" && !strings.Contains(s.Skip, "RC6") {
-			t.Errorf("KEY_MENU: %+v", s)
+		if s.Source == "KEY_INFO" && !strings.Contains(s.Skip, "RCMM") {
+			t.Errorf("KEY_INFO: %+v", s)
 		}
 	}
 }

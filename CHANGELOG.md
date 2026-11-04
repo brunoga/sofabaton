@@ -62,6 +62,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Unfolded Circle vectors' timings.
 - `irfile`: an Unfolded Circle Kaseikyo code of Denon's vendor is read
   as Denon-K.
+- `irfile`: Unfolded Circle's Sharp codes (protocol 14): Denon's (their
+  extension bits 0) become Denon codes, and Denon codes are written as
+  them; others become timings (`irgen.Sharp`, its bits as the vectors').
+  LIRC's RC6 remotes are rendered as lircd sends them (codes inverted,
+  the toggle twice as long where `rc6_mask` or `toggle_bit` says).
 
 - `dump.RefreshSome`: a refresh that reads only the devices and
   activities known to have changed (as after writing to them), keeping
