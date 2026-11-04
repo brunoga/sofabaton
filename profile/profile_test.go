@@ -1101,7 +1101,10 @@ func TestCategory(t *testing.T) {
 	if out, _ := yaml.Marshal(&profile.Device{Name: "P", Category: 6}); !strings.Contains(string(out), "category: Projector\n") {
 		t.Errorf("written:\n%s", out)
 	}
-	if out, _ := yaml.Marshal(&profile.Device{Name: "P", Category: 15}); !strings.Contains(string(out), "category: 15\n") {
+	if err := yaml.Unmarshal([]byte("device: U\ncategory: media player\ncommands: []\n"), &d); err != nil || d.Category != 3 {
+		t.Errorf("media player: %d, %v", d.Category, err)
+	}
+	if out, _ := yaml.Marshal(&profile.Device{Name: "P", Category: 40}); !strings.Contains(string(out), "category: 40\n") {
 		t.Errorf("written:\n%s", out)
 	}
 
