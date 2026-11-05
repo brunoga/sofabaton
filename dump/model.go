@@ -57,6 +57,10 @@ func (d *File) Model() (*hubsim.Model, error) {
 
 func (e *Entity) model(v wire.Variant, m *hubsim.Model) error {
 	id := e.ID
+	if e.Commands == nil && !record.IsActivityID(id) {
+		// Not read yet (RefreshLists): shown without commands.
+		m.Commands[id] = nil
+	}
 	if b, ok, err := bodies(e.Commands); err != nil {
 		return fmt.Errorf("commands: %w", err)
 	} else if ok {

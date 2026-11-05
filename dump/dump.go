@@ -144,6 +144,32 @@ func RefreshRows(ctx context.Context, c *hub.Client, old *File, tool string, log
 	})
 }
 
+// RefreshLists is RefreshRows reading only the hub's lists: the devices
+// and activities whose row is new or differs from old's are not read but
+// returned, to read with RefreshOnly once shown. Those old has are kept
+// as old has them; a new one has its id and name only, as if it had no
+// commands, keys or macros. Reading a device of many commands takes
+// seconds; the lists, one.
+func RefreshLists(ctx context.Context, c *hub.Client, old *File, tool string, log io.Writer) (*File, []byte, error) {
+	if old == nil {
+		return nil, nil, fmt.Errorf("dump: refresh: no old dump")
+	}
+	i := c.Info()
+	if old.Info.ID != hex.EncodeToString(i.ID[:]) {
+		return nil, nil, fmt.Errorf("dump: refresh: the old dump is of hub %s, not %x", old.Info.ID, i.ID)
+	}
+	was := map[byte]*record.Entity{}
+	for _, e := range append(rows(c.Variant(), old.Devices), rows(c.Variant(), old.Activities)...) {
+		was[e.ID] = e
+	}
+	var stale []byte
+	d, err := readEntities(ctx, c, tool, log, nil, old, func(e *record.Entity) bool {
+		o := was[e.ID]
+		return o == nil || !sameRow(o, e)
+	}, false, func(e *record.Entity) { stale = append(stale, e.ID) })
+	return d, stale, err
+}
+
 // RefreshOnly is RefreshSome without reading the hub's lists: old's are
 // kept, as after RefreshRows on the same connection. Only the devices and
 // activities stale picks are read.
@@ -192,6 +218,13 @@ func read(ctx context.Context, c *hub.Client, tool string, log io.Writer, progre
 // readLists is read, taking the lists from old instead of reading them
 // when keep is set.
 func readLists(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(e *record.Entity) bool, keep bool) (*File, error) {
+	return readEntities(ctx, c, tool, log, progress, old, stale, keep, nil)
+}
+
+// readEntities is readLists passing the stale entities to later instead
+// of reading them, when it is set: those are kept from old, or left with
+// their id and name only.
+func readEntities(ctx context.Context, c *hub.Client, tool string, log io.Writer, progress func(done, total int, name string), old *File, stale func(e *record.Entity) bool, keep bool, later func(e *record.Entity)) (*File, error) {
 	i := c.Info()
 	d := &File{
 		Tool: tool,
@@ -225,6 +258,17 @@ func readLists(ctx context.Context, c *hub.Client, tool string, log io.Writer, p
 				progress(done, total, e.Name)
 			}
 			done++
+			if stale != nil && stale(e) && later != nil {
+				later(e)
+				de := &Entity{ID: e.ID, Name: e.Name}
+				if kept := old.entity(e.ID); kept != nil {
+					cp := *kept
+					cp.Name = e.Name
+					de = &cp
+				}
+				d.Entities = append(d.Entities, de)
+				continue
+			}
 			if stale != nil && !stale(e) {
 				if kept := old.entity(e.ID); kept != nil {
 					cp := *kept
