@@ -48,7 +48,7 @@ copied. When we confirm something on our X2, the doc says so.
 
 | # | Limitation | Why it exists | How we attack it |
 |---|---|---|---|
-| L1 | Cannot create **Bluetooth** devices | needs a per-brand profile id in the 16-byte `code_id`, never captured | capture the Android app creating BT devices through our proxy (R1) |
+| L1 | Cannot create **Bluetooth** devices | the `code_id` is the cloud catalog's profile id and the commands its HID usages (`irsource.SofabatonDB.Bluetooth`, `irfile.ReadSofabaton`; our AWOL projector's 24 match, 2026-11-04); how the hub pairs is not known | capture the Android app creating a BT device through our proxy (R1) |
 | L2 | Cannot create **RF** devices (no known class code) | never captured | capture app RF-device create on the X2 (R2) |
 | L3 | "Known device" IR codes come from Sofabaton's cloud catalog only | app downloads codes over HTTPS; hub only stores blobs | (a) generate codes locally from open IR databases + protocol encoders (R3, primary); (b) optional: study app↔cloud API (R4) |
 | L4 | Most write flows bench-validated on **X1/X1S**, fewer on X2 | upstream bench hardware | our own X2 bench suite (live tests) |
@@ -152,7 +152,9 @@ app's own backup are the safety net for live write testing.
 
 - **R1 Bluetooth create**: through the proxy, create BT devices of 2–3 brands
   in the app; diff `0x07`/`0x08` bodies (code_id, device_type, tail byte 23,
-  keymap pages). Determine if code_id is a cloud profile id we can reuse/copy.
+  keymap pages). The code_id is the cloud catalog's profile id (2026-11-04),
+  so what remains is the pairing: what the app asks the hub, and what the
+  hub answers.
 - **R2 RF create**: create an RF (433 MHz) device in the app; capture class
   code, record body, command record shape.
 - **R3 Local IR catalog**: map open databases (IRDB / Flipper-IRDB, protocol +

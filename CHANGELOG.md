@@ -40,6 +40,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   power macro had the hub send their requests. `record.HTTPRequest`
   reads and writes the hub's form of them, and `profile.FromHub` gives
   them back as `http`.
+- Sofabaton's Bluetooth profiles: `irsource.SofabatonDB.Bluetooth` lists
+  the catalog's 27, and `irfile.ReadSofabaton` reads their keys, HID
+  usages, as the hub's data (`Signal.Data`). The AWOL profile's 24 keys
+  are byte for byte what our X2 holds for the projector made of it.
+  Creating Bluetooth devices waits on knowing how the hub pairs.
 - `record.DeviceTail.Compact`: the tail such a device is left with,
   without the address's bytes, which was misread.
 
