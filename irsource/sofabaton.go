@@ -118,6 +118,38 @@ func (db SofabatonDB) Models(ctx context.Context, b SofabatonBrand) ([]Entry, er
 	return out, nil
 }
 
+// Bluetooth are the catalog's Bluetooth profiles (the app's Bluetooth
+// devices: Android TV, Apple TV, Fire TV…), as entries of Kind
+// "Bluetooth" whose code sets (Fetch) hold HID usages. A device the app
+// makes of one carries its id as its record's code id (our X2's AWOL
+// projector, 2026-11-04). Creating one needs the hub to pair with the
+// device, which is not known yet.
+func (db SofabatonDB) Bluetooth(ctx context.Context) ([]Entry, error) {
+	var rows []struct {
+		Brand string `json:"brandName"`
+		Model string `json:"modelName"`
+		Code  string `json:"codeId"`
+	}
+	if err := db.post(ctx, "app/getBt", map[string]any{}, &rows); err != nil {
+		return nil, err
+	}
+	var out []Entry
+	for _, r := range rows {
+		brand, model := strings.TrimSpace(r.Brand), strings.TrimSpace(r.Model)
+		if !codeID.MatchString(r.Code) || brand == "" {
+			continue
+		}
+		if model == "" {
+			model = brand
+		}
+		out = append(out, Entry{Source: Sofabaton, Brand: brand, Kind: BluetoothKind, Model: model, Path: r.Code + SofabatonExt})
+	}
+	return out, nil
+}
+
+// BluetoothKind is the Kind of the catalog's Bluetooth profiles.
+const BluetoothKind = "Bluetooth"
+
 // Fetch is an entry's code set, as JSON (irfile.ReadSofabaton).
 func (db SofabatonDB) Fetch(ctx context.Context, e Entry) ([]byte, error) {
 	code := strings.TrimSuffix(path.Base(e.Path), SofabatonExt)

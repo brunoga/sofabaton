@@ -41,7 +41,10 @@ type Signal struct {
 	// Descriptor, when set, is the signal as the X2's descriptor, for
 	// those in no protocol profiles render (Sofabaton's code sets).
 	Descriptor string
-	Skip       string
+	// Data, when set, is a signal that is not IR, as the hub stores it:
+	// a Bluetooth key's (Sofabaton's Bluetooth profiles).
+	Data []byte
+	Skip string
 }
 
 // raw is s carrying r as its signal, or left out if r cannot be sent.
@@ -79,7 +82,7 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 			skipped = append(skipped, Skipped{Name: s.Source, Why: "another signal has the same name"})
 			continue
 		}
-		if s.Raw != nil || s.Descriptor != "" {
+		if s.Raw != nil || s.Descriptor != "" || s.Data != nil {
 			seen[strings.ToLower(s.Name)] = true
 			kept = append(kept, s)
 			continue
@@ -108,6 +111,10 @@ func Device(name string, signals []Signal) (*profile.Device, []Skipped) {
 		}
 		if s.Descriptor != "" {
 			d.Commands = append(d.Commands, profile.Command{Name: s.Name, Descriptor: s.Descriptor})
+			continue
+		}
+		if s.Data != nil {
+			d.Commands = append(d.Commands, profile.Command{Name: s.Name, Data: hex.EncodeToString(s.Data)})
 			continue
 		}
 		cmd := profile.Command{Name: s.Name, Code: &profile.Code{Value: s.Code, Decimal: decimal(s.IR.Protocol)}}

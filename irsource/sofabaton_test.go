@@ -52,6 +52,11 @@ func serveSofabaton(t *testing.T) {
 			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
 				{"ecode_id": "c1", "name": "55X1", "typename": "TV", "regular": "(?i)^55x.*"},
 				{"ecode_id": "c2", "name": "Box", "typename": "Stream Box", "regular": ""}}})
+		case "getBt":
+			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
+				{"mode": "1", "broadcast": "", "modelName": "", "brandName": "Android TV", "codeId": "5e0122b8"},
+				{"mode": "0", "broadcast": ".*", "modelName": "(4th Gen)", "brandName": "Apple", "codeId": "afecff98"},
+				{"mode": "1", "brandName": "Broken", "codeId": "not hex"}}})
 		default:
 			http.NotFound(w, r)
 		}
@@ -118,5 +123,16 @@ func TestSofabaton(t *testing.T) {
 	}
 	if _, err := Fetch(ctx, nil, models[0]); err == nil {
 		t.Error("Fetch fetched a Sofabaton code set without the key")
+	}
+}
+
+func TestSofabatonBluetooth(t *testing.T) {
+	serveSofabaton(t)
+	bt, err := SofabatonDB{Key: testKey}.Bluetooth(context.Background())
+	if err != nil || len(bt) != 2 {
+		t.Fatalf("profiles %+v, %v", bt, err)
+	}
+	if bt[0].Name() != "Android TV" || bt[1].Name() != "Apple (4th Gen)" || bt[1].Kind != BluetoothKind || bt[1].Path != "afecff98.sofabaton" {
+		t.Errorf("profiles %+v", bt)
 	}
 }

@@ -47,9 +47,10 @@ func readSofabatonSet(r io.Reader) (*sofabatonSet, error) {
 
 // ReadSofabaton reads a code set of Sofabaton's catalog
 // (irsource.SofabatonDB.Fetch): its keys, most an X2 descriptor in hex,
-// some (learned codes) timings. Descriptors in a protocol profiles
-// render become its codes, others stay descriptors, as the hub takes
-// them; timings become raw IR.
+// some (learned codes) timings, and a Bluetooth profile's HID usages.
+// Descriptors in a protocol profiles render become its codes, others
+// stay descriptors, as the hub takes them; timings become raw IR, and
+// HID usages data (Signal.Data).
 func ReadSofabaton(r io.Reader) ([]Signal, error) {
 	set, err := readSofabatonSet(r)
 	if err != nil {
@@ -63,6 +64,9 @@ func ReadSofabaton(r io.Reader) ([]Signal, error) {
 	return out, nil
 }
 
+// bluetoothFormat is the format of a Bluetooth profile's keys.
+const bluetoothFormat = "3"
+
 func sofabatonSignal(s Signal, irCode, pulse, carrier, format string) Signal {
 	b, err := hex.DecodeString(irCode)
 	desc := string(b)
@@ -75,6 +79,16 @@ func sofabatonSignal(s Signal, irCode, pulse, carrier, format string) Signal {
 		} else {
 			s.Descriptor = desc
 		}
+		return s
+	case format == bluetoothFormat:
+		// A HID usage: its page and code (0c01bb: consumer page, Input),
+		// the bytes our X2 holds for the AWOL profile's keys (2026-11-04).
+		b, err := hex.DecodeString(strings.TrimSpace(pulse))
+		if err != nil || len(b) != 3 {
+			s.Skip = fmt.Sprintf("a Bluetooth key %q is not a HID usage", pulse)
+			return s
+		}
+		s.Data = b
 		return s
 	case strings.TrimSpace(pulse) != "":
 		// Timings in µs, mark first, comma-separated, at the carrier.

@@ -406,3 +406,33 @@ func TestSofabatonPower(t *testing.T) {
 		}
 	}
 }
+
+// A Bluetooth profile's keys are HID usages, which become the data our
+// X2 holds for the device made of the AWOL profile
+// (testdata/x2/bluetooth-projector.yaml).
+func TestReadSofabatonBluetooth(t *testing.T) {
+	set := `{"code_type": "3", "keys": [
+		{"fid": 111, "keyname": "Input", "format": "3", "pulse": "0c01bb", "irCode": ""},
+		{"fid": 106, "keyname": "Mute", "format": "3", "pulse": "0C00E2", "irCode": ""},
+		{"fid": 1, "keyname": "Power", "format": "3", "pulse": "0C0030", "irCode": ""},
+		{"fid": 2, "keyname": "Odd", "format": "3", "pulse": "0c", "irCode": ""}],
+		"power": {"type": 1, "on": [{"fid": 1}], "off": [{"fid": 1}]}}`
+	sigs, err := irfile.ReadSofabaton(strings.NewReader(set))
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, skipped := irfile.Device("Projector", sigs)
+	if len(skipped) != 1 || skipped[0].Name != "Odd" {
+		t.Errorf("skipped %+v", skipped)
+	}
+	var got []string
+	for _, c := range d.Commands {
+		got = append(got, c.Name+" "+c.Data)
+	}
+	if want := []string{"Input 0c01bb", "Mute 0c00e2", "Power 0c0030"}; !slices.Equal(got, want) {
+		t.Errorf("commands %q, want %q", got, want)
+	}
+	if on, off, err := irfile.SofabatonPower(strings.NewReader(set)); on != "Power" || off != "Power" || err != nil {
+		t.Errorf("power %q, %q, %v", on, off, err)
+	}
+}
