@@ -195,6 +195,31 @@ Re-creating ZZ Test with HDMI 1 and 2 as inputs, our X2 accepted all of it
 and the page reads back as written; `sbx remove-device` deleted the first
 ZZ Test in 3.8 s.
 
+## Network device create `[X2✓]`
+
+Upstream's create of a generic HTTP device (class `1C`) on the X1S and
+X2 (`proxy_wifi_device.py`), which our X2 took on 2026-11-04 with
+`profile.Create` (`TestCreateNetwork` checks the order):
+
+| # | Frame | Ack |
+|---|---|---|
+| 1 | `07` CreateDevice: class `1C`, type 16 (the app's Wi-Fi category), no code id, tail with a poll time of 0, input mode 2, marker 0 | `07`, the new id |
+| 2 | `0E` WriteCommand, one per command, type `1C`, data the request (records.md) | `03` |
+| 3 | `41` SetIdleBehavior `[id, 04]` | `03` |
+| 4 | `46` an empty inputs page (mode 0) | `03` |
+| 5 | `08` UpdateDevice: the record with the real id, marker 1 | `03` |
+| 6 | `65` sync `[id, 01]` | `03` |
+| 7 | with power macros: `08` the same record again, `41 [id, 01]`, then `12` POWER_ON and POWER_OFF, one step each | `03`, `12` |
+| 8 | `3E` key bindings | `3E` |
+| 9 | `08` UpdateDevice: sort = the id, channel `4D`, compact tail | `03` |
+
+Upstream found the hub does not take the device as configured without
+step 9. Running a command (`3F`, as `sbx send`), a key bound to one, or
+the power-on macro had the hub send its request to a server here at once.
+Upstream: the hub retries a delivery whose response it does not accept
+(an empty HTTP/1.0 200) about ten times a second, and gives up on a
+refused connection.
+
 ## Remote sync `[X2✓]`
 
 The remote keeps its own copy of each device. After our renames, adds and

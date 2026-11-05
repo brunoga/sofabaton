@@ -93,6 +93,36 @@ app does. Leaving `inputs` out leaves the hub's inputs as they are;
 `inputs: []` says the device switches no inputs (an empty page and input
 mode 2, as the app writes when told the device needs none).
 
+## Network devices
+
+A device whose commands are HTTP requests is a generic network device
+(class `wifi_ip`): running a command, from its page, a key or a power
+macro, has the hub send the request. Each command gives it with `http`:
+
+```yaml
+device: Lights
+commands:
+  - name: Lights on
+    http:
+      method: POST                 # GET (the default), POST, PUT or DELETE
+      url: http://192.168.1.50:8123/api/webhook/lights-on
+      headers: ["Authorization: Bearer abc"]
+      content_type: application/json
+      body: '{"on": true}'
+  - {name: Lights off, http: {url: "http://192.168.1.50:8123/api/webhook/lights-off"}}
+power: {on: Lights on, off: Lights off}
+buttons:
+  OK: Lights on
+```
+
+The hub sends plain `http://` only, to an IPv4 address (it resolves no
+names), and writes the `Host`, `Content-Type` and `Content-Length` lines
+itself. A device's commands are all HTTP or none, and it has no inputs
+yet. `sbx apply -create` makes one in the order upstream's integration
+does, which our X2 took (2026-11-04): its commands, keys and power macros
+ran the requests. `sbx export` writes such a device's commands back as
+`http`.
+
 ## Templates
 
 A template is a device's profile as we maintain it, for any hub: read-only,
@@ -256,6 +286,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-The device's category, Bluetooth devices, and
-protocols other than NEC, Denon-K and Denon for `code`. See
+Bluetooth devices, Roku, Hue, Sonos and MQTT devices, inputs on network
+devices, and protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

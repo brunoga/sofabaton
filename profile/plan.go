@@ -324,6 +324,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			return nil, nil, err
 		}
 		nc.Device, nc.ID, nc.Type, nc.Label = st.Device, id, record.ClassIR, c.Name
+		if c.HTTP != nil {
+			nc.Type = record.ClassIP
+		}
 		used = append(used, nc)
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})
 	}
@@ -474,7 +477,8 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			return nil, nil, err
 		}
 		want := t
-		if d.Power != nil {
+		// A network device keeps the fields its create left (compact).
+		if d.Power != nil && !t.Compact {
 			want.PowerMode, want.PowerStyle = powerMode, powerStyle
 		}
 		switch {

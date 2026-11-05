@@ -393,7 +393,7 @@ buttons:
 		out.Reset()
 		return run(context.Background(), strings.NewReader(stdin), append(args[:1:1], append([]string{"-hub", "192.0.2.1"}, args[1:]...)...), &out, &errs)
 	}
-	if err := sbx("", "apply", "-f", file, "-create", "-n"); err != nil || !strings.Contains(out.String(), `create IR device "ZZ Test" with 3 commands, 1 buttons, powered by "Power On" and "Power Off"`) {
+	if err := sbx("", "apply", "-f", file, "-create", "-n"); err != nil || !strings.Contains(out.String(), `create device "ZZ Test" with 3 commands, 1 buttons, powered by "Power On" and "Power Off"`) {
 		t.Fatalf("dry run: %v\n%s", err, out.String())
 	}
 	if err := sbx("y\n", "apply", "-f", file, "-create"); err != nil || !strings.Contains(out.String(), "done: committed device") {

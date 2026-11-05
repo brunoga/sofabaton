@@ -33,6 +33,16 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Network devices: a profile's commands can be HTTP requests (`http`:
+  method, URL, headers, content type, body), and `profile.Create` (`sbx
+  apply -create`) makes a device of them, a generic network device, in
+  upstream's order. On our X2 its commands, a key bound to one and its
+  power macro had the hub send their requests. `record.HTTPRequest`
+  reads and writes the hub's form of them, and `profile.FromHub` gives
+  them back as `http`.
+- `record.DeviceTail.Compact`: the tail such a device is left with,
+  without the address's bytes, which was misread.
+
 - Raw IR: `record.RawIR` encodes and parses the timings the X2 learns
   and sends (verified on our X2: a learned code written back turned the
   projector on). Profiles add and create commands of raw IR data, and
