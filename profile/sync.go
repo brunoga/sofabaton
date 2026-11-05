@@ -440,8 +440,8 @@ func (s *syncer) device(d *Device, again bool) error {
 }
 
 func (s *syncer) createDevice(d *Device) error {
-	if d.class != 0 && d.class != record.ClassIR {
-		s.say("device %q: skipped: only IR devices can be created (it is class %v)", d.Name, d.class)
+	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) {
+		s.say("device %q: skipped: only IR devices and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}
@@ -457,7 +457,7 @@ func (s *syncer) createDevice(d *Device) error {
 		}
 	}
 	if len(data) > 0 {
-		s.say("device %q: skipped: commands that are not IR cannot be created yet (%s)", d.Name, strings.Join(data, ", "))
+		s.say("device %q: skipped: commands that are neither IR nor HTTP cannot be created yet (%s)", d.Name, strings.Join(data, ", "))
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}

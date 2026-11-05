@@ -119,8 +119,8 @@ type IR struct {
 	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }
 
-// Command is one command. Exactly one of Code, Descriptor and Data gives
-// its signal.
+// Command is one command. Exactly one of Code, Descriptor, Data and HTTP
+// gives its signal.
 type Command struct {
 	Name string `yaml:"name"`
 	// Code is the key value (NEC) or function (DenonK) in the device's IR
@@ -133,7 +133,9 @@ type Command struct {
 	Descriptor string `yaml:"descriptor,omitempty"`
 	// Data is the signal as the hub holds it, in hex, for codes the other
 	// fields cannot express (learned, RF, Bluetooth).
-	Data    string `yaml:"data,omitempty"`
+	Data string `yaml:"data,omitempty"`
+	// HTTP is a network command's request.
+	HTTP    *HTTP  `yaml:"http,omitempty"`
 	Comment string `yaml:"comment,omitempty"`
 }
 
@@ -161,6 +163,12 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		return record.Descriptor(p.render(ir, c.Code.Value))
 	case c.Descriptor != "":
 		return record.Descriptor(c.Descriptor)
+	case c.HTTP != nil:
+		r, err := c.HTTP.Request()
+		if err != nil {
+			return nil, fmt.Errorf("%w (%q)", err, c.Name)
+		}
+		return r.Data()
 	case c.Data != "":
 		b, err := hex.DecodeString(strings.Join(strings.Fields(c.Data), ""))
 		if err != nil {
@@ -168,7 +176,7 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		}
 		return b, nil
 	}
-	return nil, fmt.Errorf("profile: %q has no code, descriptor or data", c.Name)
+	return nil, fmt.Errorf("profile: %q has no code, descriptor, data or http", c.Name)
 }
 
 // Validate checks that every command has a name, unique regardless of
@@ -194,17 +202,21 @@ func (d *Device) Validate() error {
 		}
 		seen[key] = true
 		n := 0
-		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != ""} {
+		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil} {
 			if set {
 				n++
 			}
 		}
 		if n != 1 {
-			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor and data", c.Name))
+			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data and http", c.Name))
 			continue
 		}
-		if _, err := c.Signal(d); err != nil {
+		sig, err := c.Signal(d)
+		if err != nil {
 			errs = append(errs, err)
+		}
+		if d.network() && record.IsIR(sig) {
+			errs = append(errs, fmt.Errorf("profile: %q is IR, on a device of HTTP commands", c.Name))
 		}
 	}
 	errs = append(errs, d.validateButtons()...)
@@ -215,6 +227,9 @@ func (d *Device) Validate() error {
 				errs = append(errs, fmt.Errorf("profile: power: %q is not a command of the profile", c))
 			}
 		}
+	}
+	if d.network() && len(d.Inputs) > 0 {
+		errs = append(errs, errors.New("profile: inputs: a device of HTTP commands cannot have inputs yet"))
 	}
 	seenInput := map[int]bool{}
 	for _, c := range d.Inputs {
@@ -297,7 +312,9 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			return nil, fmt.Errorf("profile: no data for command %d %q", c.ID, c.Label)
 		}
 		pc := Command{Name: c.Label}
-		if desc, err := record.ParseDescriptor(raw); err == nil {
+		if r, err := record.ParseHTTPRequest(raw); c.Type == record.ClassIP && err == nil {
+			pc.HTTP = httpOf(r)
+		} else if desc, err := record.ParseDescriptor(raw); err == nil {
 			if trailing := raw[len(raw)-4:]; !bytes.Equal(trailing, make([]byte, 4)) || len(raw) != 8+len(desc)+4 {
 				pc.Data = hex.EncodeToString(raw) // keep anything unusual exactly
 			} else {

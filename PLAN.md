@@ -140,7 +140,7 @@ Design rules:
 | P6 | Writes via `plan`: IR device create, command add (IR blob save), button binding, macros, activity create, inputs, delete, remote sync; X2 live suite | create a full IR device+activity on X2 that works from the remote | started: commands added, renamed and deleted live; YAML profiles with export and a diffing apply (the Aetherion's 35 keys from AWOL's IR list, all on the hub); key bindings, command order and power sequences in profiles; **an IR device created from scratch** from a profile (`sbx apply -create`, verified 2026-10-31, shown on the remote after a sync); Denon-K and Denon codes; released as 0.1.0. Next: Bluetooth devices (R1), activities (see ROADMAP.md) |
 | P7 | `codec/ir` generators + open IR DB import (raw and X2 `P:`) | generated codes operate real equipment | X2 `P:` done (`profile` protocols, `irfile`, `irsource`); raw timings to do |
 | P8 | Research tracks R1–R5 → close L1, L2, L5 | BT and RF device create work on X2 | — |
-| P9 | Wifi classes (ip/roku/hue/sonos/mqtt), restore from backup | — | — |
+| P9 | Wifi classes (ip/roku/hue/sonos/mqtt), restore from backup | — | started: generic HTTP devices (`http` commands in profiles) created on our X2, their commands, keys and power macros sending their requests (2026-11-04); Roku, Hue, Sonos, MQTT and inputs to do |
 | P9b | Beyond the app: per-device macros (R6) | a "3D on" macro on the Aetherion, usable from every activity that includes it | done: device profiles' macros, copied into the activities with the device and tagged with it (the remote cannot name a device's own macros); keys run them as "Device: Macro" |
 | P10 | Web UI (separate plan): HTTP/WS API over `hub`, device/command/sequence editor | — | — |
 

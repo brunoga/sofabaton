@@ -42,6 +42,10 @@ type DeviceTail struct {
 	// classic, 2 BLE) exist on the 60-byte X1S/X2 tail only.
 	Color  byte
 	BTMode byte
+	// Compact is the layout generic network devices are left with
+	// (NewIPDeviceTail): the fields without the address's six bytes,
+	// and nothing after the marker.
+	Compact bool
 }
 
 // Tail offsets.
@@ -67,21 +71,17 @@ func ParseDeviceTail(tail []byte) (DeviceTail, error) {
 		return DeviceTail{}, fmt.Errorf("record: device tail is %d bytes", len(tail))
 	}
 	var t DeviceTail
+	if isCompact(tail) {
+		t.Compact = true
+		tail = append(make([]byte, tPoll), tail[:tExtra-tPoll]...)
+		return parseFields(tail, t), nil
+	}
 	if tail[tIP] == tailMarker && tail[tIP+1] == ipTag {
 		if ip := netip.AddrFrom4([4]byte(tail[tIP+2 : tIP+6])); !ip.IsUnspecified() {
 			t.IP = ip
 		}
 	}
-	if tail[tPoll] == tailMarker {
-		t.HasPollTime = true
-		t.PollTime = binary.BigEndian.Uint16(tail[tPoll+1:])
-	}
-	t.InputMode = tail[tModes+1]
-	t.PowerMode = tail[tModes+2]
-	t.PowerStyle = tail[tModes+3]
-	t.ShareMode = tail[tModes+4]
-	t.Flag = tail[tFlag+1]
-	t.Marker = tail[tMarker+1]
+	t = parseFields(tail, t)
 	if len(tail) >= tColor && tail[tExtra] == tailMarker {
 		t.HasExtra = true
 		copy(t.Extra[:], tail[tExtra+1:tExtra+4])
@@ -93,6 +93,32 @@ func ParseDeviceTail(tail []byte) (DeviceTail, error) {
 	return t, nil
 }
 
+// isCompact reports whether the tail has the compact layout: the four
+// field markers from its first byte, and no address.
+func isCompact(tail []byte) bool {
+	for _, at := range []int{tPoll, tModes, tFlag, tMarker} {
+		if tail[at-tPoll] != tailMarker {
+			return false
+		}
+	}
+	return tail[tIP+1] != ipTag
+}
+
+// parseFields decodes the fields from the poll time to the marker.
+func parseFields(tail []byte, t DeviceTail) DeviceTail {
+	if tail[tPoll] == tailMarker {
+		t.HasPollTime = true
+		t.PollTime = binary.BigEndian.Uint16(tail[tPoll+1:])
+	}
+	t.InputMode = tail[tModes+1]
+	t.PowerMode = tail[tModes+2]
+	t.PowerStyle = tail[tModes+3]
+	t.ShareMode = tail[tModes+4]
+	t.Flag = tail[tFlag+1]
+	t.Marker = tail[tMarker+1]
+	return t
+}
+
 // Put writes t into a device record's tail slot. It rewrites the first 24
 // bytes (18 on a narrow tail without room for them) and keeps the rest.
 func (t DeviceTail) Put(tail []byte) error {
@@ -100,6 +126,18 @@ func (t DeviceTail) Put(tail []byte) error {
 		return fmt.Errorf("record: device tail is %d bytes", len(tail))
 	}
 	clear(tail[:min(len(tail), tKnownLen)])
+	if t.Compact {
+		if t.IP.IsValid() || t.HasExtra || t.Color != 0 || t.BTMode != 0 {
+			return fmt.Errorf("record: a compact device tail holds no address, vendor block, color or Bluetooth mode")
+		}
+		full := make([]byte, tExtra)
+		t.Compact = false
+		if err := t.Put(full); err != nil {
+			return err
+		}
+		copy(tail, full[tPoll:])
+		return nil
+	}
 	if t.IP.IsValid() {
 		if !t.IP.Is4() {
 			return fmt.Errorf("record: device IP %v is not IPv4", t.IP)
@@ -186,6 +224,14 @@ func NewIRDeviceTail() DeviceTail {
 		Color:       1,
 		BTMode:      0xFF,
 	}
+}
+
+// NewIPDeviceTail is the tail upstream's create of a generic network
+// device (ClassIP) leaves on the X1S and X2, in its last write:
+// compact, a poll time of 1, inputs mode, power mode and style 1, and
+// flag and marker set. The hub keeps it as written.
+func NewIPDeviceTail() DeviceTail {
+	return DeviceTail{Compact: true, HasPollTime: true, PollTime: 1, InputMode: 1, PowerMode: 1, PowerStyle: 1, Flag: 1, Marker: 1}
 }
 
 // IdleDefault is the idle behavior (family 0x41 [device, behavior]) the

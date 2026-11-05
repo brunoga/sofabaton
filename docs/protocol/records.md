@@ -55,6 +55,27 @@ record (`record.TestMembershipRows`). `[ref]`
 | 23 | Bluetooth link mode (60-byte tail only): `01` on our X2's Bluetooth device, `FF` on IR devices `[X2✓]`; upstream's `0` classic / `2` BLE is unverified |
 | 24.. | unknown, preserved |
 
+**Compact tails** `[X2✓]`. The last update of upstream's create of a
+generic HTTP device writes the tail without the address's six bytes:
+`FC 00 01 FC 01 01 01 00 FC 01 FC 01`, poll time 1, input, power mode and
+style 1, flag and marker 1, then zeros. Our X2 keeps it as written.
+`record.ParseDeviceTail` takes a tail whose field markers sit at bytes 0,
+3, 8 and 10 (and no `FC 55`) as compact (`DeviceTail.Compact`).
+
+### HTTP command data (class `1C`) `[X2✓]`
+
+| Offset | Field |
+|---|---|
+| 0–3 | IPv4 address |
+| 4–5 | port (BE16) |
+| 6–7 | length of the text (BE16) |
+| 8.. | the request's text |
+
+The text is `METHOD PATH HTTP/1.1`, `Host:IP:PORT`, the headers,
+`Content-Type:…` if any, and with a body `Content-Length:N`, a blank
+line and the body; a blank line ends it. Our X2 returned the requests we
+wrote unchanged (`record.HTTPRequest`; upstream's `blob_decoders.py`).
+
 **Activity tails differ** (`fc 00 fc 01 …` on X1, `fc 00 00 …` on X1S);
 upstream reads a "needs confirm" flag from the last `fc XX fc YY` pair.
 Kept raw until decoded. `[ref]`

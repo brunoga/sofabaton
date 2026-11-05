@@ -104,7 +104,7 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 	prune := fs.Bool("prune", false, "also remove the hub's commands the profile lacks")
 	dry := fs.Bool("n", false, "show the plan only")
 	yes := fs.Bool("y", false, "apply without asking")
-	create := fs.Bool("create", false, "create the profile's device (a new IR device) or activity")
+	create := fs.Bool("create", false, "create the profile's device (of IR or HTTP commands) or activity")
 	activity := fs.String("activity", "", "activity name or id, for an activity's profile (default: the profile's id, else its name)")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -153,7 +153,7 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 		if _, err := findDevice(ctx, c, p.Name); err == nil {
 			return fmt.Errorf("a device named %q exists; rename the profile's device or apply to it", p.Name)
 		}
-		fmt.Fprintf(stdout, "create IR device %q with %d commands, %d buttons", p.Name, len(p.Commands), len(p.Buttons))
+		fmt.Fprintf(stdout, "create device %q with %d commands, %d buttons", p.Name, len(p.Commands), len(p.Buttons))
 		if p.Power != nil {
 			fmt.Fprintf(stdout, ", powered by %q and %q", p.Power.On, p.Power.Off)
 		}
