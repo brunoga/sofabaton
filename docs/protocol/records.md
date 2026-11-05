@@ -52,7 +52,7 @@ record (`record.TestMembershipRows`). `[ref]`
 | 16–17 | `FC` marker (0 in a create, 1 in the update that commits it; 1 on generic HTTP devices) |
 | 18–21 | optional `FC` + 3 bytes; X2: IR emitter routing (last byte: bit0 hub, bit1 port 1, bit2 port 2, bits 3–7 remotes 1–5) |
 | 22 | color, X2 palette 1–12 (60-byte tail only); devices and activities `[X2✓]` |
-| 23 | Bluetooth link mode (60-byte tail only): `01` on our X2's Bluetooth device, `FF` on IR devices `[X2✓]`; upstream's `0` classic / `2` BLE is unverified |
+| 23 | Bluetooth link mode (60-byte tail only): `01` on our X2's Bluetooth devices, made from catalog profiles of `mode` 1 (BLE), `FF` on IR devices `[X2✓]`; `00` for the catalog's mode 0 (classic Bluetooth) `[inferred]`; upstream's `2` for BLE is not what our X2 holds |
 | 24.. | unknown, preserved |
 
 **Compact tails** `[X2✓]`. The last update of upstream's create of a

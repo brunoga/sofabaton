@@ -120,6 +120,11 @@ type ApplyOptions struct {
 	// devices are, and a device only if its activities are (its macros
 	// live in copies in them).
 	Base *Config
+	// Pair, if not nil, has a Bluetooth device just created pair, as
+	// hub.Client.Pair does (after telling the user to pair it, with a
+	// deadline): the hub keeps a new Bluetooth device only once it has
+	// paired. Without it, Bluetooth devices are not created.
+	Pair func(ctx context.Context, c *hub.Client, device byte, name string) error
 }
 
 // ApplyConfig makes the hub c is connected to hold cfg: each device and
@@ -130,8 +135,9 @@ type ApplyOptions struct {
 // order is written last (see Config). ctx can cancel it between changes;
 // what was done stays done.
 //
-// Only IR devices can be created, of commands with a code or descriptor
-// (see Create); others are skipped, with the activities that need them.
+// IR, Bluetooth (with ApplyOptions.Pair) and network devices can be
+// created (see Create); others are skipped, with the activities that
+// need them.
 // A device's macros live in copies in its activities (see MacroList), so
 // a new activity first gets every key but those running them, the devices
 // then write their copies, and the activity's keys are applied again.
@@ -525,24 +531,29 @@ func (s *syncer) device(d *Device, again bool) error {
 }
 
 func (s *syncer) createDevice(d *Device) error {
-	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) {
-		s.say("device %q: skipped: only IR devices and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
+	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) && (d.class != record.ClassBluetooth || d.Bluetooth == nil) {
+		s.say("device %q: skipped: only IR, Bluetooth and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}
-	// Learned (raw) IR data is created like codes; other data (a
-	// Bluetooth command's) cannot be.
+	// Learned (raw) IR data is created like codes, and a Bluetooth
+	// device's HID usages; other data cannot be.
 	var data []string
 	for _, c := range d.Commands {
 		if c.Data == "" {
 			continue
 		}
-		if sig, err := c.Signal(d); err != nil || !record.IsIR(sig) {
+		if sig, err := c.Signal(d); err != nil || !record.IsIR(sig) && (d.Bluetooth == nil || !record.IsHIDUsage(sig)) {
 			data = append(data, c.Name)
 		}
 	}
 	if len(data) > 0 {
 		s.say("device %q: skipped: commands that are neither IR nor HTTP cannot be created yet (%s)", d.Name, strings.Join(data, ", "))
+		s.skipped[strings.ToLower(d.Name)] = true
+		return nil
+	}
+	if d.Bluetooth != nil && s.opts.Pair == nil {
+		s.say("device %q: skipped: a Bluetooth device is kept only once it has paired, and pairing was not asked for", d.Name)
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}
@@ -558,6 +569,13 @@ func (s *syncer) createDevice(d *Device) error {
 	id, err := Create(s.ctx, s.c, &cp, func(line string) { s.say("  %s", line) })
 	if err != nil {
 		return fmt.Errorf("profile: creating device %q: %w", d.Name, err)
+	}
+	if d.Bluetooth != nil {
+		if err := s.opts.Pair(s.ctx, s.c, id, d.Name); err != nil {
+			return fmt.Errorf("profile: pairing device %q: %w", d.Name, err)
+		}
+		s.say("device %q: created as %d and paired", d.Name, id)
+		return nil
 	}
 	s.say("device %q: created as %d", d.Name, id)
 	return nil

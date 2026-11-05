@@ -157,6 +157,36 @@ device without a table by id `[inferred]`. Our `61` write of the
 Aetherion's 35 commands in the profile's order was accepted and read back
 as written.
 
+## Bluetooth device create `[X2✓]`
+
+The app's create of the AndroidBox from the catalog's Android Box
+profile on our X2, paired with the AWOL projector
+(`testdata/x2/app-add-bluetooth.jsonl`, 2026-11-05;
+`profile.TestCreateBluetooth` makes the same frames from the exported
+profile):
+
+| # | Frame | Ack |
+|---|---|---|
+| 1 | `07` CreateDevice: class `03`, type 15 (the app's Bluetooth category), the code id the catalog profile's id, icon 1, tail: poll time 0, input mode 2, power style 1, the IR routing block `00 00 07`, color 1, Bluetooth mode 1 (BLE; the catalog's `mode`) | `07`, the new id |
+| 2 | `0E` WriteCommand, one per key of the profile (101), type `03`, id 0, the code the catalog key's function id (`fid`: Play is `00 00 00 00 00 92`), data the HID usage | `03` |
+| 3 | `3E` key bindings, each naming its command by the code alone | `3E` |
+| 4 | `41 [id, 01]` | `03` |
+| 5 | `12` POWER_ON and POWER_OFF, one step each, the command by its code | `12` |
+| 6 | `46` an empty inputs page (mode 0) | `03` |
+| 7 | `4C [id, 02]`: pair (what `02` says is not known) | `03`, then `4A [id]` once paired |
+
+There is no `08` commit (the record keeps marker 0 and power mode 0) and
+no sync. The hub answered `4A [id]` 15 s after `4C`, when the projector
+had paired with it. The hub numbered the commands from 1 in the order
+written. `profile.Create` names them by id instead, as for IR devices,
+with zero codes.
+
+Our X2 took all of our create up to the pairing request, then listed no
+such device and refused its commands (`5C`, status `07`): it keeps a new
+Bluetooth device only once it has paired. `sbx apply -create` sends `4C`
+right after the create and waits for `4A`; `sbx pair` sends it for an
+existing device `[inferred]`, as the app's re-pairing presumably does.
+
 ## Display order of devices and activities `[X2✓]`
 
 The order the app and the remote list devices and activities in is each

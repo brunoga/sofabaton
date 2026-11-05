@@ -312,7 +312,7 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			}
 			continue
 		}
-		if c.Data != "" && !record.IsIR(signals[i]) {
+		if c.Data != "" && !record.IsIR(signals[i]) && d.Bluetooth == nil {
 			return nil, nil, fmt.Errorf("profile: %q: only IR commands can be added (a code, a descriptor, or raw IR data); other data is for keeping existing ones", c.Name)
 		}
 		id, err := hub.NextCommandID(used)
@@ -324,8 +324,11 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			return nil, nil, err
 		}
 		nc.Device, nc.ID, nc.Type, nc.Label = st.Device, id, record.ClassIR, c.Name
-		if c.HTTP != nil {
+		switch {
+		case c.HTTP != nil:
 			nc.Type = record.ClassIP
+		case d.Bluetooth != nil && record.IsHIDUsage(signals[i]):
+			nc.Type = record.ClassBluetooth
 		}
 		used = append(used, nc)
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})
@@ -477,8 +480,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			return nil, nil, err
 		}
 		want := t
-		// A network device keeps the fields its create left (compact).
-		if d.Power != nil && !t.Compact {
+		// A network device keeps the fields its create left (compact),
+		// and a Bluetooth device the app's (power mode 0, style 1).
+		if d.Power != nil && !t.Compact && e.Class != record.ClassBluetooth {
 			want.PowerMode, want.PowerStyle = powerMode, powerStyle
 		}
 		switch {

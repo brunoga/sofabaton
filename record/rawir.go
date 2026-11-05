@@ -79,3 +79,8 @@ func IsIR(data []byte) bool {
 	_, err := ParseRawIR(data)
 	return err == nil
 }
+
+// IsHIDUsage reports whether command data is a Bluetooth command's: a
+// HID usage, its page and code (0c 00 b0: the consumer page's Play), the
+// three bytes our X2 holds for each key of a Bluetooth device.
+func IsHIDUsage(data []byte) bool { return len(data) == 3 }

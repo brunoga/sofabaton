@@ -15,7 +15,11 @@ import (
 // sofabatonSet is a code set of Sofabaton's catalog
 // (irsource.SofabatonDB.Fetch).
 type sofabatonSet struct {
-	Keys []struct {
+	// Type is the kind of codes, bluetoothFormat for a Bluetooth
+	// profile; Profile the set's id.
+	Type    string `json:"code_type"`
+	Profile string `json:"ecode_id"`
+	Keys    []struct {
 		FID     int    `json:"fid"`
 		Name    string `json:"keyname"`
 		Format  string `json:"format"`
@@ -110,6 +114,23 @@ func sofabatonSignal(s Signal, irCode, pulse, carrier, format string) Signal {
 	}
 	s.Skip = fmt.Sprintf("a code of format %s, neither a descriptor nor timings: not supported yet", format)
 	return s
+}
+
+// SofabatonBluetooth is what makes a device of a Sofabaton code set a
+// Bluetooth device: nil for a set of IR codes, and for a Bluetooth
+// profile its id, which the device's record keeps. Whether the device
+// pairs over classic Bluetooth the catalog's entry says
+// (irsource.Entry.Classic).
+func SofabatonBluetooth(r io.Reader) (*profile.Bluetooth, error) {
+	set, err := readSofabatonSet(r)
+	if err != nil || set.Type != bluetoothFormat {
+		return nil, err
+	}
+	b := &profile.Bluetooth{}
+	if id, err := hex.DecodeString(set.Profile); err == nil && len(id) == record.CodeIDLen {
+		b.Profile = hex.EncodeToString(id)
+	}
+	return b, nil
 }
 
 // SofabatonPower is the commands of a Sofabaton code set that switch the

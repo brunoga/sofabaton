@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/brunoga/sofabaton/record"
@@ -320,4 +321,39 @@ func (c *Client) SyncOrder(ctx context.Context) error {
 		return fmt.Errorf("hub: syncing the order to the remotes: %w", err)
 	}
 	return nil
+}
+
+// Pair has the hub pair with a Bluetooth device (family 0x4C [device,
+// 02], as the app sends it after a create; what the 02 says is not
+// known) and waits, until ctx is done, for the device to pair: the hub
+// then sends 0x4A [device]. Our X2 told so 15 s after the app's request,
+// once the projector had paired with it (2026-11-05). The device pairs
+// from its own Bluetooth settings, or its remote pairing, meanwhile. A
+// new device (profile.Create) is kept only once paired.
+func (c *Client) Pair(ctx context.Context, device byte) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	paired := make(chan struct{})
+	var once sync.Once
+	stop := c.s.Watch(func(d wire.Direction, f wire.Frame) {
+		if d == wire.FromHub && f.Family == wire.FamPaired && len(f.Payload) > 0 && f.Payload[0] == device {
+			once.Do(func() { close(paired) })
+		}
+	})
+	defer stop()
+	sctx, cancel := c.bound(ctx)
+	err := c.s.Exchange(sctx, wire.Frame{Family: wire.FamPair, Payload: []byte{device, 0x02}}, session.Status())
+	cancel()
+	if err != nil {
+		return fmt.Errorf("hub: pairing device %d: %w", device, err)
+	}
+	select {
+	case <-paired:
+		return nil
+	case <-c.s.Done():
+		return fmt.Errorf("hub: pairing device %d: %w", device, c.s.Err())
+	case <-ctx.Done():
+		return fmt.Errorf("hub: pairing device %d: %w", device, ctx.Err())
+	}
 }

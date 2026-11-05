@@ -1,0 +1,244 @@
+# AndroidBox (Android Box), exported from X2 HUB
+device: AndroidBox
+brand: Android Box
+id: 3
+icon: Monitor
+color: grey
+category: Bluetooth
+bluetooth:
+  profile: d272ab7af5404b549eb260d367112165
+commands:
+  - name: Play
+    data: 0c00b0
+  - name: Pause
+    data: 0c00cd
+  - name: Record
+    data: 0c00b2
+  - name: Stop
+    data: 0c00b7
+  - name: E
+    data: "070008"
+  - name: "0"
+    data: "070027"
+  - name: "9"
+    data: "070026"
+  - name: "8"
+    data: "070025"
+  - name: "7"
+    data: "070024"
+  - name: "6"
+    data: "070023"
+  - name: "5"
+    data: "070022"
+  - name: "4"
+    data: "070021"
+  - name: "3"
+    data: "070020"
+  - name: "2"
+    data: 07001f
+  - name: "1"
+    data: 07001e
+  - name: Forward
+    data: 0c00b3
+  - name: Play/pause
+    data: 0c00cd
+  - name: Reverse
+    data: 0c00b4
+  - name: Volume_down
+    data: "070081"
+  - name: Volumedown
+    data: 0c00ea
+  - name: Mute
+    data: 0c00e2
+  - name: Volume_up
+    data: "070080"
+  - name: Volumeup
+    data: 0c00e9
+  - name: Menu
+    data: "070076"
+  - name: Home
+    data: 07005f
+  - name: Homepage
+    data: 0c0223
+  - name: Home1
+    data: 07004a
+  - name: Back
+    data: 0c0224
+  - name: Return
+    data: 07009e
+  - name: Arrowdown
+    data: "070051"
+  - name: Down arrow
+    data: "070051"
+  - name: Arrowdown2
+    data: 0c0043
+  - name: Arrowright
+    data: 07004f
+  - name: Right arrow
+    data: 07004f
+  - name: Arrowright2
+    data: 0c0045
+  - name: Ok
+    data: 0c0041
+  - name: Arrowleft
+    data: "070050"
+  - name: Left arrow
+    data: "070050"
+  - name: Arrowleft2
+    data: 0c0044
+  - name: Arrowup
+    data: "070052"
+  - name: Up arrow
+    data: "070052"
+  - name: Arrowup2
+    data: 0c0042
+  - name: Power
+    data: 0c0030
+  - name: Sleep
+    data: 0c0032
+  - name: W
+    data: 07001a
+  - name: X
+    data: 07001b
+  - name: Z
+    data: 07001d
+  - name: Clear
+    data: 07009c
+  - name: Q
+    data: "070014"
+  - name: Pageup
+    data: 07004b
+  - name: Pagedown
+    data: 07004e
+  - name: P
+    data: "070013"
+  - name: i
+    data: 07000c
+  - name: Previoustrack
+    data: 0c00b6
+  - name: F4
+    data: 07003d
+  - name: F1
+    data: 07003a
+  - name: F3
+    data: 07003c
+  - name: F2
+    data: 07003b
+  - name: Help
+    data: "070075"
+  - name: Tab
+    data: 07002b
+  - name: Enter
+    data: "070058"
+  - name: F5
+    data: 07003e
+  - name: F6
+    data: 07003f
+  - name: F7
+    data: "070040"
+  - name: F8
+    data: "070041"
+  - name: F9
+    data: "070042"
+  - name: F10
+    data: "070043"
+  - name: F11
+    data: "070044"
+  - name: F
+    data: "070009"
+  - name: S
+    data: "070016"
+  - name: A
+    data: "070004"
+  - name: B
+    data: "070005"
+  - name: C
+    data: "070006"
+  - name: D
+    data: "070007"
+  - name: M
+    data: "070010"
+  - name: F12
+    data: "070045"
+  - name: Backspace
+    data: 07002a
+  - name: Cancel
+    data: 07009b
+  - name: R
+    data: "070015"
+  - name: "Y"
+    data: 07001c
+  - name: G
+    data: 07000a
+  - name: L
+    data: 07000f
+  - name: Select
+    data: "070077"
+  - name: T
+    data: "070017"
+  - name: Space
+    data: 07002c
+  - name: V
+    data: "070019"
+  - name: Escape
+    data: "070029"
+  - name: App
+    data: "070065"
+  - name: Nexttrack
+    data: 0c00b5
+  - name: Execute
+    data: "070074"
+  - name: H
+    data: 07000b
+  - name: J
+    data: 07000d
+  - name: K
+    data: 07000e
+  - name: "N"
+    data: "070011"
+  - name: O
+    data: "070012"
+  - name: U
+    data: "070018"
+  - name: Nvoice
+    data: 0c0221
+  - name: Mvioce
+    data: 07003e
+  - name: Exsel
+    data: 0700a4
+  - name: Channel_up(166)
+    data: 0c009c
+  - name: Channel_down(167)
+    data: 0c009d
+buttons:
+  Play: Play
+  Enter: E
+  0: "0"
+  9: "9"
+  8: "8"
+  7: "7"
+  6: "6"
+  5: "5"
+  4: "4"
+  3: "3"
+  2: "2"
+  1: "1"
+  Power: Power
+  Up: Arrowup
+  Left: Arrowleft
+  OK: Ok
+  Right: Arrowright
+  Down: Arrowdown
+  Back: Back
+  Home: Home
+  Menu: Menu
+  Vol+: Volume_up
+  Mute: Mute
+  Vol-: Volume_down
+  Rewind: Reverse
+  Pause: Pause
+  Forward: Forward
+power:
+  "on": Power
+  "off": Power
+inputs: []

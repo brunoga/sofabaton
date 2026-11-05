@@ -38,8 +38,9 @@ type DeviceTail struct {
 	// three bytes are the IR emitter routing (see Emitters).
 	HasExtra bool
 	Extra    [3]byte
-	// Color (X2 palette 1-12, 0 none) and BTMode (Bluetooth link: 0
-	// classic, 2 BLE) exist on the 60-byte X1S/X2 tail only.
+	// Color (X2 palette 1-12, 0 none) and BTMode (a Bluetooth device's
+	// link: BTModeClassic or BTModeBLE; FF on IR devices) exist on the
+	// 60-byte X1S/X2 tail only.
 	Color  byte
 	BTMode byte
 	// Compact is the layout generic network devices are left with
@@ -225,6 +226,33 @@ func NewIRDeviceTail() DeviceTail {
 		BTMode:      0xFF,
 	}
 }
+
+// NewBluetoothDeviceTail is the tail of a Bluetooth device the app
+// creates on the X2 (2026-11-05): input mode 2, power style 1, the IR
+// routing block as an IR device's, and BTMode 1 for a device that pairs
+// over BLE, 0 over classic Bluetooth (the catalog's mode). The app leaves
+// Marker 0.
+func NewBluetoothDeviceTail(classic bool) DeviceTail {
+	t := DeviceTail{
+		HasPollTime: true,
+		InputMode:   InputsNoSwitch,
+		PowerStyle:  1,
+		HasExtra:    true,
+		Extra:       [3]byte{0, 0, byte(EmitHub | EmitPort1 | EmitPort2)},
+		Color:       1,
+		BTMode:      BTModeBLE,
+	}
+	if classic {
+		t.BTMode = BTModeClassic
+	}
+	return t
+}
+
+// Bluetooth modes of a device tail.
+const (
+	BTModeClassic = 0
+	BTModeBLE     = 1
+)
 
 // NewIPDeviceTail is the tail upstream's create of a generic network
 // device (ClassIP) leaves on the X1S and X2, in its last write:

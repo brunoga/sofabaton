@@ -24,12 +24,19 @@ const (
 // called after each step. It returns the new device's id; if a step after
 // the create fails, the device is left on the hub with that id for the
 // caller to delete.
+//
+// A device of HTTP commands is made as upstream makes one, and a
+// Bluetooth device (Device.Bluetooth) as the app does, which then has
+// the hub pair with it, hub.Client.Pair: the hub keeps it only then.
 func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (byte, error) {
 	if err := d.Validate(); err != nil {
 		return 0, err
 	}
 	if d.network() {
 		return createNetwork(ctx, c, d, done)
+	}
+	if d.Bluetooth != nil {
+		return createBluetooth(ctx, c, d, done)
 	}
 	for _, cmd := range d.Commands {
 		if cmd.Data == "" {

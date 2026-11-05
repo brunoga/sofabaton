@@ -80,6 +80,7 @@ sbx apply -f receiver.yaml -n                  # show what would change
 sbx apply -f receiver.yaml                     # change it (asks first)
 sbx apply -f receiver.yaml -prune              # … also removing commands the file lacks
 sbx apply -f new-tv.yaml -create               # create a new IR device
+sbx pair -device "Android Box"                  # pair a Bluetooth device again
 sbx remove-device -device "Old TV"             # delete a device
 sbx order Projector Receiver                   # list these devices first
 sbx order -activities "Watch TV"               # … or activities

@@ -55,6 +55,10 @@ type Device struct {
 	Category Category `yaml:"category,omitempty"`
 	// IR, when set, lets commands give just a code.
 	IR *IR `yaml:"ir,omitempty"`
+	// Bluetooth, when set, makes this a Bluetooth device: its commands
+	// of data of three bytes are HID usages the hub sends it; it can
+	// have IR commands too.
+	Bluetooth *Bluetooth `yaml:"bluetooth,omitempty"`
 	// Commands are in the order the remote lists them on the device's
 	// page.
 	Commands []Command `yaml:"commands"`
@@ -218,6 +222,9 @@ func (d *Device) Validate() error {
 		if d.network() && record.IsIR(sig) {
 			errs = append(errs, fmt.Errorf("profile: %q is IR, on a device of HTTP commands", c.Name))
 		}
+		if d.Bluetooth != nil && c.Data != "" && !record.IsHIDUsage(sig) && !record.IsIR(sig) {
+			errs = append(errs, fmt.Errorf("profile: %q: a Bluetooth device's commands are HID usages (data of three bytes, such as 0c00b0) or IR", c.Name))
+		}
 	}
 	errs = append(errs, d.validateButtons()...)
 	errs = append(errs, d.validateMacros()...)
@@ -230,6 +237,17 @@ func (d *Device) Validate() error {
 	}
 	if d.network() && len(d.Inputs) > 0 {
 		errs = append(errs, errors.New("profile: inputs: a device of HTTP commands cannot have inputs yet"))
+	}
+	if d.Bluetooth != nil {
+		if d.network() {
+			errs = append(errs, errors.New("profile: a Bluetooth device has no HTTP commands"))
+		}
+		if len(d.Inputs) > 0 {
+			errs = append(errs, errors.New("profile: inputs: a Bluetooth device cannot have inputs yet"))
+		}
+		if err := d.Bluetooth.check(); err != nil {
+			errs = append(errs, err)
+		}
 	}
 	seenInput := map[int]bool{}
 	for _, c := range d.Inputs {
@@ -298,8 +316,15 @@ func (h *Hex16) UnmarshalYAML(n *yaml.Node) error {
 // of the device's IR protocol.
 func FromHub(dev *record.Entity, st *State) (*Device, error) {
 	d := &Device{Name: dev.Name, Brand: dev.Brand, ID: dev.ID, Icon: Icon(dev.Icon), Category: Category(dev.Type), class: dev.Class}
-	if t, err := dev.DeviceTail(); err == nil {
+	t, tailErr := dev.DeviceTail()
+	if tailErr == nil {
 		d.Color = Color(t.Color)
+	}
+	if dev.Class == record.ClassBluetooth {
+		d.Bluetooth = &Bluetooth{Classic: tailErr == nil && t.BTMode == record.BTModeClassic}
+		if dev.CodeID != [record.CodeIDLen]byte{} {
+			d.Bluetooth.Profile = hex.EncodeToString(dev.CodeID[:])
+		}
 	}
 	byID := map[byte]*record.Command{}
 	for _, c := range st.Commands {
