@@ -26,6 +26,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - Device templates, by transport and maker, carried by `sbx` (`sbx new`).
 - Icons and colors of devices and activities, by name.
 - Activity favorites: added, ordered and removed.
+- The order of the devices and activities (`sbx order`, and in restores).
 - Unbinding an activity's key (`apply -prune`).
 - `sbx restore`: a dump written back to a hub, by name, creating what is
   missing (IR devices of codes and descriptors, activities).
@@ -41,9 +42,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
    since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
    `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
    R1).
-3. **Restore, the rest.** Bluetooth devices, and the order of the devices
-   and activities. (Devices of learned IR codes are restored since
-   2026-11-04.)
+3. **Restore, the rest.** Bluetooth devices. (Devices of learned IR
+   codes are restored since 2026-11-04, and the order of the devices and
+   activities since 2026-11-05.)
 
 ## Later
 

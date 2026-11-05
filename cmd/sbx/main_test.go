@@ -529,3 +529,31 @@ commands:
 		t.Errorf("pronto:\n%s", out.String())
 	}
 }
+
+func TestOrder(t *testing.T) {
+	var devs []*record.Entity
+	for i, name := range []string{"TV", "AVR", "Player"} {
+		e, _ := record.NewEntity(wire.X2)
+		e.ID, e.Name, e.Class, e.Sort = byte(i+1), name, record.ClassIR, byte(i+1)
+		devs = append(devs, e)
+	}
+	m := &hubsim.Model{Info: &record.HubInfo{Model: 0x03, Firmware: 9, Name: "X2 HUB"}, Devices: devs}
+	prev := dialHub
+	dialHub = func(ctx context.Context, _ netip.Addr, opts hub.Options) (*hub.Client, error) {
+		return hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), opts)
+	}
+	t.Cleanup(func() { dialHub = prev })
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), nil, []string{"order", "-hub", "192.0.2.1", "player", "2"}, &out, &errs); err != nil {
+		t.Fatal(err)
+	}
+	if want := " 1. Player (3)\n 2. AVR (2)\n 3. TV (1)\n"; out.String() != want {
+		t.Fatalf("order:\n%s", out.String())
+	}
+	if devs[0].Sort != 3 || devs[1].Sort != 2 || devs[2].Sort != 1 || m.OrderSyncs != 1 {
+		t.Fatalf("sorts %d %d %d, %d syncs", devs[0].Sort, devs[1].Sort, devs[2].Sort, m.OrderSyncs)
+	}
+	if err := run(context.Background(), nil, []string{"order", "-hub", "192.0.2.1", "TV", "TV"}, &out, &errs); err == nil {
+		t.Error("a device named twice")
+	}
+}

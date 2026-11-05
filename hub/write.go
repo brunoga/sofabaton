@@ -267,3 +267,57 @@ func (c *Client) Sync(ctx context.Context, entity byte) error {
 	}
 	return nil
 }
+
+// SortDevices writes the display order of the hub's devices (family
+// 0x11): devs, every device the hub holds, first place first. The hub
+// restamps the records' Sort; SyncOrder sends the order to the remotes.
+func (c *Client) SortDevices(ctx context.Context, devs []*record.Entity) error {
+	return c.sortEntities(ctx, wire.FamDeviceSort, "devices", devs)
+}
+
+// SortActivities writes the display order of the hub's activities
+// (family 0x51), as SortDevices does the devices'.
+func (c *Client) SortActivities(ctx context.Context, acts []*record.Entity) error {
+	return c.sortEntities(ctx, wire.FamActivitySort, "activities", acts)
+}
+
+func (c *Client) sortEntities(ctx context.Context, fam wire.Family, what string, ents []*record.Entity) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	if len(ents) == 0 {
+		return fmt.Errorf("hub: ordering no %s", what)
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	pages := record.EntitySortPages(ents)
+	for i, p := range pages {
+		if err := c.s.Exchange(ctx, wire.Frame{Family: fam, Payload: p}, session.Status()); err != nil {
+			return fmt.Errorf("hub: writing the order of the %s, page %d of %d: %w", what, i+1, len(pages), err)
+		}
+	}
+	return nil
+}
+
+// SyncOrder has the hub send the remotes the display order of its
+// devices and activities (family 0x64), as the app does after a reorder:
+// on the X2 the order-only sync [00 00 FF 00] (our X2, 2026-11-05), on
+// the X1S a full sync. The X1's remote needs none (upstream).
+func (c *Client) SyncOrder(ctx context.Context) error {
+	if err := c.Writable(); err != nil {
+		return err
+	}
+	var p []byte
+	switch c.variant {
+	case wire.X1:
+		return nil
+	case wire.X2:
+		p = []byte{0x00, 0x00, 0xFF, 0x00}
+	}
+	ctx, cancel := c.bound(ctx)
+	defer cancel()
+	if err := c.s.Exchange(ctx, wire.Frame{Family: wire.FamRemoteSync, Payload: p}, session.Status()); err != nil {
+		return fmt.Errorf("hub: syncing the order to the remotes: %w", err)
+	}
+	return nil
+}
