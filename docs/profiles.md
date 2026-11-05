@@ -146,8 +146,9 @@ power: {on: Power, off: Power}
 `sbx import-ir` makes one of a profile of Sofabaton's catalog (fetched
 with the library's `irsource.SofabatonDB`), and `sbx export` writes one
 the hub holds. `sbx apply -create` makes the device as the app does and
-then has the hub pair: pair it from the device's Bluetooth settings or
-its remote pairing within two minutes. The hub keeps a new Bluetooth
+then has the hub pair: within two minutes, pick the hub in the device's
+Bluetooth settings (or its remote pairing), where it shows as
+"Sofabaton" and an id, as the app says. The hub keeps a new Bluetooth
 device only once it has paired. `sbx pair -device NAME` pairs one again.
 
 ## Templates

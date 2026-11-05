@@ -47,7 +47,7 @@ func pairCmd(ctx context.Context, args []string, stdout, stderr io.Writer) error
 
 // pair has the hub pair with the Bluetooth device, saying what to do.
 func pair(ctx context.Context, c *hub.Client, id byte, name string, stdout io.Writer) error {
-	fmt.Fprintf(stdout, "pairing %q: pair the device with the hub now, from the device's Bluetooth settings or its remote pairing (waiting %v)\n", name, pairTimeout)
+	fmt.Fprintf(stdout, "pairing %q: on the device, open its Bluetooth settings (or its remote pairing) and pick \"Sofabaton\" (a name with an id after it) (waiting %v)\n", name, pairTimeout)
 	ctx, cancel := context.WithTimeout(ctx, pairTimeout)
 	defer cancel()
 	if err := c.Pair(ctx, id); err != nil {
