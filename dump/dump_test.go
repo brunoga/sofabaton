@@ -11,6 +11,7 @@ import (
 	"github.com/brunoga/sofabaton/dump"
 	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/hubsim"
+	"github.com/brunoga/sofabaton/profile"
 	"github.com/brunoga/sofabaton/record"
 	"github.com/brunoga/sofabaton/wire"
 )
@@ -317,5 +318,87 @@ func TestRefreshRows(t *testing.T) {
 	}
 	if name, n := commands(got, 2); name != "Receiver" || n != 2 {
 		t.Errorf("AVR: %q with %d commands, want Receiver with 2 (read again)", name, n)
+	}
+}
+
+func TestRefreshLists(t *testing.T) {
+	ctx := context.Background()
+	open := func(activity bool, names ...string) *hub.Client {
+		t.Helper()
+		var ents, acts []*record.Entity
+		if activity {
+			a, _ := record.NewEntity(wire.X2)
+			a.ID, a.Name = record.MinActivityID, "Watch"
+			acts = append(acts, a)
+		}
+		for i, name := range names {
+			e, _ := record.NewEntity(wire.X2)
+			e.ID, e.Name, e.Class = byte(i+1), name, record.ClassIR
+			ents = append(ents, e)
+		}
+		h := hubsim.FromModel(&hubsim.Model{
+			Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 9, Name: "X2 HUB"},
+			Devices: ents, Activities: acts,
+		})
+		c, err := hub.Open(ctx, hubsim.Pipe(h), hub.Options{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = c.Close() })
+		return c
+	}
+	c := open(false, "TV", "AVR")
+	for dev := byte(1); dev <= 2; dev++ {
+		cmd, _ := record.NewCommand(wire.X2)
+		cmd.Device, cmd.ID, cmd.Type, cmd.Label = dev, 1, record.ClassIR, "Power"
+		data, _ := record.Descriptor("P:NEC R:38400 D:0 S:206 F:1")
+		if err := c.WriteCommand(ctx, cmd, data); err != nil {
+			t.Fatal(err)
+		}
+	}
+	old, err := dump.ReadProgress(ctx, c, "test", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The same hub, with the AVR renamed, a new device and a new
+	// activity: only the lists are read.
+	c = open(true, "TV", "Receiver", "Box")
+	got, stale, err := dump.RefreshLists(ctx, c, old, "test", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(stale) != "\x02\x03\x65" {
+		t.Fatalf("stale % x, want 02 03 65", stale)
+	}
+	byID := map[byte]*dump.Entity{}
+	for _, e := range got.Entities {
+		byID[e.ID] = e
+	}
+	if e := byID[2]; e == nil || e.Name != "Receiver" || len(e.Data) != 1 {
+		t.Errorf("AVR: %+v, want Receiver with its kept command", e)
+	}
+	if e := byID[3]; e == nil || e.Name != "Box" || e.Commands != nil {
+		t.Errorf("Box: %+v, want its name only", e)
+	}
+	// What it holds is a hub to show.
+	sim, err := got.Open(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sim.Close()
+	devs, err := sim.Devices(ctx)
+	if err != nil || len(devs) != 3 {
+		t.Fatalf("%d devices, %v", len(devs), err)
+	}
+	cfg, err := profile.Snapshot(ctx, sim, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d := cfg.Device("Box"); d == nil || len(d.Commands) != 0 {
+		t.Errorf("Box: %+v, want it with no commands", d)
+	}
+	if a := cfg.Activity("Watch"); a == nil || len(a.Devices) != 0 {
+		t.Errorf("Watch: %+v, want it with no devices", a)
 	}
 }

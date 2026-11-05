@@ -33,6 +33,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `dump.RefreshLists` reads only the hub's lists and returns the devices
+  and activities whose row is new or changed, to read once shown: a new
+  device of 101 commands took 15-20 s to show on our X2, the lists take
+  about one. A dump's device not read yet is served with no commands.
 - Bluetooth devices: a profile's `bluetooth` block (the catalog profile
   it came from, and whether it pairs over classic Bluetooth) makes a
   device whose commands are HID usages, and `profile.Create` (`sbx apply
