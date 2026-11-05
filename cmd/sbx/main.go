@@ -104,10 +104,12 @@ commands:
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
-             IR device or activity)
+             device, of IR, Bluetooth or HTTP commands, or activity)
   restore    make a hub hold what a dump holds: devices and activities
              matched by name are applied, missing ones created (-f
              dump.json; -n shows the plan, -prune as for apply)
+  pair       have the hub pair with a Bluetooth device again
+             (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
              -activities, the activities) on the remote and in the
              app: the ones named go first, as given, the others after
@@ -169,6 +171,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return importIR(args, stdout, stderr)
 	case "export-ir":
 		return exportIR(args, stdout, stderr)
+	case "pair":
+		return pairCmd(ctx, args, stdout, stderr)
 	case "order":
 		return order(ctx, args, stdout, stderr)
 	case "sync":

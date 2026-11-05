@@ -75,6 +75,9 @@ type Entry struct {
 	// Pattern, when set, is a regular expression of the model numbers
 	// the entry covers (Sofabaton's), which Search matches words against.
 	Pattern string `json:"pattern,omitempty"`
+	// Classic, on a Bluetooth profile (Kind BluetoothKind), says the
+	// device pairs over classic Bluetooth, not BLE (profile.Bluetooth).
+	Classic bool `json:"classic,omitempty"`
 }
 
 // Name is a name for the device the entry is the file of.

@@ -132,7 +132,7 @@ func TestSofabatonBluetooth(t *testing.T) {
 	if err != nil || len(bt) != 2 {
 		t.Fatalf("profiles %+v, %v", bt, err)
 	}
-	if bt[0].Name() != "Android TV" || bt[1].Name() != "Apple (4th Gen)" || bt[1].Kind != BluetoothKind || bt[1].Path != "afecff98.sofabaton" {
+	if bt[0].Name() != "Android TV" || bt[1].Name() != "Apple (4th Gen)" || bt[1].Kind != BluetoothKind || bt[1].Path != "afecff98.sofabaton" || bt[0].Classic || !bt[1].Classic {
 		t.Errorf("profiles %+v", bt)
 	}
 }

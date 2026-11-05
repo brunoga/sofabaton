@@ -123,6 +123,33 @@ does, which our X2 took (2026-11-04): its commands, keys and power macros
 ran the requests. `sbx export` writes such a device's commands back as
 `http`.
 
+## Bluetooth devices
+
+A device with a `bluetooth` block is a Bluetooth device: the hub pairs
+with it, as a keyboard or remote would, and its commands are HID usages,
+three bytes of data each (the usage page, then the usage: `0c00b0` is
+the consumer page's Play, `070028` the keyboard's Enter). It can have IR
+commands too.
+
+```yaml
+device: Android Box
+bluetooth:
+  profile: d272ab7af5404b549eb260d367112165   # the catalog's profile id
+  # classic: true                            # pairs over classic Bluetooth, not BLE
+commands:
+  - {name: Play, data: 0c00b0}
+  - {name: Home, data: 0c0223}
+  - {name: Power, data: "070066"}
+power: {on: Power, off: Power}
+```
+
+`sbx import-ir` makes one of a profile of Sofabaton's catalog (fetched
+with the library's `irsource.SofabatonDB`), and `sbx export` writes one
+the hub holds. `sbx apply -create` makes the device as the app does and
+then has the hub pair: pair it from the device's Bluetooth settings or
+its remote pairing within two minutes. The hub keeps a new Bluetooth
+device only once it has paired. `sbx pair -device NAME` pairs one again.
+
 ## Templates
 
 A template is a device's profile as we maintain it, for any hub: read-only,

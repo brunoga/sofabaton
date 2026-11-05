@@ -35,13 +35,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 1. **Activities.** Exported, applied and created from profiles, with
    their own macros across devices; to confirm on the remote.
-2. **Bluetooth devices.** Read their commands (HID usages) into profiles,
-   then create them: capture the app pairing a Bluetooth device (the UGOOS
-   AM6B+, the Aetherion's Bluetooth remote) through the proxy, and work out
-   the record's profile id (`code_id`). The Aetherion's Bluetooth device,
-   since deleted, is kept in `testdata/x2/dump-2026-11-01.json` and
-   `bluetooth-projector.yaml`. Upstream never managed it (PLAN L1,
-   R1).
+2. **Bluetooth devices.** Created as the app creates them, from catalog
+   profiles, and paired (2026-11-05); to see one of ours paired and its
+   keys working (PLAN L1, R1). Upstream never managed it.
 3. **Restore, the rest.** Bluetooth devices. (Devices of learned IR
    codes are restored since 2026-11-04, and the order of the devices and
    activities since 2026-11-05.)

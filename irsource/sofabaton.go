@@ -129,6 +129,9 @@ func (db SofabatonDB) Bluetooth(ctx context.Context) ([]Entry, error) {
 		Brand string `json:"brandName"`
 		Model string `json:"modelName"`
 		Code  string `json:"codeId"`
+		// Mode is "1" for BLE and "0" for classic Bluetooth; one row
+		// has none.
+		Mode any `json:"mode"`
 	}
 	if err := db.post(ctx, "app/getBt", map[string]any{}, &rows); err != nil {
 		return nil, err
@@ -142,7 +145,8 @@ func (db SofabatonDB) Bluetooth(ctx context.Context) ([]Entry, error) {
 		if model == "" {
 			model = brand
 		}
-		out = append(out, Entry{Source: Sofabaton, Brand: brand, Kind: BluetoothKind, Model: model, Path: r.Code + SofabatonExt})
+		classic := r.Mode != nil && fmt.Sprint(r.Mode) == "0"
+		out = append(out, Entry{Source: Sofabaton, Brand: brand, Kind: BluetoothKind, Model: model, Path: r.Code + SofabatonExt, Classic: classic})
 	}
 	return out, nil
 }

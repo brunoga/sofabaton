@@ -29,6 +29,12 @@ type Model struct {
 	Synced []byte
 	// OrderSyncs counts the order syncs (family 0x64).
 	OrderSyncs int
+	// Paired records the Bluetooth devices paired (family 0x4C).
+	Paired []byte
+
+	// unpaired is the Bluetooth devices created and not paired yet,
+	// which the hub does not list.
+	unpaired map[byte]bool
 }
 
 // NotFound is the status the simulated hub rejects requests for absent
@@ -46,10 +52,16 @@ func FromModel(m *Model) *Hub {
 		return []wire.Frame{{Family: wire.FamBanner, Payload: m.Info.AppendPayload(nil)}}
 	})
 	h.Handle(wire.FamReqDevices, func(wire.Frame) []wire.Frame {
-		if len(m.Devices) == 0 {
+		var listed []*record.Entity
+		for _, d := range m.Devices {
+			if !m.unpaired[d.ID] {
+				listed = append(listed, d)
+			}
+		}
+		if len(listed) == 0 {
 			return []wire.Frame{Status(NotFound)}
 		}
-		return entityRows(wire.FamDeviceRow, m.Devices)
+		return entityRows(wire.FamDeviceRow, listed)
 	})
 	h.Handle(wire.FamReqActivities, func(wire.Frame) []wire.Frame {
 		if len(m.Activities) == 0 {
@@ -299,6 +311,13 @@ func FromModel(m *Model) *Hub {
 		e.ID = freeEntityID(m.Devices, 1)
 		e.Sort = byte(len(m.Devices) + 1) // our X2 puts a new device last
 		m.Devices = append(m.Devices, e)
+		if e.Class == record.ClassBluetooth {
+			// Our X2 lists a new Bluetooth device once it has paired.
+			if m.unpaired == nil {
+				m.unpaired = map[byte]bool{}
+			}
+			m.unpaired[e.ID] = true
+		}
 		return []wire.Frame{{Family: wire.FamCreateDeviceAck, Payload: []byte{e.ID}}}
 	})
 	h.Handle(wire.FamUpdateDevice, func(req wire.Frame) []wire.Frame {
@@ -396,6 +415,15 @@ func FromModel(m *Model) *Hub {
 	}
 	h.Handle(wire.FamDeviceSort, sortHandler(&m.Devices))
 	h.Handle(wire.FamActivitySort, sortHandler(&m.Activities))
+	h.Handle(wire.FamPair, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) != 2 || m.device(req.Payload[0]) == nil || m.device(req.Payload[0]).Class != record.ClassBluetooth {
+			return []wire.Frame{Status(Rejected)}
+		}
+		m.Paired = append(m.Paired, req.Payload[0])
+		delete(m.unpaired, req.Payload[0])
+		// The device pairs at once.
+		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
 	h.Handle(wire.FamRemoteSync, func(wire.Frame) []wire.Frame {
 		m.OrderSyncs++
 		return []wire.Frame{Status(0)}
@@ -584,4 +612,14 @@ func (m *Model) freeID(entity byte) byte {
 		id++
 	}
 	return id
+}
+
+// device is the device with the id, or nil.
+func (m *Model) device(id byte) *record.Entity {
+	for _, d := range m.Devices {
+		if d.ID == id {
+			return d
+		}
+	}
+	return nil
 }

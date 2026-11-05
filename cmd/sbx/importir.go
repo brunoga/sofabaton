@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/brunoga/sofabaton/irfile"
+	"github.com/brunoga/sofabaton/irsource"
 )
 
 // importIR writes the profile of a device made of a file of IR codes
@@ -26,12 +28,11 @@ func importIR(args []string, stdout, stderr io.Writer) error {
 	if *file == "" {
 		return errors.New("-f is required")
 	}
-	f, err := os.Open(*file)
+	data, err := os.ReadFile(*file)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	sigs, err := irfile.Read(*file, f)
+	sigs, err := irfile.Read(*file, bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
@@ -39,6 +40,12 @@ func importIR(args []string, stdout, stderr io.Writer) error {
 		*name = strings.ReplaceAll(strings.TrimSuffix(filepath.Base(*file), filepath.Ext(*file)), "_", " ")
 	}
 	d, skipped := irfile.Device(*name, sigs)
+	if strings.HasSuffix(*file, irsource.SofabatonExt) {
+		// A Bluetooth profile of Sofabaton's catalog.
+		if d.Bluetooth, err = irfile.SofabatonBluetooth(bytes.NewReader(data)); err != nil {
+			return err
+		}
+	}
 	for _, s := range skipped {
 		fmt.Fprintf(stderr, "left out %s: %s\n", s.Name, s.Why)
 	}

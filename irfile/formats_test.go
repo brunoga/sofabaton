@@ -411,7 +411,7 @@ func TestSofabatonPower(t *testing.T) {
 // X2 holds for the device made of the AWOL profile
 // (testdata/x2/bluetooth-projector.yaml).
 func TestReadSofabatonBluetooth(t *testing.T) {
-	set := `{"code_type": "3", "keys": [
+	set := `{"code_type": "3", "ecode_id": "E2A55F31B45545989124017B61986F7E", "keys": [
 		{"fid": 111, "keyname": "Input", "format": "3", "pulse": "0c01bb", "irCode": ""},
 		{"fid": 106, "keyname": "Mute", "format": "3", "pulse": "0C00E2", "irCode": ""},
 		{"fid": 1, "keyname": "Power", "format": "3", "pulse": "0C0030", "irCode": ""},
@@ -434,5 +434,16 @@ func TestReadSofabatonBluetooth(t *testing.T) {
 	}
 	if on, off, err := irfile.SofabatonPower(strings.NewReader(set)); on != "Power" || off != "Power" || err != nil {
 		t.Errorf("power %q, %q, %v", on, off, err)
+	}
+	b, err := irfile.SofabatonBluetooth(strings.NewReader(set))
+	if err != nil || b == nil || b.Profile != "e2a55f31b45545989124017b61986f7e" {
+		t.Fatalf("bluetooth %+v, %v", b, err)
+	}
+	d.Bluetooth = b
+	if err := d.Validate(); err != nil {
+		t.Error(err)
+	}
+	if b, err := irfile.SofabatonBluetooth(strings.NewReader(`{"code_type": "1", "keys": []}`)); b != nil || err != nil {
+		t.Errorf("an IR set: %+v, %v", b, err)
 	}
 }

@@ -104,6 +104,7 @@ const (
 	FamReqIdleBehavior    Family = 0x40
 	FamSetIdleBehavior    Family = 0x41
 	FamWriteInputs        Family = 0x46
+	FamPair               Family = 0x4C // [device, 02]: pair a Bluetooth device
 	FamReqActivityInputs  Family = 0x48
 	FamReqMacros          Family = 0x4D
 	FamConfirmMember      Family = 0x4F
@@ -146,6 +147,7 @@ const (
 	FamButtonAck        Family = 0x3E // payload[0] echoes the button id
 	FamIdleBehavior     Family = 0x42
 	FamActivityInputs   Family = 0x47
+	FamPaired           Family = 0x4A // [device]: a Bluetooth device paired
 	FamWiFiFirmware     Family = 0x59
 	FamCommandPage      Family = 0x5D
 	FamReady            Family = 0x60
@@ -194,6 +196,7 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamReqIdleBehavior}:    "ReqIdleBehavior",
 	{ToHub, FamSetIdleBehavior}:    "SetIdleBehavior",
 	{ToHub, FamWriteInputs}:        "WriteInputs",
+	{ToHub, FamPair}:               "Pair",
 	{ToHub, FamReqActivityInputs}:  "ReqActivityInputs",
 	{ToHub, FamReqMacros}:          "ReqMacros",
 	{ToHub, FamConfirmMember}:      "ConfirmMember",
@@ -233,6 +236,7 @@ var familyNames = map[familyKey]string{
 	{FromHub, FamButtonAck}:        "ButtonAck",
 	{FromHub, FamIdleBehavior}:     "IdleBehavior",
 	{FromHub, FamActivityInputs}:   "ActivityInputs",
+	{FromHub, FamPaired}:           "Paired",
 	{FromHub, FamWiFiFirmware}:     "WiFiFirmware",
 	{FromHub, FamCommandPage}:      "CommandPage",
 	{FromHub, FamReady}:            "Ready",

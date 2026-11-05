@@ -33,6 +33,18 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Bluetooth devices: a profile's `bluetooth` block (the catalog profile
+  it came from, and whether it pairs over classic Bluetooth) makes a
+  device whose commands are HID usages, and `profile.Create` (`sbx apply
+  -create`) makes it as the app did on our X2, frame for frame but for
+  the command ids, then has the hub pair (`hub.Client.Pair`, `sbx
+  pair`). The hub keeps a new Bluetooth device only once it has paired:
+  `ApplyOptions.Pair` pairs the ones `ApplyConfig` creates, which skips
+  them without it. Exports carry the block; `irfile.SofabatonBluetooth`
+  reads it from a catalog profile, and `irsource.Entry.Classic` its
+  mode. The simulated hub pairs at once and lists a Bluetooth device
+  only once paired.
+
 - The display order of the devices and of the activities: `Snapshot`
   lists them in it, and `ApplyConfig` writes a config's order when it
   holds every device (or activity) of the hub, then has the X2 sync the

@@ -557,3 +557,38 @@ func TestOrder(t *testing.T) {
 		t.Error("a device named twice")
 	}
 }
+
+// apply -create makes a Bluetooth device and has the hub pair with it;
+// pair pairs it again.
+func TestCreateBluetooth(t *testing.T) {
+	simulated(t)
+	file := t.TempDir() + "/bt.yaml"
+	if err := os.WriteFile(file, []byte(`device: ZZ Box
+bluetooth: {profile: d272ab7af5404b549eb260d367112165}
+commands:
+  - {name: Play, data: 0c00b0}
+  - {name: Power, data: "070066"}
+power: {on: Power, off: Power}
+buttons:
+  Play: Play
+`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out, errs bytes.Buffer
+	sbx := func(stdin string, args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(stdin), append(args[:1:1], append([]string{"-hub", "192.0.2.1"}, args[1:]...)...), &out, &errs)
+	}
+	if err := sbx("y\n", "apply", "-f", file, "-create"); err != nil || !strings.Contains(out.String(), `paired "ZZ Box"`) {
+		t.Fatalf("create: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "apply", "-f", file, "-n"); err != nil || !strings.Contains(out.String(), "already matches") {
+		t.Fatalf("after the create: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "pair", "-device", "zz box"); err != nil || !strings.Contains(out.String(), `paired "ZZ Box"`) {
+		t.Fatalf("pair: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "pair", "-device", "TV"); err == nil {
+		t.Error("paired an IR device")
+	}
+}
