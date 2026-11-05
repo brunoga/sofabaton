@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"go.yaml.in/yaml/v3"
@@ -14,7 +15,8 @@ import (
 )
 
 // Config is a hub's whole configuration, as profiles: its devices and
-// activities, in the hub's order.
+// activities, in the hub's display order. Applying a config that holds
+// every device of a hub (or every activity) sets their order.
 type Config struct {
 	Devices    []*Device
 	Activities []*Activity
@@ -40,6 +42,8 @@ func Snapshot(ctx context.Context, c *hub.Client, progress func(Progress)) (*Con
 	if err != nil && !errors.Is(err, hub.ErrNotFound) {
 		return nil, fmt.Errorf("profile: snapshot: %w", err)
 	}
+	byPlace(devs)
+	byPlace(acts)
 	total := len(devs) + len(acts)
 	step := func(done int, what string) error {
 		if err := ctx.Err(); err != nil {
@@ -85,6 +89,11 @@ func Snapshot(ctx context.Context, c *hub.Client, progress func(Progress)) (*Con
 	return cfg, nil
 }
 
+// byPlace sorts entities into their display order, as the app lists them.
+func byPlace(ents []*record.Entity) {
+	slices.SortStableFunc(ents, func(a, b *record.Entity) int { return int(a.Sort) - int(b.Sort) })
+}
+
 // ApplyOptions tunes ApplyConfig.
 type ApplyOptions struct {
 	// ByID matches the config's devices and activities to the hub's by ID
@@ -117,8 +126,9 @@ type ApplyOptions struct {
 // activity of cfg is applied to its match on the hub (see
 // ApplyOptions.ByID) or, if there is none, created. Devices are written
 // before the activities that use them; with Delete, the activities the
-// config lacks go first and the devices it lacks last. ctx can cancel it
-// between changes; what was done stays done.
+// config lacks go first and the devices it lacks last, and the display
+// order is written last (see Config). ctx can cancel it between changes;
+// what was done stays done.
 //
 // Only IR devices can be created, of commands with a code or descriptor
 // (see Create); others are skipped, with the activities that need them.
@@ -282,7 +292,82 @@ func (s *syncer) run() error {
 			return err
 		}
 	}
+	if err := s.order(); err != nil {
+		return err
+	}
 	return s.extras()
+}
+
+// order writes the display order of the devices, and of the activities,
+// where the config's differs from the hub's, then syncs it to the
+// remotes. A config sets the order only of what it holds all of: with a
+// device of the hub's not in it, the devices keep their order.
+func (s *syncer) order() error {
+	devs, err := s.devices()
+	if err != nil {
+		return err
+	}
+	acts, err := s.activities()
+	if err != nil {
+		return err
+	}
+	var names []string
+	for _, d := range s.cfg.Devices {
+		names = append(names, d.Name)
+	}
+	wantDevs := s.ordered(devs, names, func(i int) byte { return s.cfg.Devices[i].ID })
+	names = names[:0]
+	for _, a := range s.cfg.Activities {
+		names = append(names, a.Name)
+	}
+	wantActs := s.ordered(acts, names, func(i int) byte { return s.cfg.Activities[i].ID })
+	synced := false
+	for _, k := range []struct {
+		what string
+		want []*record.Entity
+		sort func(context.Context, []*record.Entity) error
+	}{{"devices", wantDevs, s.c.SortDevices}, {"activities", wantActs, s.c.SortActivities}} {
+		if k.want == nil {
+			continue
+		}
+		if s.opts.DryRun {
+			s.say("%s: reorder", k.what)
+			continue
+		}
+		if err := s.ctx.Err(); err != nil {
+			return err
+		}
+		if err := k.sort(s.ctx, k.want); err != nil {
+			return fmt.Errorf("profile: ordering the %s: %w", k.what, err)
+		}
+		s.say("%s: reordered", k.what)
+		synced = true
+	}
+	if synced {
+		if err := s.c.SyncOrder(s.ctx); err != nil {
+			return fmt.Errorf("profile: %w", err)
+		}
+	}
+	return nil
+}
+
+// ordered is the hub's entities in the order of the config's profiles
+// (their names, and ids by place), or nil if that is the order they have
+// or the config does not hold them all.
+func (s *syncer) ordered(ents []*record.Entity, names []string, id func(int) byte) []*record.Entity {
+	now := slices.Clone(ents)
+	byPlace(now)
+	var want []*record.Entity
+	seen := map[byte]bool{}
+	for i, name := range names {
+		if e := s.match(ents, id(i), name); e != nil && !seen[e.ID] {
+			want, seen[e.ID] = append(want, e), true
+		}
+	}
+	if len(want) != len(ents) || slices.Equal(want, now) {
+		return nil
+	}
+	return want
 }
 
 // macroPass writes the devices' macro copies into the activities, now

@@ -229,3 +229,47 @@ func TestApplyConfigRaw(t *testing.T) {
 		t.Errorf("devices %v; report:\n%s", names, out.String())
 	}
 }
+
+// A config holding every device sets their display order; one that does
+// not keeps it.
+func TestApplyConfigOrder(t *testing.T) {
+	ctx := context.Background()
+	c := populated(t)
+	cfg, err := profile.Snapshot(ctx, c, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	slices.Reverse(cfg.Devices)
+	var log []string
+	opts := profile.ApplyOptions{ByID: true, Report: func(s string) { log = append(log, s) }}
+	if err := profile.ApplyConfig(ctx, c, cfg, opts); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(log, "devices: reordered") || slices.Contains(log, "activities: reordered") {
+		t.Errorf("log:\n%s", strings.Join(log, "\n"))
+	}
+	again, err := profile.Snapshot(ctx, c, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Devices[0].Name != "AVR" || again.Devices[1].Name != "TV" {
+		t.Fatalf("order %s, %s", again.Devices[0].Name, again.Devices[1].Name)
+	}
+	log = nil
+	if err := profile.ApplyConfig(ctx, c, again, opts); err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(log, "devices: reordered") {
+		t.Error("reordered again")
+	}
+
+	// Without the AVR the config does not say where it goes.
+	part := &profile.Config{Devices: again.Devices[1:]}
+	log = nil
+	if err := profile.ApplyConfig(ctx, c, part, opts); err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(log, "devices: reordered") {
+		t.Error("a partial config reordered the devices")
+	}
+}

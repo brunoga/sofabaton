@@ -157,6 +157,24 @@ device without a table by id `[inferred]`. Our `61` write of the
 Aetherion's 35 commands in the profile's order was accepted and read back
 as written.
 
+## Display order of devices and activities `[X2✓]`
+
+The order the app and the remote list devices and activities in is each
+record's Sort byte (body offset 6). The X2 serves the device rows in that
+order and the activity rows by id. A reorder writes the whole order in
+one paged write: `51` for the activities, `11` for the devices, the body
+`01 pages16`, a `(kind, id, place)` row per entity (kind is the record's
+byte 3, 0 on every record), and a sum8, status ack. The hub restamps the
+Sort bytes. The app follows it with `64 [00 00 FF 00]`, the X2's
+order-only remote sync (upstream; the X1S takes an empty `64`, a full
+sync). Our X2 took the app's activity reorder
+(`01 00 01 | 00 66 01 00 68 02 00 67 03 00 65 04 | a6`, 2026-11-05) and
+our own of the activities and of the devices, which read back as
+written.
+
+A device the X2 creates goes last, whatever Sort the create carried, and
+an update write keeps the hub's Sort.
+
 ## Device create from scratch `[X2✓]`
 
 The app's create flow (above), with our own records and no catalog. On
@@ -338,6 +356,6 @@ record of our copy.
 
 ## TODO
 
-- [ ] Delete activity, membership, device and activity ordering (`0x11`, `0x51`, `0x65`)
+- [ ] Delete activity, membership (`0x65`)
 - [ ] Paging rules per family (`0x0E` uses `[command_seq, page_be]`)
 - [ ] X2 remote-sync targeting and "busy updating remote" status `0x11`

@@ -27,6 +27,8 @@ type Model struct {
 	Idle map[byte]byte
 	// Synced records the entities synced to the remotes (family 0x65).
 	Synced []byte
+	// OrderSyncs counts the order syncs (family 0x64).
+	OrderSyncs int
 }
 
 // NotFound is the status the simulated hub rejects requests for absent
@@ -295,6 +297,7 @@ func FromModel(m *Model) *Hub {
 			return []wire.Frame{Status(Rejected)}
 		}
 		e.ID = freeEntityID(m.Devices, 1)
+		e.Sort = byte(len(m.Devices) + 1) // our X2 puts a new device last
 		m.Devices = append(m.Devices, e)
 		return []wire.Frame{{Family: wire.FamCreateDeviceAck, Payload: []byte{e.ID}}}
 	})
@@ -305,6 +308,7 @@ func FromModel(m *Model) *Hub {
 		}
 		for i, d := range m.Devices {
 			if d.ID == e.ID {
+				e.Sort = d.Sort // our X2 keeps its own
 				m.Devices[i] = e
 				return []wire.Frame{Status(0)}
 			}
@@ -363,6 +367,37 @@ func FromModel(m *Model) *Hub {
 			m.Inputs = map[byte]*record.Inputs{}
 		}
 		m.Inputs[in.Device] = in
+		return []wire.Frame{Status(0)}
+	})
+	sortHandler := func(ents *[]*record.Entity) Handler {
+		return func(req wire.Frame) []wire.Frame {
+			_, body, err := wire.SplitPage(req.Payload)
+			if err != nil || len(body) < 4 || body[len(body)-1] != wire.Checksum(body[:len(body)-1]) {
+				return []wire.Frame{Status(Rejected)}
+			}
+			ids, err := record.ParseEntitySort(body)
+			if err != nil || len(ids) != len(*ents) {
+				return []wire.Frame{Status(Rejected)}
+			}
+			place := map[byte]byte{}
+			for i, id := range ids {
+				place[id] = byte(i + 1)
+			}
+			for _, e := range *ents {
+				if place[e.ID] == 0 {
+					return []wire.Frame{Status(Rejected)}
+				}
+			}
+			for _, e := range *ents {
+				e.Sort = place[e.ID]
+			}
+			return []wire.Frame{Status(0)}
+		}
+	}
+	h.Handle(wire.FamDeviceSort, sortHandler(&m.Devices))
+	h.Handle(wire.FamActivitySort, sortHandler(&m.Activities))
+	h.Handle(wire.FamRemoteSync, func(wire.Frame) []wire.Frame {
+		m.OrderSyncs++
 		return []wire.Frame{Status(0)}
 	})
 	h.Handle(wire.FamAssignCommit, func(req wire.Frame) []wire.Frame {

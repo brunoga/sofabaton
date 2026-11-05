@@ -33,6 +33,16 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- The display order of the devices and of the activities: `Snapshot`
+  lists them in it, and `ApplyConfig` writes a config's order when it
+  holds every device (or activity) of the hub, then has the X2 sync the
+  order to the remotes (`hub.SortDevices`, `hub.SortActivities`,
+  `hub.SyncOrder`, `record.EntitySortPages`). `sbx order` shows the
+  order and moves the devices or activities named to the front. Checked
+  on our X2 against the app's write, and live. The simulated hub keeps
+  the order, puts a new device last and keeps the Sort through updates,
+  as our X2 does.
+
 - Network devices: a profile's commands can be HTTP requests (`http`:
   method, URL, headers, content type, body), and `profile.Create` (`sbx
   apply -create`) makes a device of them, a generic network device, in
