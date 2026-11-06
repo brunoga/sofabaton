@@ -248,6 +248,22 @@ func NewBluetoothDeviceTail(classic bool) DeviceTail {
 	return t
 }
 
+// NewHueDeviceTail is the tail of a Philips Hue bridge the app creates
+// on the X2 (2026-11-06): the bridge's address, input mode 2, the IR
+// routing block as an IR device's, and no Bluetooth. The app leaves
+// Marker 0 and commits the device with 1.
+func NewHueDeviceTail(bridge netip.Addr) DeviceTail {
+	return DeviceTail{
+		IP:          bridge,
+		HasPollTime: true,
+		InputMode:   InputsNoSwitch,
+		HasExtra:    true,
+		Extra:       [3]byte{0, 0, byte(EmitHub | EmitPort1 | EmitPort2)},
+		Color:       1,
+		BTMode:      0xFF,
+	}
+}
+
 // Bluetooth modes of a device tail.
 const (
 	BTModeClassic = 0
