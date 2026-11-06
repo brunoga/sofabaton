@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 
 	"github.com/brunoga/sofabaton/record"
+	"github.com/brunoga/sofabaton/sifli"
 	"github.com/brunoga/sofabaton/wire"
 )
 
@@ -119,4 +121,85 @@ func (db SofabatonDB) HubImage(ctx context.Context, f *Firmware) ([]byte, error)
 		return nil, errors.New("irsource: an empty firmware image")
 	}
 	return b, nil
+}
+
+// remoteProduct is the server's name of the X2 remote's firmware.
+const remoteProduct = "remote2_release"
+
+// RemoteFirmwares are the firmwares the server lists for the X2's remote.
+func (db SofabatonDB) RemoteFirmwares(ctx context.Context) ([]*Firmware, error) {
+	var rows []struct {
+		Product string `json:"product_name"`
+		Version string `json:"software_code"`
+		Notes   string `json:"cont"`
+		URL     string `json:"url"`
+		Force   int    `json:"is_force"`
+	}
+	if err := db.post(ctx, "app/getFirmwares", map[string]any{"product_name": remoteProduct}, &rows); err != nil {
+		return nil, err
+	}
+	var out []*Firmware
+	for _, row := range rows {
+		v, err := strconv.Atoi(row.Version)
+		if err != nil {
+			continue
+		}
+		f := &Firmware{Product: row.Product, Version: v, Notes: row.Notes, Force: row.Force != 0}
+		for _, u := range strings.Split(row.URL, "&&") {
+			if u = strings.TrimSpace(u); u != "" {
+				f.URLs = append(f.URLs, u)
+			}
+		}
+		out = append(out, f)
+	}
+	return out, nil
+}
+
+// RemoteFirmware is the newest firmware the server lists for the X2's
+// remote, or nil if the remote's version is it.
+func (db SofabatonDB) RemoteFirmware(ctx context.Context, r *record.RemoteInfo) (*Firmware, error) {
+	all, err := db.RemoteFirmwares(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var best *Firmware
+	for _, f := range all {
+		if f.Version > int(r.Firmware) && (best == nil || f.Version > best.Version) {
+			best = f
+		}
+	}
+	return best, nil
+}
+
+// remoteImages are the remote firmware's image files, by image id, as the
+// app sends them after its ctrl_packet.bin.
+var remoteImages = []string{"outcom_app.bin", "outcom_lcpu.bin", "outcom_lcpu_patch.bin", "outres.bin", "outfont.bin"}
+
+// RemotePackage downloads the remote firmware's files: its control packet
+// and its images, in the order sifli.Update sends them.
+func (db SofabatonDB) RemotePackage(ctx context.Context, f *Firmware) (sifli.Package, error) {
+	byName := map[string]string{}
+	for _, u := range f.URLs {
+		byName[path.Base(u)] = u
+	}
+	var p sifli.Package
+	for i, name := range append([]string{"ctrl_packet.bin"}, remoteImages...) {
+		u, ok := byName[name]
+		if !ok {
+			return sifli.Package{}, fmt.Errorf("irsource: the remote firmware has no %s", name)
+		}
+		b, err := db.Download(ctx, u)
+		if err != nil {
+			return sifli.Package{}, err
+		}
+		if len(b) == 0 {
+			return sifli.Package{}, fmt.Errorf("irsource: an empty %s", name)
+		}
+		if i == 0 {
+			p.Ctrl = b
+		} else {
+			p.Images = append(p.Images, b)
+		}
+	}
+	return p, nil
 }

@@ -37,6 +37,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- X2 remote firmware updates: the `sifli` package speaks SiFli's update
+  protocol, as the Sofabaton app updates the remote from the phone over
+  Bluetooth (checked message by message against the phone's log of the
+  app's update of our remote; docs/protocol/remote-firmware-update.md);
+  `hub.Client.Remotes` reads the remotes the hub knows (firmware and
+  Bluetooth address), `irsource` lists and downloads the remote's
+  firmware, and `sbx firmware -remote` updates it over BlueZ on Linux.
+  Not yet sent to a remote.
 - Hub firmware updates: `hub.Client.UpdateFirmware` sends an image as the
   app does (its size and MD5, then numbered chunks, each acknowledged);
   `irsource.SofabatonDB.HubFirmware` asks Sofabaton's server for a newer

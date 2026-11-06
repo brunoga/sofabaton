@@ -118,7 +118,9 @@ commands:
   firmware   say whether Sofabaton's server has a newer firmware for the
              hub, and install it with -update, as the app does (-key KEY
              or $SBX_SOFABATON_KEY, the server's key; -y installs without
-             asking)
+             asking); with -remote, the remote's, sent over this
+             computer's Bluetooth (Linux) as the app does from the phone
+             ([-name NAME] [-reinstall] for the version it has)
   pair       have the hub pair with a Bluetooth device again
              (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
