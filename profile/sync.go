@@ -531,8 +531,8 @@ func (s *syncer) device(d *Device, again bool) error {
 }
 
 func (s *syncer) createDevice(d *Device) error {
-	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) && (d.class != record.ClassBluetooth || d.Bluetooth == nil) {
-		s.say("device %q: skipped: only IR, Bluetooth and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
+	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) && (d.class != record.ClassBluetooth || d.Bluetooth == nil) && (d.class != record.ClassHue || d.Hue == nil) {
+		s.say("device %q: skipped: only IR, Bluetooth, Hue and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}

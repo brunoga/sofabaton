@@ -156,6 +156,34 @@ failed with a wrong PIN or passkey, though nothing asked for one, for the
 app's devices as ours, and the phone listed a second, stale "Sofabaton";
 restarting the hub cleared it.
 
+## Philips Hue bridges
+
+A device with a `hue` block is a Philips Hue bridge: its commands are
+requests the hub sends the bridge's API (a PUT of the body to
+`api/USER/path`), as the app's are.
+
+```yaml
+device: Hue Bridge (192.168.1.183)
+hue: {bridge: 192.168.1.183, user: KEY}   # the user is a key to the lights: keep it private
+commands:
+  - name: Cinema on
+    hue: {path: groups/81/action, body: '{"on": true}'}
+  - name: Cinema 50% Brightness
+    hue: {path: groups/81/action, body: '{"bri": 127}'}
+  - name: Pool Table off
+    hue: {path: lights/27/state, body: '{"on": false}'}
+```
+
+`sbx hue` makes one from the bridge, as the app does: it finds the bridge
+(or takes `-bridge IP`), asks for its link button to get a user (or takes
+`-user`), and makes on, off and brightness commands for its rooms, zones
+and lights (`-only`, `-no-lights`, `-no-onoff`, `-brightness 10,50,80`),
+at most 169, the app's limit. `sbx apply -create` makes the device as the
+app does; a device made so on our X2 switched our lights (2026-11-06).
+The app writes each request's Content-Length 2 or 3 bytes longer than
+the body; exports keep that as `length`, and our own commands give the
+body's, which the bridge took.
+
 ## Templates
 
 A template is a device's profile as we maintain it, for any hub: read-only,
@@ -319,6 +347,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Bluetooth devices, Roku, Hue, Sonos and MQTT devices, inputs on network
+Roku, Sonos and MQTT devices, inputs on network
 devices, and protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

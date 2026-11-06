@@ -45,8 +45,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 ## Later
 
 - What the device category changes (PLAN L5, R5).
-- RF devices (PLAN L2, R2) and the other network devices (Roku, Hue,
-  Sonos, MQTT; PLAN P9). Generic HTTP devices are made since 2026-11-04.
+- RF devices (PLAN L2, R2) and the other network devices (Roku, Sonos,
+  MQTT; PLAN P9). Generic HTTP devices are made since 2026-11-04, Hue
+  bridges since 2026-11-06.
 - A web UI over the library (PLAN P10).
 
 ## Unknown or untested

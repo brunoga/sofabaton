@@ -59,6 +59,9 @@ type Device struct {
 	// of data of three bytes are HID usages the hub sends it; it can
 	// have IR commands too.
 	Bluetooth *Bluetooth `yaml:"bluetooth,omitempty"`
+	// Hue makes the device a Philips Hue bridge, whose commands (Hue)
+	// are requests to the bridge's API.
+	Hue *Hue `yaml:"hue,omitempty"`
 	// Commands are in the order the remote lists them on the device's
 	// page.
 	Commands []Command `yaml:"commands"`
@@ -123,8 +126,8 @@ type IR struct {
 	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }
 
-// Command is one command. Exactly one of Code, Descriptor, Data and HTTP
-// gives its signal.
+// Command is one command. Exactly one of Code, Descriptor, Data, HTTP and
+// Hue gives its signal.
 type Command struct {
 	Name string `yaml:"name"`
 	// Code is the key value (NEC) or function (DenonK) in the device's IR
@@ -139,8 +142,10 @@ type Command struct {
 	// fields cannot express (learned, RF, Bluetooth).
 	Data string `yaml:"data,omitempty"`
 	// HTTP is a network command's request.
-	HTTP    *HTTP  `yaml:"http,omitempty"`
-	Comment string `yaml:"comment,omitempty"`
+	HTTP *HTTP `yaml:"http,omitempty"`
+	// Hue is a Hue bridge's command (see Device.Hue).
+	Hue     *HueCommand `yaml:"hue,omitempty"`
+	Comment string      `yaml:"comment,omitempty"`
 }
 
 // Signal returns the command's signal data as the hub stores it.
@@ -173,6 +178,12 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 			return nil, fmt.Errorf("%w (%q)", err, c.Name)
 		}
 		return r.Data()
+	case c.Hue != nil:
+		r, err := c.Hue.request(d.Hue)
+		if err != nil {
+			return nil, fmt.Errorf("%w (%q)", err, c.Name)
+		}
+		return r.Data()
 	case c.Data != "":
 		b, err := hex.DecodeString(strings.Join(strings.Fields(c.Data), ""))
 		if err != nil {
@@ -180,7 +191,7 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		}
 		return b, nil
 	}
-	return nil, fmt.Errorf("profile: %q has no code, descriptor, data or http", c.Name)
+	return nil, fmt.Errorf("profile: %q has no code, descriptor, data, http or hue", c.Name)
 }
 
 // Validate checks that every command has a name, unique regardless of
@@ -206,13 +217,13 @@ func (d *Device) Validate() error {
 		}
 		seen[key] = true
 		n := 0
-		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil} {
+		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil, c.Hue != nil} {
 			if set {
 				n++
 			}
 		}
 		if n != 1 {
-			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data and http", c.Name))
+			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data, http and hue", c.Name))
 			continue
 		}
 		sig, err := c.Signal(d)
@@ -221,6 +232,9 @@ func (d *Device) Validate() error {
 		}
 		if d.network() && record.IsIR(sig) {
 			errs = append(errs, fmt.Errorf("profile: %q is IR, on a device of HTTP commands", c.Name))
+		}
+		if (d.Hue != nil) != (c.Hue != nil) && (d.Hue == nil || c.Data == "") {
+			errs = append(errs, fmt.Errorf("profile: %q: a Hue bridge's commands are hue requests, and only its", c.Name))
 		}
 		if d.Bluetooth != nil && c.Data != "" && !record.IsHIDUsage(sig) && !record.IsIR(sig) {
 			errs = append(errs, fmt.Errorf("profile: %q: a Bluetooth device's commands are HID usages (data of three bytes, such as 0c00b0) or IR", c.Name))
@@ -247,6 +261,17 @@ func (d *Device) Validate() error {
 		}
 		if err := d.Bluetooth.check(); err != nil {
 			errs = append(errs, err)
+		}
+	}
+	if d.Hue != nil {
+		if err := d.Hue.check(); err != nil {
+			errs = append(errs, err)
+		}
+		if d.Bluetooth != nil || d.network() {
+			errs = append(errs, errors.New("profile: a Hue bridge is not a Bluetooth or HTTP device"))
+		}
+		if len(d.Inputs) > 0 || d.Power != nil {
+			errs = append(errs, errors.New("profile: a Hue bridge has no inputs or power commands yet"))
 		}
 	}
 	seenInput := map[int]bool{}
@@ -326,6 +351,9 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			d.Bluetooth.Profile = hex.EncodeToString(dev.CodeID[:])
 		}
 	}
+	if dev.Class == record.ClassHue {
+		d.Hue = hueFromHub(dev, st)
+	}
 	byID := map[byte]*record.Command{}
 	for _, c := range st.Commands {
 		byID[c.ID] = c
@@ -337,8 +365,14 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			return nil, fmt.Errorf("profile: no data for command %d %q", c.ID, c.Label)
 		}
 		pc := Command{Name: c.Label}
+		hue, isHue := (*HueCommand)(nil), false
+		if r, err := record.ParseHueRequest(raw); d.Hue != nil && err == nil {
+			hue, isHue = hueCommandOf(r, d.Hue.User)
+		}
 		if r, err := record.ParseHTTPRequest(raw); c.Type == record.ClassIP && err == nil {
 			pc.HTTP = httpOf(r)
+		} else if isHue {
+			pc.Hue = hue
 		} else if desc, err := record.ParseDescriptor(raw); err == nil {
 			if trailing := raw[len(raw)-4:]; !bytes.Equal(trailing, make([]byte, 4)) || len(raw) != 8+len(desc)+4 {
 				pc.Data = hex.EncodeToString(raw) // keep anything unusual exactly

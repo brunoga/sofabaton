@@ -37,6 +37,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Philips Hue bridges: a profile's `hue` block (the bridge's address and
+  user) and `hue` commands (a path and a JSON body the hub PUTs to the
+  bridge), read from the hub and created as the app creates them
+  (`record.HueRequest`, checked against the app's 100 commands). The `hue`
+  package finds bridges (mDNS), gets a user with the link button, lists
+  rooms and lights and makes the app's on, off and brightness commands;
+  `sbx hue` writes the profile. A bridge device we made switched our
+  lights on the X2 (2026-11-06).
 - `dump.RefreshLists` reads only the hub's lists and returns the devices
   and activities whose row is new or changed, to read once shown: a new
   device of 101 commands took 15-20 s to show on our X2, the lists take

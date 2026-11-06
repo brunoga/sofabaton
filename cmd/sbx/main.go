@@ -12,6 +12,7 @@
 //	sbx export ...        write a device's profile (YAML)
 //	sbx import-ir ...     make a device's profile from a file of IR codes
 //	sbx export-ir ...     write a device profile's IR codes for other tools
+//	sbx hue ...           make a Philips Hue bridge's profile from the bridge
 //	sbx apply ...         make a device match a profile, or create it
 //	sbx remove-device ... delete a device
 //	sbx remove-activity . delete an activity
@@ -104,10 +105,15 @@ commands:
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
-             device, of IR, Bluetooth or HTTP commands, or activity)
+             device, of IR, Bluetooth, Hue or HTTP commands, or activity)
   restore    make a hub hold what a dump holds: devices and activities
              matched by name are applied, missing ones created (-f
              dump.json; -n shows the plan, -prune as for apply)
+  hue        make the profile of a Philips Hue bridge's commands, as
+             the app does: on, off and brightness levels for its rooms
+             and lights (finds the bridge and asks for its link button;
+             [-bridge IP] [-user KEY] [-only NAMES] [-no-lights]
+             [-no-onoff] [-brightness 10,50,80] [-o file])
   pair       have the hub pair with a Bluetooth device again
              (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
@@ -173,6 +179,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return exportIR(args, stdout, stderr)
 	case "pair":
 		return pairCmd(ctx, args, stdout, stderr)
+	case "hue":
+		return hueCmd(ctx, args, stdout, stderr)
 	case "order":
 		return order(ctx, args, stdout, stderr)
 	case "sync":

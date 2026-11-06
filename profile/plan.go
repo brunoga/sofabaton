@@ -329,6 +329,8 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			nc.Type = record.ClassIP
 		case d.Bluetooth != nil && record.IsHIDUsage(signals[i]):
 			nc.Type = record.ClassBluetooth
+		case c.Hue != nil:
+			nc.Type = record.ClassHue
 		}
 		used = append(used, nc)
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})
