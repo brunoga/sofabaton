@@ -58,4 +58,18 @@ func TestFirmware(t *testing.T) {
 	if err := sbx(""); err != nil || !strings.Contains(out.String(), "the newest") {
 		t.Fatalf("after: %v\n%s", err, out.String())
 	}
+
+	// Without -key, the key built in.
+	prevKey := builtinKey
+	t.Cleanup(func() { builtinKey = prevKey })
+	t.Setenv(keyEnv, "")
+	builtinKey = irsource.ScrambleKey("K")
+	out.Reset()
+	if err := run(context.Background(), strings.NewReader(""), []string{"firmware", "-hub", "192.0.2.1"}, &out, &errs); err != nil {
+		t.Fatalf("built-in key: %v\n%s", err, out.String())
+	}
+	builtinKey = ""
+	if err := run(context.Background(), strings.NewReader(""), []string{"firmware", "-hub", "192.0.2.1"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "none of built in") {
+		t.Errorf("no key: %v", err)
+	}
 }

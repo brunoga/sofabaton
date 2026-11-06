@@ -37,6 +37,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- The catalog's key can be built into sbx, scrambled (`irsource.ScrambleKey`,
+  `tools/scramblekey`, the linker's `-X main.builtinKey`): releases and CI
+  take it from the repository's `SOFABATON_KEY` secret, `make` from
+  `~/sofabaton-catalog-key.txt` if there is one. `-key` and
+  `$SBX_SOFABATON_KEY` come first. It is never in the repository; the
+  scrambling keeps it from a casual look at the binary, not from a search.
 - X2 remote firmware updates: the `sifli` package speaks SiFli's update
   protocol, as the Sofabaton app updates the remote from the phone over
   Bluetooth (checked message by message against the phone's log of the

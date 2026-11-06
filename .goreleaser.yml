@@ -7,7 +7,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X main.version={{.Version}}
+      - -s -w -X main.version={{.Version}} -X main.builtinKey={{.Env.SBX_BUILTIN_KEY}}
     goos:
       - linux
       - windows

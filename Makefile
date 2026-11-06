@@ -1,7 +1,11 @@
 PKG     := ./...
 COVER   := coverage.out
 VERSION := $(shell git describe --tags --dirty --always 2>/dev/null || echo "dev")
-LDFLAGS := -ldflags "-X main.version=$(VERSION)"
+# The catalog's key, built into sbx scrambled (tools/scramblekey): from
+# $SOFABATON_KEY or KEY_FILE, which is never committed; none if neither.
+KEY_FILE ?= $(HOME)/sofabaton-catalog-key.txt
+BUILTIN_KEY := $(shell go run ./tools/scramblekey $(KEY_FILE) 2>/dev/null)
+LDFLAGS := -ldflags "-X main.version=$(VERSION) -X main.builtinKey=$(BUILTIN_KEY)"
 FUZZTIME ?= 30s
 
 .PHONY: build check test test-live fuzz lint vet cover clean oracle ci ci-test ci-fuzz ci-build ci-tidy ci-lint

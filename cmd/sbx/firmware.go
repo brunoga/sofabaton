@@ -18,6 +18,19 @@ import (
 // server, which the app carries.
 const keyEnv = "SBX_SOFABATON_KEY"
 
+// builtinKey is the key built into sbx, scrambled (irsource.ScrambleKey):
+// releases set it from the repository's secrets, with the linker's -X.
+var builtinKey string
+
+// sofabatonKey is the key to use: $SBX_SOFABATON_KEY's, else the one
+// built in; "" for none.
+func sofabatonKey() string {
+	if k := os.Getenv(keyEnv); k != "" {
+		return k
+	}
+	return irsource.UnscrambleKey(builtinKey)
+}
+
 // The server's answers, which the tests replace.
 var (
 	hubFirmware = func(ctx context.Context, key string, info *record.HubInfo) (*irsource.Firmware, error) {
@@ -38,7 +51,7 @@ func firmwareCmd(ctx context.Context, args []string, stdin io.Reader, stdout, st
 	fs := flag.NewFlagSet("firmware", flag.ContinueOnError)
 	var h hubFlags
 	h.register(fs)
-	key := fs.String("key", os.Getenv(keyEnv), "the key of Sofabaton's server (default $"+keyEnv+")")
+	key := fs.String("key", "", "the key of Sofabaton's server (default $"+keyEnv+", else the one built in)")
 	update := fs.Bool("update", false, "install the newer firmware, if there is one")
 	yes := fs.Bool("y", false, "install without asking")
 	remote := fs.Bool("remote", false, "the remote's firmware, not the hub's: updated over this computer's Bluetooth (Linux)")
@@ -48,7 +61,10 @@ func firmwareCmd(ctx context.Context, args []string, stdin io.Reader, stdout, st
 		return err
 	}
 	if *key == "" {
-		return errors.New("-key (or $" + keyEnv + ") is required: the key of Sofabaton's server")
+		*key = sofabatonKey() // not as the flag's default, which -h prints
+	}
+	if *key == "" {
+		return errors.New("-key (or $" + keyEnv + ") is required: the key of Sofabaton's server, which this sbx has none of built in")
 	}
 	if *remote {
 		return remoteFirmware(ctx, &h, *key, *name, *update, *reinstall, *yes, stdin, stdout, stderr)
