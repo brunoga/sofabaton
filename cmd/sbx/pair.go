@@ -42,17 +42,26 @@ func pairCmd(ctx context.Context, args []string, stdout, stderr io.Writer) error
 	if e.Class != record.ClassBluetooth {
 		return fmt.Errorf("%q is not a Bluetooth device", e.Name)
 	}
-	return pair(ctx, c, e.ID, e.Name, stdout)
+	return pair(ctx, c, e.ID, e.Name, false, stdout)
 }
 
-// pair has the hub pair with the Bluetooth device, saying what to do.
-func pair(ctx context.Context, c *hub.Client, id byte, name string, stdout io.Writer) error {
+// pairHint is what to do when pairing fails: on our X2, pairing failed
+// with a wrong PIN, though no device asked for one, after earlier failed
+// attempts, the app's as ours, until the hub was restarted (2026-11-06).
+const pairHint = `if the device says the PIN or passkey is wrong, restart the hub (power it off and on) and have the device forget "Sofabaton" first`
+
+// pair has the hub pair with the Bluetooth device, saying what to do; a
+// device just created is not kept by the hub unless it pairs.
+func pair(ctx context.Context, c *hub.Client, id byte, name string, created bool, stdout io.Writer) error {
 	fmt.Fprintf(stdout, "pairing %q: on the device, open its Bluetooth settings (or its remote pairing) and pick \"Sofabaton\" (a name with an id after it) (waiting %v)\n", name, pairTimeout)
 	ctx, cancel := context.WithTimeout(ctx, pairTimeout)
 	defer cancel()
 	if err := c.Pair(ctx, id); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			return fmt.Errorf("%q did not pair; try again with sbx pair -device %d", name, id)
+			if created {
+				return fmt.Errorf("%q did not pair, and the hub keeps a new Bluetooth device only once paired: run apply -create again; %s", name, pairHint)
+			}
+			return fmt.Errorf("%q did not pair; try again with sbx pair -device %d; %s", name, id, pairHint)
 		}
 		return err
 	}

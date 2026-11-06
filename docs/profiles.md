@@ -150,6 +150,11 @@ then has the hub pair: within two minutes, pick the hub in the device's
 Bluetooth settings (or its remote pairing), where it shows as
 "Sofabaton" and an id, as the app says. The hub keeps a new Bluetooth
 device only once it has paired. `sbx pair -device NAME` pairs one again.
+Checked on our X2 (2026-11-06): a device made this way paired with a
+phone and its Volume Up worked. After failed attempts, though, pairing
+failed with a wrong PIN or passkey, though nothing asked for one, for the
+app's devices as ours, and the phone listed a second, stale "Sofabaton";
+restarting the hub cleared it.
 
 ## Templates
 

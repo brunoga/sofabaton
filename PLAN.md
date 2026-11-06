@@ -48,7 +48,7 @@ copied. When we confirm something on our X2, the doc says so.
 
 | # | Limitation | Why it exists | How we attack it |
 |---|---|---|---|
-| L1 | Creating **Bluetooth** devices not yet seen working end to end | the app's create captured (2026-11-05): `profile.Create` makes the same frames, and the hub keeps the device once `4C` has it paired (`4A`); our create was taken but, unpaired, not kept | pair a device we create, and check its keys (R1) |
+| L1 | ~~Creating **Bluetooth** devices not yet seen working end to end~~ | closed 2026-11-06: a device `sbx apply -create` made paired with a phone and its Volume Up worked. Failed attempts can leave the hub failing to pair (a wrong PIN, nothing asked) until it is restarted, the app's creates as ours | — |
 | L2 | Cannot create **RF** devices (no known class code) | never captured | capture app RF-device create on the X2 (R2) |
 | L3 | "Known device" IR codes come from Sofabaton's cloud catalog only | app downloads codes over HTTPS; hub only stores blobs | (a) generate codes locally from open IR databases + protocol encoders (R3, primary); (b) optional: study app↔cloud API (R4) |
 | L4 | Most write flows bench-validated on **X1/X1S**, fewer on X2 | upstream bench hardware | our own X2 bench suite (live tests) |
@@ -150,7 +150,7 @@ app's own backup are the safety net for live write testing.
 
 ## 7. Research tracks (using our X2 + Android app)
 
-- **R1 Bluetooth create**: through the proxy, create BT devices of 2–3 brands
+- **R1 Bluetooth create** (done 2026-11-06, see L1): through the proxy, create BT devices of 2–3 brands
   in the app; diff `0x07`/`0x08` bodies (code_id, device_type, tail byte 23,
   keymap pages). The code_id is the cloud catalog's profile id (2026-11-04),
   so what remains is the pairing: what the app asks the hub, and what the

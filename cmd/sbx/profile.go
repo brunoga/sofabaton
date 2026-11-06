@@ -174,7 +174,7 @@ func apply(ctx context.Context, args []string, stdin io.Reader, stdout, stderr i
 		if err != nil || p.Bluetooth == nil {
 			return err
 		}
-		return pair(ctx, c, id, p.Name, stdout)
+		return pair(ctx, c, id, p.Name, true, stdout)
 	}
 	dev, err := findDevice(ctx, c, which)
 	if err != nil {
