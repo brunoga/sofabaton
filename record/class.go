@@ -17,6 +17,10 @@ const (
 	ClassRF433     Class = 0x1D // not yet seen in a capture
 	ClassRF315     Class = 0x1E // not yet seen in a capture
 	ClassMQTT      Class = 0x20 // X2 only
+	// ClassWeb is the command type of the X2's newer generic HTTP
+	// commands (WebRequest), in devices of ClassIP: the app writes these
+	// on the X2, the older HTTPRequest form on the X1S.
+	ClassWeb Class = 0x21
 )
 
 var classNames = map[Class]string{
@@ -29,6 +33,7 @@ var classNames = map[Class]string{
 	ClassRF433:     "rf_433mhz",
 	ClassRF315:     "rf_315mhz",
 	ClassMQTT:      "wifi_mqtt",
+	ClassWeb:       "wifi_web",
 }
 
 func (c Class) String() string {
@@ -47,7 +52,7 @@ func (c Class) Known() bool {
 // IsWiFi reports whether the class is one of the network classes.
 func (c Class) IsWiFi() bool {
 	switch c {
-	case ClassRoku, ClassHue, ClassSonos, ClassIP, ClassMQTT:
+	case ClassRoku, ClassHue, ClassSonos, ClassIP, ClassMQTT, ClassWeb:
 		return true
 	}
 	return false

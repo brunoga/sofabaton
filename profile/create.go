@@ -26,7 +26,8 @@ const (
 // caller to delete.
 //
 // A device of HTTP commands is made as upstream makes one, a Philips Hue
-// bridge (Device.Hue) as the app does, and a Bluetooth device
+// bridge, Roku or Sonos (Device.Hue, Roku, Sonos) as the app does, and a
+// Bluetooth device
 // (Device.Bluetooth) as the app does, which then has the hub pair with
 // it, hub.Client.Pair: the hub keeps it only then.
 func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (byte, error) {
@@ -39,8 +40,8 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 	if d.Bluetooth != nil {
 		return createBluetooth(ctx, c, d, done)
 	}
-	if d.Hue != nil {
-		return createHue(ctx, c, d, done)
+	if _, _, ok := d.addressed(); ok {
+		return createAddressed(ctx, c, d, done)
 	}
 	for _, cmd := range d.Commands {
 		if cmd.Data == "" {

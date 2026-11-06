@@ -199,3 +199,51 @@ func TestRestore(t *testing.T) {
 	defer from.Close()
 	check("dump", from)
 }
+
+// An activity profile can add a device the activity does not have yet,
+// with its keys, once the state read for it has that device's commands.
+func TestPlanActivityNewDevice(t *testing.T) {
+	ctx := context.Background()
+	c := populated(t)
+	box, err := profile.Load(strings.NewReader("device: Box\nir: {protocol: NEC, system: 0x00CE}\ncommands:\n  - {name: Home, code: 0x31}\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profile.Create(ctx, c, box, nil); err != nil {
+		t.Fatal(err)
+	}
+	st, err := profile.ReadActivity(ctx, c, 101)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := profile.ActivityFromHub(st)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.Devices = append(a.Devices, profile.Member{Device: "Box"})
+	a.Buttons["Home"] = profile.Key{Short: "Box: Home"}
+	if _, err := profile.PlanActivity(a, st, false); err == nil {
+		t.Fatal("planned without the new device's commands")
+	}
+	// Its steps, which do not turn the new device on, would drop it.
+	if st, err := profile.ReadActivityFor(ctx, c, 101, a); err != nil {
+		t.Fatal(err)
+	} else if _, err := profile.PlanActivity(a, st, false); err == nil || !strings.Contains(err.Error(), "power_on does not turn on Box") {
+		t.Fatalf("planned power_on without Box: %v", err)
+	}
+	a.PowerOn, a.PowerOff = nil, nil // the usual steps, with Box
+	st, err = profile.ReadActivityFor(ctx, c, 101, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	changes, err := profile.PlanActivity(a, st, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := profile.ApplyActivity(ctx, c, changes, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := export(t, c)["Watch TV"]; !strings.Contains(got, "device: Box") || !strings.Contains(got, "Home: 'Box: Home'") {
+		t.Errorf("Watch TV:\n%s", got)
+	}
+}

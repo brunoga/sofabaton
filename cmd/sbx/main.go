@@ -13,6 +13,10 @@
 //	sbx import-ir ...     make a device's profile from a file of IR codes
 //	sbx export-ir ...     write a device profile's IR codes for other tools
 //	sbx hue ...           make a Philips Hue bridge's profile from the bridge
+//	sbx roku ...          make a Roku's profile from the Roku
+//	sbx sonos ...         make a Sonos speaker's profile from the speaker
+//	sbx govee ...         make a profile of a Govee account's lights
+//	sbx lifx ...          make a profile of a LIFX account's lights
 //	sbx firmware ...      check for a hub firmware update, and install it
 //	sbx apply ...         make a device match a profile, or create it
 //	sbx remove-device ... delete a device
@@ -106,7 +110,8 @@ commands:
   apply      make a device or activity match a profile, changing only
              what differs (-f file; -n shows the plan, -prune removes
              commands or macros the profile lacks; -create makes a new
-             device, of IR, Bluetooth, Hue or HTTP commands, or activity)
+             device, of IR, Bluetooth, Hue, Roku, Sonos or HTTP
+             commands, or activity)
   restore    make a hub hold what a dump holds: devices and activities
              matched by name are applied, missing ones created (-f
              dump.json; -n shows the plan, -prune as for apply)
@@ -115,6 +120,21 @@ commands:
              and lights (finds the bridge and asks for its link button;
              [-bridge IP] [-user KEY] [-only NAMES] [-no-lights]
              [-no-onoff] [-brightness 10,50,80] [-o file])
+  roku       make the profile of a Roku, as the app does: its keys, the
+             remote's bound to them, and a command for each channel
+             (finds it on the network; [-address IP] [-name NAME]
+             [-no-apps] [-o file])
+  sonos      make the profile of a Sonos speaker, as the app does: play,
+             pause, next, previous, mute, volumes, the room's and its
+             group's ([-address IP] [-name NAME] [-o file])
+  govee      make the profile of a device of commands for a Govee
+             account's lights, sent by the X2 to Govee's cloud: on, off
+             and brightness levels (-key KEY or $SBX_GOVEE_KEY; [-only
+             NAMES] [-no-onoff] [-brightness 10,50,80,100] [-o file])
+  lifx       the same for a LIFX account's lights, all at once (as the
+             app makes it) and each group and light (-token TOKEN or
+             $SBX_LIFX_TOKEN; [-only NAMES] [-all-only] [-no-onoff]
+             [-brightness 10,50,80,100] [-o file])
   firmware   say whether Sofabaton's server has a newer firmware for the
              hub, and install it with -update, as the app does (-key KEY
              or $SBX_SOFABATON_KEY, the server's key; -y installs without
@@ -188,6 +208,14 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return pairCmd(ctx, args, stdout, stderr)
 	case "hue":
 		return hueCmd(ctx, args, stdout, stderr)
+	case "roku":
+		return rokuCmd(ctx, args, stdout)
+	case "sonos":
+		return sonosCmd(ctx, args, stdout)
+	case "govee":
+		return goveeCmd(ctx, args, stdout)
+	case "lifx":
+		return lifxCmd(ctx, args, stdout)
 	case "firmware":
 		return firmwareCmd(ctx, args, stdin, stdout, stderr)
 	case "order":

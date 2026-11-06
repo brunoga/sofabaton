@@ -115,9 +115,11 @@ buttons:
   OK: Lights on
 ```
 
-The hub sends plain `http://` only, to an IPv4 address (it resolves no
-names), and writes the `Host`, `Content-Type` and `Content-Length` lines
-itself. A device's commands are all HTTP or none, and it has no inputs
+A plain `http://` request to an IPv4 address is stored in the form every
+hub takes; an `https://` one, or one to a name, in the X2's newer form,
+which the X2 sends itself, TLS included (the app's Govee and LIFX
+commands are these). The hub writes the `Host` and `Content-Length`
+lines itself. A device's commands are all HTTP or none, and it has no inputs
 yet. `sbx apply -create` makes one in the order upstream's integration
 does, which our X2 took (2026-11-04): its commands, keys and power macros
 ran the requests. `sbx export` writes such a device's commands back as
@@ -183,6 +185,40 @@ app does; a device made so on our X2 switched our lights (2026-11-06).
 The app writes each request's Content-Length 2 or 3 bytes longer than
 the body; exports keep that as `length`, and our own commands give the
 body's, which the bridge took.
+
+## Roku and Sonos
+
+A device with a `roku` block is a Roku: its commands are paths of Roku's
+External Control Protocol, which the hub POSTs to the Roku. One with a
+`sonos` block is a Sonos speaker: its commands are UPnP requests.
+
+```yaml
+device: Den
+roku: {address: 192.168.1.50}
+commands:
+  - {name: Home, roku: keypress/Home}
+  - {name: Netflix, roku: launch/12}
+power: {on: Power On, off: Power Off}
+```
+
+`sbx roku` makes a Roku's profile as the app does: it finds the Roku (or
+takes `-address`), and makes its keys, the remote's keys bound to them,
+power on and off, and a command for each channel (`-no-apps` for none).
+`sbx sonos` makes a speaker's: play, pause, next, previous, mute and
+unmute, set volumes (the room's and its group's) and the hub's volume
+steps, from the speaker's volume now. Its requests are Sonos's own, each
+its own length: the app's are a few bytes off, and its group volumes
+adjust rather than set. `sbx apply -create` makes either as the app does.
+
+## Govee and LIFX lights
+
+Govee and LIFX lights are controlled through their clouds: a device of
+`https` commands, which the X2 sends itself, with the account's key in
+them (keep the profile private). `sbx govee -key KEY` lists the account's
+lights and makes on, off and brightness commands for each (`-only`,
+`-no-onoff`, `-brightness`); `sbx lifx -token TOKEN` makes them for all
+the lights at once, as the app does, and for each group and light
+(`-all-only` for the app's alone).
 
 ## Templates
 
@@ -347,6 +383,6 @@ of its own of an activity with the device.
 
 ## Not yet
 
-Roku, Sonos and MQTT devices, inputs on network
+MQTT devices, inputs on network
 devices, and protocols other than NEC, Denon-K and Denon for `code`. See
 [ROADMAP.md](../ROADMAP.md).

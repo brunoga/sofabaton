@@ -3,7 +3,6 @@ package hue
 import (
 	"fmt"
 	"strings"
-	"unicode/utf16"
 
 	"github.com/brunoga/sofabaton/profile"
 )
@@ -11,7 +10,7 @@ import (
 // MaxCommands is the most commands the app gives a Hue bridge on the X2
 // ("the limit for the Sofabaton remote"); for more, it adds the bridge
 // again.
-const MaxCommands = 169
+const MaxCommands = profile.MaxCommands
 
 // Brightness levels the app offers, in percent.
 var Brightness = []int{10, 50, 80}
@@ -23,10 +22,6 @@ type Options struct {
 	// Brightness makes a command for each level, in percent (1-100).
 	Brightness []int
 }
-
-// labelLen is the most UTF-16 units a command's name holds on the hub;
-// the app cuts longer names there.
-const labelLen = 30
 
 // Commands are the commands of the targets, as the app makes them: on
 // and off for each room, then each room's brightness levels, then the
@@ -68,15 +63,8 @@ func Commands(targets []Target, o Options) []profile.Command {
 }
 
 // named is the command name target+what+n, the target's name cut so that
-// it fits in what the hub holds (labelLen UTF-16 units).
-func named(target, what, n string) string {
-	u := utf16.Encode([]rune(target))
-	room := labelLen - len(utf16.Encode([]rune(what+n)))
-	if len(u) > room {
-		target = strings.TrimSpace(string(utf16.Decode(u[:max(room, 0)])))
-	}
-	return target + what + n
-}
+// it fits in what the hub holds.
+func named(target, what, n string) string { return profile.FitName(target, what+n) }
 
 // Device is the profile of a bridge device of commands, named as the app
 // names it: "Hue Bridge (192.168.1.183)".

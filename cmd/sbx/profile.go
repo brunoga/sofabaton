@@ -271,7 +271,7 @@ func applyActivity(ctx context.Context, data []byte, h *hubFlags, which string, 
 	if err != nil {
 		return err
 	}
-	st, err := profile.ReadActivity(ctx, c, act.ID)
+	st, err := profile.ReadActivityFor(ctx, c, act.ID, a)
 	if err != nil {
 		return err
 	}
