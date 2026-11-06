@@ -37,6 +37,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Hub firmware updates: `hub.Client.UpdateFirmware` sends an image as the
+  app does (its size and MD5, then numbered chunks, each acknowledged);
+  `irsource.SofabatonDB.HubFirmware` asks Sofabaton's server for a newer
+  firmware, as the app does, and `HubImage` downloads it; `sbx firmware`
+  says whether there is one and installs it with `-update`, then waits for
+  the hub to come back with it. Our start frame for the 8 to 9 image is
+  the app's; no newer hub firmware has been out to send yet.
 - Philips Hue bridges: a profile's `hue` block (the bridge's address and
   user) and `hue` commands (a path and a JSON body the hub PUTs to the
   bridge), read from the hub and created as the app creates them

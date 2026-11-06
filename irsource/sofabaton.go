@@ -225,12 +225,22 @@ func (db SofabatonDB) post(ctx context.Context, endpoint string, fields map[stri
 		return fmt.Errorf("irsource: Sofabaton's %s: %w", endpoint, err)
 	}
 	if r.Code != 0 {
-		return fmt.Errorf("irsource: Sofabaton's %s: %s (%d)", endpoint, r.Msg, r.Code)
+		return &catalogError{endpoint: endpoint, msg: r.Msg, code: r.Code}
 	}
 	if err := json.Unmarshal(r.Data, out); err != nil {
 		return fmt.Errorf("irsource: Sofabaton's %s: %w", endpoint, err)
 	}
 	return nil
+}
+
+// catalogError is the catalog's answer of a non-zero code.
+type catalogError struct {
+	endpoint, msg string
+	code          int
+}
+
+func (e *catalogError) Error() string {
+	return fmt.Sprintf("irsource: Sofabaton's %s: %s (%d)", e.endpoint, e.msg, e.code)
 }
 
 func (db SofabatonDB) get(ctx context.Context, u string) ([]byte, error) {
