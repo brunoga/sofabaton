@@ -208,6 +208,13 @@ func ReadActivity(ctx context.Context, c *hub.Client, activity byte) (*ActivityS
 	return readActivity(ctx, c, activity, nil)
 }
 
+// ReadActivityFor is ReadActivity, also reading the devices the profile a
+// refers to, which PlanActivity needs for a device the activity does not
+// have yet.
+func ReadActivityFor(ctx context.Context, c *hub.Client, activity byte, a *Activity) (*ActivityState, error) {
+	return readActivity(ctx, c, activity, a.deviceNames())
+}
+
 // readActivity is ReadActivity, also reading the devices named (by
 // lower-case name): those a profile to plan for the activity refers to.
 func readActivity(ctx context.Context, c *hub.Client, activity byte, named map[string]bool) (*ActivityState, error) {

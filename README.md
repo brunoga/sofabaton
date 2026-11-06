@@ -58,10 +58,10 @@ every frame to stderr.
 
 `sbx restore -f hub.json` writes a dump back: devices and activities are
 matched by name and made to match the dump, and missing ones are created
-(a hub just reset, or another hub). `-n` shows the plan. IR, network, Hue
-and Bluetooth devices can be created; a Bluetooth device is kept by the hub
-only once it pairs again, so restore waits for each (`-no-pair` skips
-them). Devices of other kinds, and the activities with them, are skipped
+(a hub just reset, or another hub). `-n` shows the plan. IR, network,
+Hue, Roku, Sonos and Bluetooth devices can be created; a Bluetooth device
+is kept by the hub only once it pairs again, so restore waits for each
+(`-no-pair` skips them). Devices of other kinds, and the activities with them, are skipped
 and reported.
 
 ### Changing devices with profiles

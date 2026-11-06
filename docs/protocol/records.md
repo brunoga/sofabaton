@@ -76,6 +76,42 @@ The text is `METHOD PATH HTTP/1.1`, `Host:IP:PORT`, the headers,
 line and the body; a blank line ends it. Our X2 returned the requests we
 wrote unchanged (`record.HTTPRequest`; upstream's `blob_decoders.py`).
 
+### Web command data (type `21`, in `1C` devices) `[X2✓]`
+
+The app writes the X2's generic HTTP commands in this newer form (and the
+form above on the X1S), all big-endian:
+
+| Field | Bytes |
+|---|---|
+| length of it all | 2 |
+| URL length, URL (`http://` or `https://`, an address or a name) | 2 + n |
+| method: 0 GET, 1 POST, 2 PUT | 1 |
+| number of headers | 1 |
+| each header: name length, name, value length, value | 1 + n + 2 + m |
+| body | the rest |
+
+Our X2 sent such requests with `User-Agent: ESP32 HTTP Client/1.0`, its
+own `Host` and `Content-Length`, the headers in order, and
+`Content-Type: application/x-www-form-urlencoded` when none was given;
+over https it took a self-signed certificate (2026-11-06,
+`record.WebRequest`). That it resolves names is the app's Govee and LIFX
+commands' doing, not yet seen.
+
+### Roku and Sonos command data (classes `0A`, `1B`) `[X2✓]`
+
+A Roku's command is `u8 length | path` (`keypress/Home`, `launch/12`),
+which the hub POSTs to port 8060 of the address in the device's record:
+`POST /keypress/Home HTTP/1.1`, `Host:IP:8060`, a blank line. A Sonos's
+is laid out as a Hue's, `u8 path length | u16 rest length | path |
+rest`; the hub POSTs it to port 1400, the rest (a `SOAPACTION` line,
+`Content-Length:N`, a blank line and the envelope) sent as it is, then a
+`\r`. The app's Volume up and down are the paths
+`MediaRenderer/VolumeUp/Control` and `VolumeDown/Control` with a volume
+as the rest: the hub sent the last SetVolume it had sent, one up
+(2026-11-06, devices pointed at a listener; `record.RokuRequest`,
+`record.SonosRequest`). The devices are made as a Hue bridge is: type 16,
+the address's last byte as the channel, the Hue tail.
+
 **Activity tails differ** (`fc 00 fc 01 …` on X1, `fc 00 00 …` on X1S);
 upstream reads a "needs confirm" flag from the last `fc XX fc YY` pair.
 Kept raw until decoded. `[ref]`

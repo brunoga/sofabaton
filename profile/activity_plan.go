@@ -358,6 +358,13 @@ func PlanActivity(a *Activity, st *ActivityState, prune bool) ([]ActivityChange,
 			if steps, err = r.steps(p.steps, inputs); err != nil {
 				return nil, fmt.Errorf("%w (%s)", err, strings.ToLower(p.label))
 			}
+			// The hub takes the activity's devices from its POWER_ON
+			// steps: one they leave out is dropped from it.
+			for i, id := range members {
+				if p.on && !slices.ContainsFunc(steps, func(s record.Step) bool { return s.Device == id && s.Command == record.MacroPowerOn }) {
+					return nil, fmt.Errorf("profile: power_on does not turn on %s, one of the devices: the hub takes an activity's devices from it (add '- power on: %s', or leave power_on out for the usual steps)", names[i], names[i])
+				}
+			}
 		}
 		if err := rewrite(p.id, p.label, steps); err != nil {
 			return nil, err

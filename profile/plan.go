@@ -312,7 +312,7 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			}
 			continue
 		}
-		if c.Data != "" && !record.IsIR(signals[i]) && d.Bluetooth == nil {
+		if _, _, ok := d.addressed(); c.Data != "" && !record.IsIR(signals[i]) && d.Bluetooth == nil && !ok {
 			return nil, nil, fmt.Errorf("profile: %q: only IR commands can be added (a code, a descriptor, or raw IR data); other data is for keeping existing ones", c.Name)
 		}
 		id, err := hub.NextCommandID(used)
@@ -325,12 +325,21 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		}
 		nc.Device, nc.ID, nc.Type, nc.Label = st.Device, id, record.ClassIR, c.Name
 		switch {
+		case c.HTTP != nil && c.HTTP.Newer():
+			if st.Variant != wire.X2 {
+				return nil, nil, fmt.Errorf("profile: %q: https, and requests to names, are the X2's only", c.Name)
+			}
+			nc.Type = record.ClassWeb
 		case c.HTTP != nil:
 			nc.Type = record.ClassIP
 		case d.Bluetooth != nil && record.IsHIDUsage(signals[i]):
 			nc.Type = record.ClassBluetooth
 		case c.Hue != nil:
 			nc.Type = record.ClassHue
+		case d.Roku != nil:
+			nc.Type = record.ClassRoku
+		case d.Sonos != nil:
+			nc.Type = record.ClassSonos
 		}
 		used = append(used, nc)
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})

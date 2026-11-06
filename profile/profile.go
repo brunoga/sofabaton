@@ -62,6 +62,10 @@ type Device struct {
 	// Hue makes the device a Philips Hue bridge, whose commands (Hue)
 	// are requests to the bridge's API.
 	Hue *Hue `yaml:"hue,omitempty"`
+	// Roku and Sonos make the device a Roku or a Sonos speaker, whose
+	// commands (Roku, Sonos) are requests to it.
+	Roku  *Roku  `yaml:"roku,omitempty"`
+	Sonos *Sonos `yaml:"sonos,omitempty"`
 	// Commands are in the order the remote lists them on the device's
 	// page.
 	Commands []Command `yaml:"commands"`
@@ -126,8 +130,8 @@ type IR struct {
 	Subdevice *uint8 `yaml:"subdevice,omitempty"`
 }
 
-// Command is one command. Exactly one of Code, Descriptor, Data, HTTP and
-// Hue gives its signal.
+// Command is one command. Exactly one of Code, Descriptor, Data, HTTP,
+// Hue, Roku and Sonos gives its signal.
 type Command struct {
 	Name string `yaml:"name"`
 	// Code is the key value (NEC) or function (DenonK) in the device's IR
@@ -144,8 +148,12 @@ type Command struct {
 	// HTTP is a network command's request.
 	HTTP *HTTP `yaml:"http,omitempty"`
 	// Hue is a Hue bridge's command (see Device.Hue).
-	Hue     *HueCommand `yaml:"hue,omitempty"`
-	Comment string      `yaml:"comment,omitempty"`
+	Hue *HueCommand `yaml:"hue,omitempty"`
+	// Roku is a Roku's command, its ECP path (see Device.Roku).
+	Roku string `yaml:"roku,omitempty"`
+	// Sonos is a Sonos speaker's command (see Device.Sonos).
+	Sonos   *SonosCommand `yaml:"sonos,omitempty"`
+	Comment string        `yaml:"comment,omitempty"`
 }
 
 // Signal returns the command's signal data as the hub stores it.
@@ -173,17 +181,29 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 	case c.Descriptor != "":
 		return record.Descriptor(c.Descriptor)
 	case c.HTTP != nil:
-		r, err := c.HTTP.Request()
+		b, err := c.HTTP.data()
 		if err != nil {
 			return nil, fmt.Errorf("%w (%q)", err, c.Name)
 		}
-		return r.Data()
+		return b, nil
 	case c.Hue != nil:
 		r, err := c.Hue.request(d.Hue)
 		if err != nil {
 			return nil, fmt.Errorf("%w (%q)", err, c.Name)
 		}
 		return r.Data()
+	case c.Roku != "":
+		b, err := record.RokuRequest{Path: strings.TrimPrefix(c.Roku, "/")}.Data()
+		if err != nil {
+			return nil, fmt.Errorf("profile: %w (%q)", err, c.Name)
+		}
+		return b, nil
+	case c.Sonos != nil:
+		b, err := c.Sonos.request().Data()
+		if err != nil {
+			return nil, fmt.Errorf("profile: %w (%q)", err, c.Name)
+		}
+		return b, nil
 	case c.Data != "":
 		b, err := hex.DecodeString(strings.Join(strings.Fields(c.Data), ""))
 		if err != nil {
@@ -191,7 +211,7 @@ func (c Command) Signal(d *Device) ([]byte, error) {
 		}
 		return b, nil
 	}
-	return nil, fmt.Errorf("profile: %q has no code, descriptor, data, http or hue", c.Name)
+	return nil, fmt.Errorf("profile: %q has no code, descriptor, data, http, hue, roku or sonos", c.Name)
 }
 
 // Validate checks that every command has a name, unique regardless of
@@ -217,13 +237,13 @@ func (d *Device) Validate() error {
 		}
 		seen[key] = true
 		n := 0
-		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil, c.Hue != nil} {
+		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil, c.Hue != nil, c.Roku != "", c.Sonos != nil} {
 			if set {
 				n++
 			}
 		}
 		if n != 1 {
-			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data, http and hue", c.Name))
+			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data, http, hue, roku and sonos", c.Name))
 			continue
 		}
 		sig, err := c.Signal(d)
@@ -240,6 +260,7 @@ func (d *Device) Validate() error {
 			errs = append(errs, fmt.Errorf("profile: %q: a Bluetooth device's commands are HID usages (data of three bytes, such as 0c00b0) or IR", c.Name))
 		}
 	}
+	errs = append(errs, d.validateWiFi()...)
 	errs = append(errs, d.validateButtons()...)
 	errs = append(errs, d.validateMacros()...)
 	if p := d.Power; p != nil {
@@ -351,8 +372,13 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			d.Bluetooth.Profile = hex.EncodeToString(dev.CodeID[:])
 		}
 	}
-	if dev.Class == record.ClassHue {
+	switch dev.Class {
+	case record.ClassHue:
 		d.Hue = hueFromHub(dev, st)
+	case record.ClassRoku:
+		d.Roku = &Roku{Address: address(dev)}
+	case record.ClassSonos:
+		d.Sonos = &Sonos{Address: address(dev)}
 	}
 	byID := map[byte]*record.Command{}
 	for _, c := range st.Commands {
@@ -371,8 +397,14 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		}
 		if r, err := record.ParseHTTPRequest(raw); c.Type == record.ClassIP && err == nil {
 			pc.HTTP = httpOf(r)
+		} else if r, err := record.ParseWebRequest(raw); c.Type == record.ClassWeb && err == nil {
+			pc.HTTP = webOf(r)
 		} else if isHue {
 			pc.Hue = hue
+		} else if r, err := record.ParseRokuRequest(raw); d.Roku != nil && err == nil {
+			pc.Roku = r.Path
+		} else if r, err := record.ParseSonosRequest(raw); d.Sonos != nil && err == nil {
+			pc.Sonos = sonosCommandOf(r)
 		} else if desc, err := record.ParseDescriptor(raw); err == nil {
 			if trailing := raw[len(raw)-4:]; !bytes.Equal(trailing, make([]byte, 4)) || len(raw) != 8+len(desc)+4 {
 				pc.Data = hex.EncodeToString(raw) // keep anything unusual exactly

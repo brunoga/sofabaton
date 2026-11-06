@@ -91,26 +91,29 @@ func hueFromHub(dev *record.Entity, st *State) *Hue {
 // hueType is the app's category for Wi-Fi devices, a Hue bridge's.
 const hueType = 16
 
-// createHue makes a Hue bridge device as the app did on our X2
-// (2026-11-06): the record, with the bridge's address and, as the app
-// writes it, the address's last byte as its channel; the commands; the
-// keys; idle behavior 4; an empty inputs page; and the update that
-// commits it. The app sends no sync.
-func createHue(ctx context.Context, c *hub.Client, d *Device, done func(string)) (byte, error) {
+// createAddressed makes a Hue bridge, Roku or Sonos device (see
+// Device.addressed) as the app made a Hue bridge on our X2 (2026-11-06),
+// and makes the others, its code shows: the record, of the device's class,
+// with its address and, as the app writes it, the address's last byte as
+// its channel; the commands (and power macros); the keys; idle behavior
+// 4; an empty inputs page; and the update that commits it. The app sends
+// no sync.
+func createAddressed(ctx context.Context, c *hub.Client, d *Device, done func(string)) (byte, error) {
+	class, addr, _ := d.addressed()
 	if c.Variant() != wire.X2 {
-		return 0, errors.New("profile: Hue bridges are made on the X2 only")
+		return 0, fmt.Errorf("profile: %v devices are made on the X2 only", class)
 	}
 	report := func(s string) {
 		if done != nil {
 			done(s)
 		}
 	}
-	bridge, _ := netip.ParseAddr(d.Hue.Bridge) // validated
+	bridge, _ := netip.ParseAddr(addr) // validated
 	e, err := record.NewEntity(c.Variant())
 	if err != nil {
 		return 0, err
 	}
-	e.Name, e.Brand, e.Class, e.Type, e.Icon = d.Name, d.Brand, record.ClassHue, hueType, defaultIcon
+	e.Name, e.Brand, e.Class, e.Type, e.Icon = d.Name, d.Brand, class, hueType, defaultIcon
 	e.Channel = bridge.As4()[3]
 	if d.Icon != 0 {
 		e.Icon = byte(d.Icon)
@@ -135,6 +138,13 @@ func createHue(ctx context.Context, c *hub.Client, d *Device, done func(string))
 	committed.ID = id
 	committed.Tail = append([]byte(nil), e.Tail...)
 	tail.Marker = 1
+	idle := byte(4)
+	if d.Power != nil {
+		// As an IR device's (a Roku has power commands; the app's Hue
+		// bridges have none).
+		tail.PowerMode, tail.PowerStyle = powerMode, powerStyle
+		idle = record.IdleDefault
+	}
 	if err := committed.SetDeviceTail(tail); err != nil {
 		return id, err
 	}
@@ -162,7 +172,7 @@ func createHue(ctx context.Context, c *hub.Client, d *Device, done func(string))
 	if err := apply(keys); err != nil {
 		return id, err
 	}
-	if err := c.SetIdleBehavior(ctx, id, 4); err != nil {
+	if err := c.SetIdleBehavior(ctx, id, idle); err != nil {
 		return id, err
 	}
 	in, err := record.NewInputs(c.Variant(), id, 0)

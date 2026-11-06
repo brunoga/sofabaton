@@ -34,7 +34,12 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 - Bluetooth devices: created as the app creates them, from catalog
   profiles, and paired; one of ours paired with a phone and its keys
   worked (2026-11-06).
-- Philips Hue bridges' rooms and lights as devices (`sbx hue`).
+- Philips Hue bridges' rooms and lights as devices (`sbx hue`); Rokus
+  and Sonos speakers (`sbx roku`, `sbx sonos`), as the app makes them;
+  Govee and LIFX lights through their clouds (`sbx govee`, `sbx lifx`),
+  as https commands the X2 sends itself. Roku's, Sonos's and https
+  requests were checked on our X2 against listeners, not yet against the
+  real devices.
 - Firmware: the hub's found and sent as the app does (`sbx firmware`), and
   the remote's over Bluetooth (`sbx firmware -remote`, Linux; checked from
   Armrest on Android, 2026-11-06).
@@ -49,9 +54,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 ## Later
 
 - What the device category changes (PLAN L5, R5).
-- RF devices (PLAN L2, R2) and the other network devices (Roku, Sonos,
-  MQTT; PLAN P9). Generic HTTP devices are made since 2026-11-04, Hue
-  bridges since 2026-11-06.
+- RF devices (PLAN L2, R2) and MQTT devices (PLAN P9).
 - A web UI over the library (PLAN P10).
 
 ## Unknown or untested

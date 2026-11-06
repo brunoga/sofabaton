@@ -531,19 +531,21 @@ func (s *syncer) device(d *Device, again bool) error {
 }
 
 func (s *syncer) createDevice(d *Device) error {
-	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) && (d.class != record.ClassBluetooth || d.Bluetooth == nil) && (d.class != record.ClassHue || d.Hue == nil) {
-		s.say("device %q: skipped: only IR, Bluetooth, Hue and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
+	class, _, addressed := d.addressed()
+	if d.class != 0 && d.class != record.ClassIR && (d.class != record.ClassIP || !d.network()) && (d.class != record.ClassBluetooth || d.Bluetooth == nil) && (!addressed || d.class != class) {
+		s.say("device %q: skipped: only IR, Bluetooth, Hue, Roku, Sonos and devices of HTTP commands can be created (it is class %v)", d.Name, d.class)
 		s.skipped[strings.ToLower(d.Name)] = true
 		return nil
 	}
-	// Learned (raw) IR data is created like codes, and a Bluetooth
-	// device's HID usages; other data cannot be.
+	// Learned (raw) IR data is created like codes, a Bluetooth device's
+	// HID usages, and a Hue's, Roku's or Sonos's data as the hub held it;
+	// other data cannot be.
 	var data []string
 	for _, c := range d.Commands {
 		if c.Data == "" {
 			continue
 		}
-		if sig, err := c.Signal(d); err != nil || !record.IsIR(sig) && (d.Bluetooth == nil || !record.IsHIDUsage(sig)) {
+		if sig, err := c.Signal(d); err != nil || !record.IsIR(sig) && (d.Bluetooth == nil || !record.IsHIDUsage(sig)) && !addressed {
 			data = append(data, c.Name)
 		}
 	}
