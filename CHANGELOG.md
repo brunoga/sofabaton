@@ -7,6 +7,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- When a new Bluetooth device does not pair, sbx says to create it again
+  (the hub dropped it) instead of to `sbx pair` it, and to restart the hub
+  if the device reports a wrong PIN: on our X2 that cleared what failed
+  attempts left. A device we created paired and worked (2026-11-06).
 - Applying an activity reads the commands and inputs of the devices it
   refers to only, not of every device, and once instead of twice when
   creating it; a device left as in `ApplyOptions.Base` whose activities

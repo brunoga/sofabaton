@@ -147,7 +147,9 @@ func TestCreateBluetooth(t *testing.T) {
 		switch f.Family {
 		case wire.FamWriteCommand:
 			// The app sends id 0 and the catalog's function id as the
-			// code, and the hub numbers the commands; we number them.
+			// code, all in one burst, and the hub numbers the commands;
+			// we number them and write each as a burst of one, which
+			// paired and worked on our X2 as well (2026-11-06).
 			_, got, gdata, err1 := record.ParseCommandWrite(wire.X2, f.Payload[3:])
 			_, want, wdata, err2 := record.ParseCommandWrite(wire.X2, a.Payload[3:])
 			if err1 != nil || err2 != nil || got.Label != want.Label || got.Type != want.Type || got.Device != want.Device || !bytes.Equal(gdata, wdata) {
