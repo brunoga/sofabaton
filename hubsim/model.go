@@ -33,6 +33,9 @@ type Model struct {
 	OrderSyncs int
 	// Paired records the Bluetooth devices paired (family 0x4C).
 	Paired []byte
+	// Remotes are the RemoteStatus payloads the hub answers ReqRemoteList
+	// with, one frame each.
+	Remotes [][]byte
 	// Firmware is the last firmware image the hub took whole (families
 	// 0x29 and 0x2A), its size and MD5 as the start gave them.
 	Firmware []byte
@@ -428,6 +431,13 @@ func FromModel(m *Model) *Hub {
 		delete(m.unpaired, req.Payload[0])
 		// The device pairs at once.
 		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
+	h.Handle(wire.FamReqRemoteList, func(wire.Frame) []wire.Frame {
+		var out []wire.Frame
+		for _, r := range m.Remotes {
+			out = append(out, wire.Frame{Family: wire.FamRemoteStatus, Payload: r})
+		}
+		return out
 	})
 	var fwSize int
 	var fwSum, fwImage []byte

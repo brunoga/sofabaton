@@ -72,3 +72,18 @@ func FuzzParseHubInfo(f *testing.F) {
 		}
 	})
 }
+
+// Our X2's remote after its update to firmware 9 (2026-11-06).
+func TestRemoteInfo(t *testing.T) {
+	p, _ := hex.DecodeString("010100000800042025061009000100faba25000f4e52656d6f7465203100000000000000000000000000000000000000000000")
+	r, err := ParseRemoteInfo(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Count != 1 || r.Index != 1 || r.Hardware != 4 || r.Firmware != 9 || r.Addr.String() != "fa:ba:25:00:0f:4e" || r.Name != "Remote 1" || r.BatchDate() != "2025-06-10" {
+		t.Fatalf("%+v", r)
+	}
+	if _, err := ParseRemoteInfo(p[:20]); err == nil {
+		t.Error("short status taken")
+	}
+}

@@ -41,11 +41,17 @@ func firmwareCmd(ctx context.Context, args []string, stdin io.Reader, stdout, st
 	key := fs.String("key", os.Getenv(keyEnv), "the key of Sofabaton's server (default $"+keyEnv+")")
 	update := fs.Bool("update", false, "install the newer firmware, if there is one")
 	yes := fs.Bool("y", false, "install without asking")
+	remote := fs.Bool("remote", false, "the remote's firmware, not the hub's: updated over this computer's Bluetooth (Linux)")
+	name := fs.String("name", "", "with -remote, the remote's name or Bluetooth address (default: the only one)")
+	reinstall := fs.Bool("reinstall", false, "with -remote, send the remote the firmware it has again")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *key == "" {
 		return errors.New("-key (or $" + keyEnv + ") is required: the key of Sofabaton's server")
+	}
+	if *remote {
+		return remoteFirmware(ctx, &h, *key, *name, *update, *reinstall, *yes, stdin, stdout, stderr)
 	}
 	c, err := h.connect(ctx, stderr)
 	if err != nil {

@@ -2,7 +2,8 @@ package hub_test
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec // G501: the hub checks firmware images by MD5
+	"encoding/hex"
 	"testing"
 
 	"github.com/brunoga/sofabaton/hub"
@@ -40,5 +41,20 @@ func TestUpdateFirmware(t *testing.T) {
 	chunks, _ := record.FirmwareChunks(image)
 	if len(chunks[0]) != 9+236 || string(chunks[216][:9]) != "\x00\x00\x01\x00\x00\x00\x01\x00\xd9" || len(chunks[216]) != 9+68 {
 		t.Errorf("chunks % x … % x", chunks[0][:9], chunks[216][:9])
+	}
+}
+
+func TestRemotes(t *testing.T) {
+	ctx := context.Background()
+	status, _ := hex.DecodeString("010100000800042025061009000100faba25000f4e52656d6f7465203100000000000000000000000000000000000000000000")
+	m := &hubsim.Model{Info: &record.HubInfo{Model: 0x03, Firmware: 9, Name: "X2 HUB"}, Remotes: [][]byte{status}}
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	rs, err := c.Remotes(ctx)
+	if err != nil || len(rs) != 1 || rs[0].Firmware != 9 || rs[0].Name != "Remote 1" {
+		t.Fatalf("%+v %v", rs, err)
 	}
 }

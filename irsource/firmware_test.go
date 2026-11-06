@@ -27,3 +27,16 @@ func TestHubFirmware(t *testing.T) {
 		}
 	}
 }
+
+func TestRemoteFirmware(t *testing.T) {
+	serveSofabaton(t)
+	ctx := context.Background()
+	db := SofabatonDB{Key: testKey}
+	f, err := db.RemoteFirmware(ctx, &record.RemoteInfo{Firmware: 8})
+	if err != nil || f == nil || f.Version != 9 || len(f.URLs) != 6 || f.Notes != "Remote 9" {
+		t.Fatalf("%+v %v", f, err)
+	}
+	if f, err := db.RemoteFirmware(ctx, &record.RemoteInfo{Firmware: 9}); err != nil || f != nil {
+		t.Errorf("from 9: %+v %v", f, err)
+	}
+}

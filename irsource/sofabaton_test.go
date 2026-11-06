@@ -62,6 +62,21 @@ func serveSofabaton(t *testing.T) {
 			answer(w, map[string]any{"code": 0, "msg": "ok", "data": map[string]any{
 				"cont": "X2-Hub Firmware Update", "is_force": 0, "product_name": "x2", "software_code": "9",
 				"url": "https://sofabaton.s3.us-west-2.amazonaws.com/firmware_patches/HUB.bin"}})
+		case "getFirmwares":
+			if req["product_name"] != "remote2_release" {
+				answer(w, map[string]any{"code": 1, "msg": "error"})
+				return
+			}
+			files := func(dir string) string {
+				var us []string
+				for _, f := range []string{"ctrl_packet.bin", "outres.bin", "outcom_app.bin", "outcom_lcpu.bin", "outcom_lcpu_patch.bin", "outfont.bin"} {
+					us = append(us, "https://sofabaton.s3.us-west-2.amazonaws.com/uploadFiles/bins/"+dir+"/"+f)
+				}
+				return strings.Join(us, "&&")
+			}
+			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
+				{"cont": "Remote 9", "product_name": "remote2_release", "software_code": "9", "url": files("9")},
+				{"cont": "Remote 8", "product_name": "remote2_release", "software_code": "8", "url": files("8")}}})
 		case "getBt":
 			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
 				{"mode": "1", "broadcast": "", "modelName": "", "brandName": "Android TV", "codeId": "5e0122b8"},
