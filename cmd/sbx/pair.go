@@ -59,7 +59,7 @@ func pair(ctx context.Context, c *hub.Client, id byte, name string, created bool
 	if err := c.Pair(ctx, id); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			if created {
-				return fmt.Errorf("%q did not pair, and the hub keeps a new Bluetooth device only once paired: run apply -create again; %s", name, pairHint)
+				return fmt.Errorf("%q did not pair, and the hub keeps a new Bluetooth device only once paired: run the command again; %s", name, pairHint)
 			}
 			return fmt.Errorf("%q did not pair; try again with sbx pair -device %d; %s", name, id, pairHint)
 		}

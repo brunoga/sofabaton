@@ -35,6 +35,12 @@ func simulated(t *testing.T) {
 		Keymaps:    map[byte][]record.Binding{0x65: {{Entity: 0x65, Button: record.ButtonOK, Short: record.Press{Device: 1, Command: 1}}}},
 		Members:    map[byte][]byte{0x65: {1}},
 	}
+	simulate(t, m)
+}
+
+// simulate has sbx connect to a simulated hub of m.
+func simulate(t *testing.T, m *hubsim.Model) {
+	t.Helper()
 	prev := dialHub
 	dialHub = func(ctx context.Context, _ netip.Addr, opts hub.Options) (*hub.Client, error) {
 		return hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), opts)
@@ -590,5 +596,51 @@ buttons:
 	}
 	if err := sbx("", "pair", "-device", "TV"); err == nil {
 		t.Error("paired an IR device")
+	}
+}
+
+// restore creates a Bluetooth device the hub lacks and has it pair, unless
+// told not to.
+func TestRestoreBluetooth(t *testing.T) {
+	empty := func() *hubsim.Model {
+		return &hubsim.Model{Info: &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 8, Name: "X2 HUB"}}
+	}
+	simulate(t, empty())
+	dir := t.TempDir()
+	if err := os.WriteFile(dir+"/bt.yaml", []byte(`device: ZZ Box
+bluetooth: {profile: d272ab7af5404b549eb260d367112165}
+commands:
+  - {name: Play, data: 0c00b0}
+`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out, errs bytes.Buffer
+	sbx := func(stdin string, args ...string) error {
+		out.Reset()
+		return run(context.Background(), strings.NewReader(stdin), append(args[:1:1], append([]string{"-hub", "192.0.2.1"}, args[1:]...)...), &out, &errs)
+	}
+	if err := sbx("y\n", "apply", "-f", dir+"/bt.yaml", "-create"); err != nil {
+		t.Fatalf("create: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "dump"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(dir+"/dump.json", out.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	dst := empty() // a hub without it
+	simulate(t, dst)
+	if err := sbx("", "restore", "-f", dir+"/dump.json", "-no-pair", "-n"); err != nil || !strings.Contains(out.String(), `"ZZ Box": skipped`) {
+		t.Fatalf("-no-pair: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "restore", "-f", dir+"/dump.json", "-n"); err != nil || !strings.Contains(out.String(), `"ZZ Box": create`) {
+		t.Fatalf("plan: %v\n%s", err, out.String())
+	}
+	if err := sbx("", "restore", "-f", dir+"/dump.json", "-y"); err != nil || !strings.Contains(out.String(), `paired "ZZ Box"`) {
+		t.Fatalf("restore: %v\n%s", err, out.String())
+	}
+	if len(dst.Devices) != 1 || dst.Devices[0].Name != "ZZ Box" || len(dst.Paired) != 1 {
+		t.Fatalf("devices %v, paired %v", dst.Devices, dst.Paired)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/brunoga/sofabaton/dump"
+	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/profile"
 )
 
@@ -22,6 +23,7 @@ func restore(ctx context.Context, args []string, stdin io.Reader, stdout, stderr
 	prune := fs.Bool("prune", false, "also remove what the dump's devices and activities lack (commands, macros, keys, favorites)")
 	dry := fs.Bool("n", false, "show the plan only")
 	yes := fs.Bool("y", false, "restore without asking")
+	noPair := fs.Bool("no-pair", false, "skip the Bluetooth devices the hub lacks, rather than create them and wait for each to pair")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -52,7 +54,14 @@ func restore(ctx context.Context, args []string, stdin io.Reader, stdout, stderr
 	}
 	say := func(s string) { fmt.Fprintln(stdout, s) }
 	fmt.Fprintf(stdout, "restoring %q (%s, dumped by %s)\n", d.Info.Name, d.Info.Model, d.Tool)
-	if err := profile.Restore(ctx, src, c, *prune, true, say); err != nil {
+	var pairing func(context.Context, *hub.Client, byte, string) error
+	if !*noPair {
+		// The hub keeps a new Bluetooth device only once it has paired.
+		pairing = func(ctx context.Context, c *hub.Client, id byte, name string) error {
+			return pair(ctx, c, id, name, true, stdout)
+		}
+	}
+	if err := profile.Restore(ctx, src, c, profile.ApplyOptions{Prune: *prune, DryRun: true, Report: say, Pair: pairing}); err != nil {
 		return err
 	}
 	if *dry {
@@ -61,5 +70,5 @@ func restore(ctx context.Context, args []string, stdin io.Reader, stdout, stderr
 	if !*yes && !confirm(stdin, stdout, "restore?") {
 		return errors.New("not restored")
 	}
-	return profile.Restore(ctx, src, c, *prune, false, func(s string) { say("done: " + s) })
+	return profile.Restore(ctx, src, c, profile.ApplyOptions{Prune: *prune, Report: func(s string) { say("done: " + s) }, Pair: pairing})
 }
