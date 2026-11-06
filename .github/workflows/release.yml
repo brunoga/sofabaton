@@ -24,6 +24,17 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      # The catalog's key, from the repository's secrets, scrambled for
+      # building into sbx (tools/scramblekey); masked, as the scrambling
+      # is no secret.
+      - name: Scramble the catalog key
+        env:
+          SOFABATON_KEY: ${{ secrets.SOFABATON_KEY }}
+        run: |
+          k=$(go run ./tools/scramblekey)
+          if [ -n "$k" ]; then echo "::add-mask::$k"; fi
+          echo "SBX_BUILTIN_KEY=$k" >> "$GITHUB_ENV"
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:

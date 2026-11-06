@@ -78,9 +78,14 @@ jobs:
           GOARCH:      ${{ matrix.goarch }}
           GOARM:       ${{ matrix.goarm }}
           CGO_ENABLED: "0"
+          SOFABATON_KEY: ${{ secrets.SOFABATON_KEY }}
         run: |
           VERSION=$(git describe --tags --dirty --always 2>/dev/null || echo "dev")
-          go build -ldflags "-s -w -X main.version=${VERSION}" ./cmd/sbx
+          # The catalog's key, scrambled (tools/scramblekey), as releases
+          # have it; none on pull requests from forks.
+          KEY=$(GOOS= GOARCH= GOARM= go run ./tools/scramblekey)
+          if [ -n "$KEY" ]; then echo "::add-mask::$KEY"; fi
+          go build -ldflags "-s -w -X main.version=${VERSION} -X main.builtinKey=${KEY}" ./cmd/sbx
           go vet ./...
 
       - name: Verify go.mod is tidy
