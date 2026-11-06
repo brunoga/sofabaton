@@ -44,7 +44,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `hub.Client.Remotes` reads the remotes the hub knows (firmware and
   Bluetooth address), `irsource` lists and downloads the remote's
   firmware, and `sbx firmware -remote` updates it over BlueZ on Linux.
-  Not yet sent to a remote.
+  Armrest, on Android, sent our remote its firmware this way
+  (2026-11-06).
 - Hub firmware updates: `hub.Client.UpdateFirmware` sends an image as the
   app does (its size and MD5, then numbered chunks, each acknowledged);
   `irsource.SofabatonDB.HubFirmware` asks Sofabaton's server for a newer

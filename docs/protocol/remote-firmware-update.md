@@ -2,8 +2,10 @@
 
 The X2 remote is updated over Bluetooth Low Energy from the phone, not through
 the hub, with SiFli Semiconductor's "OTA V3" protocol. Implemented by
-`sifli.Update`; `sbx firmware -remote` runs it over BlueZ. Not yet sent to a
-remote by us.
+`sifli.Update`; `sbx firmware -remote` runs it over BlueZ, and Armrest over
+Android's Bluetooth. Checked on our X2's remote (2026-11-06): Armrest on a
+Pixel (Android API 37) sent it firmware 9 again, and the hub reported it back
+on 9 (`sbx`'s BlueZ path is not yet run against it).
 
 Confidence tags: **[seen]** in the HCI snoop log (2026-11-06, firmware 8 to 9, LE handle 69);
 **[code]** from the Android app's dex or SiFli's public sources; **[guess]** is inference.
