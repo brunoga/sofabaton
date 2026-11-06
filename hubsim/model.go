@@ -1,6 +1,8 @@
 package hubsim
 
 import (
+	"crypto/md5" //nolint:gosec // G501: the hub checks firmware images by MD5
+	"encoding/binary"
 	"slices"
 
 	"github.com/brunoga/sofabaton/record"
@@ -31,6 +33,9 @@ type Model struct {
 	OrderSyncs int
 	// Paired records the Bluetooth devices paired (family 0x4C).
 	Paired []byte
+	// Firmware is the last firmware image the hub took whole (families
+	// 0x29 and 0x2A), its size and MD5 as the start gave them.
+	Firmware []byte
 
 	// unpaired is the Bluetooth devices created and not paired yet,
 	// which the hub does not list.
@@ -423,6 +428,32 @@ func FromModel(m *Model) *Hub {
 		delete(m.unpaired, req.Payload[0])
 		// The device pairs at once.
 		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
+	var fwSize int
+	var fwSum, fwImage []byte
+	fwAck := func(n int) []wire.Frame {
+		return []wire.Frame{{Family: wire.FamFirmwareAck, Payload: binary.BigEndian.AppendUint16([]byte{0, 0, 1, 0, 0, 0}, uint16(n))}}
+	}
+	h.Handle(wire.FamFirmwareStart, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) != 26 {
+			return []wire.Frame{Status(Rejected)}
+		}
+		fwSize, fwSum, fwImage = int(binary.BigEndian.Uint32(req.Payload[6:])), req.Payload[10:], nil
+		return fwAck(0)
+	})
+	h.Handle(wire.FamFirmwareChunk, func(req wire.Frame) []wire.Frame {
+		if fwSum == nil || len(req.Payload) < 10 || int(binary.BigEndian.Uint16(req.Payload[7:])) != len(fwImage)/record.FirmwareChunkLen+1 {
+			return []wire.Frame{Status(Rejected)}
+		}
+		fwImage = append(fwImage, req.Payload[9:]...)
+		if len(fwImage) < fwSize {
+			return fwAck(int(binary.BigEndian.Uint16(req.Payload[7:])))
+		}
+		if sum := md5.Sum(fwImage); len(fwImage) != fwSize || string(sum[:]) != string(fwSum) { //nolint:gosec // G401: the hub's check, not a security one
+			return []wire.Frame{Status(Rejected)}
+		}
+		m.Firmware, fwSum = fwImage, nil
+		return []wire.Frame{{Family: wire.FamFirmwareDone, Payload: []byte{0, 0, 1, 0, 0, 0}}}
 	})
 	h.Handle(wire.FamRemoteSync, func(wire.Frame) []wire.Frame {
 		m.OrderSyncs++

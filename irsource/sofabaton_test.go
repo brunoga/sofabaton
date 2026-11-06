@@ -52,6 +52,16 @@ func serveSofabaton(t *testing.T) {
 			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
 				{"ecode_id": "c1", "name": "55X1", "typename": "TV", "regular": "(?i)^55x.*"},
 				{"ecode_id": "c2", "name": "Box", "typename": "Stream Box", "regular": ""}}})
+		case "checkFirmwareUpgrade":
+			// As our X2's answers: an update to 9 from 8 for hardware 3,
+			// none from 9.
+			if req["product_name"] != "x2" || req["hardware_code"] != 3.0 || req["production_time"] != "20221120" || req["software_code"] != 8.0 {
+				answer(w, map[string]any{"code": 1, "msg": "error"})
+				return
+			}
+			answer(w, map[string]any{"code": 0, "msg": "ok", "data": map[string]any{
+				"cont": "X2-Hub Firmware Update", "is_force": 0, "product_name": "x2", "software_code": "9",
+				"url": "https://sofabaton.s3.us-west-2.amazonaws.com/firmware_patches/HUB.bin"}})
 		case "getBt":
 			answer(w, map[string]any{"code": 0, "msg": "ok", "data": []map[string]any{
 				{"mode": "1", "broadcast": "", "modelName": "", "brandName": "Android TV", "codeId": "5e0122b8"},

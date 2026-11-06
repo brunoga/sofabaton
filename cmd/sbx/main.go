@@ -13,6 +13,7 @@
 //	sbx import-ir ...     make a device's profile from a file of IR codes
 //	sbx export-ir ...     write a device profile's IR codes for other tools
 //	sbx hue ...           make a Philips Hue bridge's profile from the bridge
+//	sbx firmware ...      check for a hub firmware update, and install it
 //	sbx apply ...         make a device match a profile, or create it
 //	sbx remove-device ... delete a device
 //	sbx remove-activity . delete an activity
@@ -114,6 +115,10 @@ commands:
              and lights (finds the bridge and asks for its link button;
              [-bridge IP] [-user KEY] [-only NAMES] [-no-lights]
              [-no-onoff] [-brightness 10,50,80] [-o file])
+  firmware   say whether Sofabaton's server has a newer firmware for the
+             hub, and install it with -update, as the app does (-key KEY
+             or $SBX_SOFABATON_KEY, the server's key; -y installs without
+             asking)
   pair       have the hub pair with a Bluetooth device again
              (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
@@ -181,6 +186,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return pairCmd(ctx, args, stdout, stderr)
 	case "hue":
 		return hueCmd(ctx, args, stdout, stderr)
+	case "firmware":
+		return firmwareCmd(ctx, args, stdin, stdout, stderr)
 	case "order":
 		return order(ctx, args, stdout, stderr)
 	case "sync":
