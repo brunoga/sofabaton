@@ -163,7 +163,7 @@ func TestRestore(t *testing.T) {
 		t.Helper()
 		dst := emptyHub(t)
 		var log []string
-		if err := profile.Restore(ctx, from, dst, false, false, func(s string) { log = append(log, s) }); err != nil {
+		if err := profile.Restore(ctx, from, dst, profile.ApplyOptions{Report: func(s string) { log = append(log, s) }}); err != nil {
 			t.Fatalf("%s: %v\n%s", name, err, strings.Join(log, "\n"))
 		}
 		got := export(t, dst)
@@ -173,7 +173,7 @@ func TestRestore(t *testing.T) {
 			}
 		}
 		log = nil
-		if err := profile.Restore(ctx, from, dst, false, true, func(s string) { log = append(log, s) }); err != nil {
+		if err := profile.Restore(ctx, from, dst, profile.ApplyOptions{DryRun: true, Report: func(s string) { log = append(log, s) }}); err != nil {
 			t.Fatal(err)
 		}
 		for _, l := range log {
