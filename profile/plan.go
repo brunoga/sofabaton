@@ -511,7 +511,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		case d.Inputs != nil:
 			want.InputMode = record.InputsNoSwitch
 		}
-		if d.Color != 0 {
+		// A compact tail holds no color: the remote draws a network device
+		// grey, and its create leaves the profile's color out too.
+		if d.Color != 0 && !t.Compact {
 			want.Color = byte(d.Color)
 		}
 		renamed := e.Name != d.Name || (d.Brand != "" && e.Brand != d.Brand)
