@@ -184,9 +184,15 @@ type DeviceActivity struct {
 // Read reads a device's state from a hub: its command list, each
 // command's data, its order, its keymap, its macros, its record, its
 // inputs and the activities with it.
+//
+// A device the hub says has no commands (hub.ErrNotFound) has none if it
+// has no keys either, as a device just created; one with keys, which run
+// commands, is the hub answering wrongly, as our X2 once did, and an
+// error, to read again.
 func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 	cmds, err := c.Commands(ctx, device)
-	if err != nil {
+	none := errors.Is(err, hub.ErrNotFound)
+	if err != nil && !none {
 		return nil, err
 	}
 	st := &State{Variant: c.Variant(), Device: device, Commands: cmds, Data: map[byte][]byte{}}
@@ -210,6 +216,9 @@ func Read(ctx context.Context, c *hub.Client, device byte) (*State, error) {
 	}
 	if st.Keymap, err = c.Keymap(ctx, device); err != nil && !errors.Is(err, hub.ErrNotFound) {
 		return nil, err
+	}
+	if none && len(st.Keymap) > 0 {
+		return nil, fmt.Errorf("profile: the hub says device %d has no commands, but its keys run some: read it again", device)
 	}
 	if st.Macros, err = c.Macros(ctx, device); err != nil && !errors.Is(err, hub.ErrNotFound) {
 		return nil, err

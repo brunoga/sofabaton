@@ -19,9 +19,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- Reading the commands of a device that has none no longer fails: the
-  hub answers it with status 0x07, which now reads as no commands (a
-  device made for learning is one).
+- Reading a device that has no commands (one made for learning, say) no
+  longer fails: the hub answers its command list with status 0x07, which
+  `profile.Read` takes as no commands when the device has no keys either.
+  With keys, which run commands, it is the hub answering wrongly, as our
+  X2 once did, and an error, to read again; `hub.Client.Commands` reports
+  it as `hub.ErrNotFound`.
 
 - When a new Bluetooth device does not pair, sbx says to create it again
   (the hub dropped it) instead of to `sbx pair` it, and to restart the hub
