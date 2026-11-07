@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/netip"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -642,5 +643,44 @@ commands:
 	}
 	if len(dst.Devices) != 1 || dst.Devices[0].Name != "ZZ Box" || len(dst.Paired) != 1 {
 		t.Fatalf("devices %v, paired %v", dst.Devices, dst.Paired)
+	}
+}
+
+func TestLearn(t *testing.T) {
+	tv, _ := record.NewEntity(wire.X2)
+	tv.ID, tv.Name, tv.Class = 1, "TV", record.ClassIR
+	_ = tv.SetDeviceTail(record.DeviceTail{InputMode: 1})
+	code, err := record.RawIR{Carrier: 38000, Timings: []uint32{9000, 4500, 560, 560, 560, 40000}}.Encode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := &hubsim.Model{
+		Info:    &record.HubInfo{Marker: 0x64, Model: 0x03, Firmware: 8, Name: "X2 HUB"},
+		Devices: []*record.Entity{tv},
+		Learned: code, LearnFailures: 1,
+	}
+	simulate(t, m)
+	var out, errs bytes.Buffer
+	if err := run(context.Background(), strings.NewReader(""), []string{"learn", "-hub", "192.0.2.1", "-device", "TV", "-name", "Mute", "-key", "Mute"}, &out, &errs); err != nil {
+		t.Fatalf("%v\n%s%s", err, out.String(), errs.String())
+	}
+	if !strings.Contains(out.String(), "could not read that") || !strings.Contains(out.String(), "learned: 6 timings at 38000 Hz") {
+		t.Errorf("output:\n%s", out.String())
+	}
+	cmds := m.Commands[1]
+	if len(cmds) != 1 || cmds[0].Label != "Mute" || cmds[0].Type != record.ClassIR || !bytes.Equal(m.Data[1][cmds[0].ID], code) {
+		t.Fatalf("the hub holds %v", cmds)
+	}
+	bound := false
+	for _, b := range m.Keymaps[1] {
+		bound = bound || (b.Button == record.ButtonMute && b.Short.Command == cmds[0].ID)
+	}
+	if !bound || !slices.Contains(m.Synced, 1) {
+		t.Errorf("Mute bound %v, synced %v", bound, m.Synced)
+	}
+
+	m.Learned = nil
+	if err := run(context.Background(), strings.NewReader(""), []string{"learn", "-hub", "192.0.2.1", "-device", "TV", "-name", "Other", "-wait", "200ms"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "learned no code") {
+		t.Errorf("a window closed without a code: %v", err)
 	}
 }

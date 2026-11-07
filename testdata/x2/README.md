@@ -18,6 +18,7 @@ owner's consent.
 | `app-pair-phone.jsonl` | `sbx proxy`: the Android app adding the same Android Box profile and pairing it with a phone (2026-11-06): the same frames, the commands as one burst of 101 with id 0 and the catalog function ids as codes; a replay of them, after failed attempts, failed to pair as ours did until the hub was restarted | — |
 | `bluetooth-androidbox.yaml` | `sbx export` of AndroidBox after that create | `profile.TestCreateBluetooth` |
 | `app-clear-device-key.jsonl` | `sbx proxy`: the Android app clearing the Receiver's Up key (Customize Remote buttons, Clear assignment), then assigning it again | `capture.TestX2UnbindDeviceKey` |
+| `app-learn-ir.jsonl` | `sbx proxy`: the Android app learning the receiver's Up into ZZ Learn, an empty IR device: 28 failed attempts (the key held), then the code, written back | `hub.TestLearnedCode` |
 | `app-firmware-update.jsonl` | `sbx proxy`: the Android app updating the hub from 8 to 9; image bytes removed | `capture.TestX2FirmwareUpdate` |
 
 The configuration: devices Receiver, Blu-ray and Projector/Google TV (a

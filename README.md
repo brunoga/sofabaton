@@ -124,6 +124,7 @@ AM6B Plus media player).
 sbx send -device Receiver -command "Volume Up"     # send a command now
 sbx add-ir -device TV -label Focus -code "P:NEC R:38400 D:0 S:206 F:217"
 sbx remove-ir -device TV -label Focus
+sbx learn -device TV -name Mute -key Mute     # learn it from another remote
 sbx sync -device TV                                # refresh the remote's copy
 ```
 

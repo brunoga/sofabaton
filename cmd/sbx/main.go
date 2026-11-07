@@ -8,6 +8,7 @@
 //	sbx proxy             stand between the app and the hub, recording
 //	sbx add-ir ...        add an IR command to a device
 //	sbx remove-ir ...     delete a command of a device
+//	sbx learn ...         learn an IR code from another remote into a device
 //	sbx send ...          send a device's command now
 //	sbx export ...        write a device's profile (YAML)
 //	sbx import-ir ...     make a device's profile from a file of IR codes
@@ -91,6 +92,9 @@ commands:
   add-ir     add an IR command to a device, from a descriptive code
              (-device ID -label NAME -code "P:NEC ..."; -n shows the write)
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
+  learn      learn an IR code from another remote, pointed at the hub,
+             as a new command of a device (-device ID -name NAME
+             [-key KEY] [-wait 1m]); press the key once, not held
   send       send a device's command now (-device ID, -command NAME or -id N)
   export     write a device's profile: commands in the remote's order,
              keys and power macros (YAML: -device ID [-o file]); or
@@ -188,6 +192,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return addIR(ctx, args, stdout, stderr)
 	case "remove-ir":
 		return removeIR(ctx, args, stdout, stderr)
+	case "learn":
+		return learnCmd(ctx, args, stdout, stderr)
 	case "send":
 		return send(ctx, args, stdout, stderr)
 	case "export":

@@ -36,6 +36,15 @@ type Model struct {
 	// Remotes are the RemoteStatus payloads the hub answers ReqRemoteList
 	// with, one frame each.
 	Remotes [][]byte
+	// Learned is the command data the hub learns when asked to (family
+	// 0x04), after LearnFailures failed attempts; nil, it learns nothing
+	// and closes the window (family 0x05).
+	Learned       []byte
+	LearnFailures int
+	// LearnArms counts the times learning was armed, LearnLeft whether
+	// it was left (family 0x05).
+	LearnArms int
+	LearnLeft bool
 	// Firmware is the last firmware image the hub took whole (families
 	// 0x29 and 0x2A), its size and MD5 as the start gave them.
 	Firmware []byte
@@ -431,6 +440,38 @@ func FromModel(m *Model) *Hub {
 		delete(m.unpaired, req.Payload[0])
 		// The device pairs at once.
 		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
+	h.Handle(wire.FamLearnExit, func(wire.Frame) []wire.Frame {
+		m.LearnLeft = true
+		return nil
+	})
+	h.Handle(wire.FamLearnEnter, func(wire.Frame) []wire.Frame {
+		m.LearnArms++
+		out := []wire.Frame{Status(0)}
+		for range m.LearnFailures {
+			out = append(out, wire.Frame{Family: wire.FamLearnFailed})
+		}
+		if m.Learned == nil {
+			return append(out, wire.Frame{Family: wire.FamLearnExpired})
+		}
+		// The hub sends the code as the body of a command write of
+		// device 0, command 0, type 0 and no label.
+		v, err := wire.VariantFromModel(m.Info.Model)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		cmd, err := record.NewCommand(v)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		pages, err := cmd.WritePages(1, 1, m.Learned)
+		if err != nil {
+			return []wire.Frame{Status(Rejected)}
+		}
+		for _, p := range pages {
+			out = append(out, wire.Frame{Family: wire.FamLearnData, Payload: p})
+		}
+		return out
 	})
 	h.Handle(wire.FamReqRemoteList, func(wire.Frame) []wire.Frame {
 		var out []wire.Frame
