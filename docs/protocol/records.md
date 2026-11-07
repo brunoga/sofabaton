@@ -112,6 +112,13 @@ as the rest: the hub sent the last SetVolume it had sent, one up
 `record.SonosRequest`). The devices are made as a Hue bridge is: type 16,
 the address's last byte as the channel, the Hue tail.
 
+The hub keeps the connection open and sends the next command on it
+(HTTP/1.1 keep-alive): a server that waits for more before answering, or
+closes after one request, loses the presses that follow. Against one that
+answers at once and keeps the connection, every press arrived, each on the
+same connection, one Up and OK 0.8 s apart included (2026-11-07, from the
+remote, in an activity: power on and off, keys, a macro, a favorite).
+
 **Activity tails differ** (`fc 00 fc 01 …` on X1, `fc 00 00 …` on X1S);
 upstream reads a "needs confirm" flag from the last `fc XX fc YY` pair.
 Kept raw until decoded. `[ref]`
