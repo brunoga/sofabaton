@@ -19,6 +19,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Applying a network device's profile that names a color no longer fails:
+  its compact record holds none, so the color is left out, as its create
+  does.
 - Reading a device that has no commands (one made for learning, say) no
   longer fails: the hub answers its command list with status 0x07, which
   `profile.Read` takes as no commands when the device has no keys either.

@@ -89,6 +89,12 @@ func TestCreateNetwork(t *testing.T) {
 	if changes, _, err := profile.Plan(d, st, true); err != nil || len(changes) != 0 {
 		t.Fatalf("after the create: %v %v", changes, err)
 	}
+	// A color, which the compact tail cannot hold, changes nothing.
+	d.Color = 5
+	if changes, _, err := profile.Plan(d, st, true); err != nil || len(changes) != 0 {
+		t.Fatalf("with a color: %v %v", changes, err)
+	}
+	d.Color = 0
 	back, err := profile.FromHub(st.Entity, st)
 	if err != nil {
 		t.Fatal(err)
