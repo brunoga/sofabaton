@@ -81,16 +81,15 @@ func (c *Client) entities(ctx context.Context, req wire.Frame, fam wire.Family) 
 	return out, nil
 }
 
-// Commands reads a device's command list. A device without commands
-// has none: the hub answers it with status 0x07, as our X2 did a device
-// just created for learning (2026-11-07).
+// Commands reads a device's command list. The hub answers a device
+// without commands with status 0x07, ErrNotFound, as our X2 did a device
+// just created for learning (2026-11-07); but it once answered so for a
+// device with commands, so ErrNotFound alone does not say the device has
+// none (see profile.Read).
 func (c *Client) Commands(ctx context.Context, device byte) ([]*record.Command, error) {
 	body, err := c.single(ctx, reqCommands(device), wire.FamCommandPage)
-	if errors.Is(notFound(err), ErrNotFound) {
-		return nil, nil
-	}
 	if err != nil {
-		return nil, err
+		return nil, notFound(err)
 	}
 	return record.ParseCommandList(c.variant, body)
 }
