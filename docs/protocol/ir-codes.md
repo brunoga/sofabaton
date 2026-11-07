@@ -110,6 +110,45 @@ encodes them, `irgen` renders protocols the X2 has no descriptor for
 vendors) as timings, and `irfile` reads Flipper's raw signals and Pronto
 codes into them.
 
+## Learning `[X2✓]`
+
+The app learns a code into a device as follows (2026-11-07, through the
+proxy: `testdata/x2/app-learn-ir.jsonl`):
+
+1. App → hub `0x04`, empty payload. The hub acks with `0x03 [00]`.
+2. For each attempt it cannot read the hub sends `0x68`, empty, and keeps
+   listening. A key held down failed every time; one brief press worked.
+3. The code arrives as pages of family `0x06` whose body is a command
+   write (as family `0x0E`), of device 0, command 0, type 0 and no
+   label, its data a raw IR signal (above).
+4. The app writes those same bytes with `0x0E`, with the device, the IR
+   class and the label filled in, then sends `0x65 [device, 01]` and the
+   device's command order (`0x61`). It sent no `0x05` afterwards.
+
+From the app's code (`LearnDialog`): closing the dialog without a code
+sends `0x05`, empty, to leave learning; a `0x05` from the hub (the
+window closed) has the app arm it again with `0x04`; a learned code of
+fewer than 10 timings is refused and learning armed again. There is no
+timeout in the app. Ours, armed and left alone for 150 s, sent nothing:
+the window stayed open, and our `0x05` got no answer, the hub carrying on
+as before (2026-11-07). `[X2✓]` for what was seen, `[code]` for the rest.
+
+RF learning, from the app's code only (`RfLearnDialog`) `[code]`: `0x70
+[01, f]` starts it and `0x70 [00, f]` stops it, `f` 0 for 433 MHz and 1
+for 315 MHz; the hub answers as for IR (`0x06` pages of a command write,
+`0x68`, `0x05`), and status `0x11` to the start is an error the app ends
+learning on. The app gives the command class `0x1D` (433 MHz) or `0x1E`
+(315 MHz), the data as the hub sent it, and makes RF devices of type 17.
+Not tried yet.
+
+The receiver's Up came out as 200 timings at 38,659 Hz: the Denon code
+`D:4 S:1 F:27` twice, which its catalog profile holds as `P:DenonK …
+F:27 CHECKSUM:240`, with marks about 10% short and the header 4% short.
+`hub.Client.Learn` arms learning and returns the data; `sbx learn` adds
+it to a device. It learned the receiver's Down (F:28) on the first
+press. A device without commands answers a command-list request with
+status `0x07`.
+
 ## Why this matters
 
 Generating either form locally from open IR databases removes the dependency

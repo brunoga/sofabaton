@@ -40,16 +40,20 @@ the design and the phases behind it; [docs/](docs) has the protocol.
   as https commands the X2 sends itself. Roku's, Sonos's and https
   requests were checked on our X2 against listeners, not yet against the
   real devices.
+- IR learning: a code learned from another remote, as a new command
+  bound to a key (`sbx learn`); checked on our X2 (2026-11-07).
 - Firmware: the hub's found and sent as the app does (`sbx firmware`), and
   the remote's over Bluetooth (`sbx firmware -remote`, Linux; checked from
   Armrest on Android, 2026-11-06).
+- Activities started from the remote: one of ours, with a Roku pointed
+  at a listener, sent its power on and off, keys, macro and favorite
+  (2026-11-07).
 
 ## Next
 
-1. **Activities on the remote.** Activities are exported, applied and
-   created from profiles, with their own macros across devices, and read
-   back from the hub as written (Armrest made, edited and deleted one on
-   our X2, 2026-11-05); still to see one of ours started from the remote.
+1. **RF learning.** The X2 learns 433 and 315 MHz codes; the app's
+   frames are read from its code (docs/protocol/ir-codes.md), still to
+   be tried with an RF remote.
 
 ## Later
 

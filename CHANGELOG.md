@@ -5,7 +5,23 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- IR learning: `hub.Client.Learn` has the hub learn a code from another
+  remote, as the app does (family 0x04, then the code as a command
+  write in family 0x06, a 0x68 for each attempt it could not read), and
+  `sbx learn -device D -name N [-key K]` adds it to a device, bound to a
+  key if asked. On our X2 it learned the receiver's Down on the first
+  press, the Denon code its catalog profile has (2026-11-07).
+- `sbx` checks every part of an activity from the remote: Roku commands
+  reached a listener from its keys, macro, favorite, and power on and
+  off, on the connection the hub keeps open.
+
 ### Fixed
+
+- Reading the commands of a device that has none no longer fails: the
+  hub answers it with status 0x07, which now reads as no commands (a
+  device made for learning is one).
 
 - When a new Bluetooth device does not pair, sbx says to create it again
   (the hub dropped it) instead of to `sbx pair` it, and to restart the hub
