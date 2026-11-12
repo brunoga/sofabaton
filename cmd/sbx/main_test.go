@@ -679,6 +679,18 @@ func TestLearn(t *testing.T) {
 		t.Errorf("Mute bound %v, synced %v", bound, m.Synced)
 	}
 
+	// An RF code is written with its frequency's class.
+	m.Learned = []byte{9, 8, 7, 6}
+	if err := run(context.Background(), strings.NewReader(""), []string{"learn", "-hub", "192.0.2.1", "-device", "TV", "-name", "Fan", "-rf", "433"}, &out, &errs); err != nil {
+		t.Fatalf("%v\n%s%s", err, out.String(), errs.String())
+	}
+	if cmds := m.Commands[1]; len(cmds) != 2 || cmds[1].Label != "Fan" || cmds[1].Type != record.ClassRF433 || !slices.Equal(m.RFArms, []byte{0}) {
+		t.Fatalf("the hub holds %v, RF armed at %v", cmds, m.RFArms)
+	}
+	if err := run(context.Background(), strings.NewReader(""), []string{"learn", "-hub", "192.0.2.1", "-device", "TV", "-name", "X", "-rf", "868"}, &out, &errs); err == nil {
+		t.Error("-rf 868 taken")
+	}
+
 	m.Learned = nil
 	if err := run(context.Background(), strings.NewReader(""), []string{"learn", "-hub", "192.0.2.1", "-device", "TV", "-name", "Other", "-wait", "200ms"}, &out, &errs); err == nil || !strings.Contains(err.Error(), "learned no code") {
 		t.Errorf("a window closed without a code: %v", err)

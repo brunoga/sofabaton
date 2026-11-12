@@ -329,7 +329,7 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			}
 			continue
 		}
-		if _, _, ok := d.addressed(); c.Data != "" && !record.IsIR(signals[i]) && d.Bluetooth == nil && !ok {
+		if _, _, ok := d.addressed(); c.Data != "" && c.RF == 0 && !record.IsIR(signals[i]) && d.Bluetooth == nil && !ok {
 			return nil, nil, fmt.Errorf("profile: %q: only IR commands can be added (a code, a descriptor, or raw IR data); other data is for keeping existing ones", c.Name)
 		}
 		id, err := hub.NextCommandID(used)
@@ -357,6 +357,8 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			nc.Type = record.ClassRoku
 		case d.Sonos != nil:
 			nc.Type = record.ClassSonos
+		case c.RF != 0:
+			nc.Type, _ = hub.RFClass(c.RF) // validated
 		case d.MQTT:
 			nc.Type = record.ClassMQTT
 			signals[i] = MQTTData(st.Device, id)

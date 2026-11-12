@@ -139,7 +139,12 @@ for 315 MHz; the hub answers as for IR (`0x06` pages of a command write,
 `0x68`, `0x05`), and status `0x11` to the start is an error the app ends
 learning on. The app gives the command class `0x1D` (433 MHz) or `0x1E`
 (315 MHz), the data as the hub sent it, and makes RF devices of type 17.
-Not tried yet.
+A second reading of the app's code (2026-11-12) agrees, and adds: status
+`0x11` means the hub is busy syncing a remote or repeater; any non-empty
+code is taken (no 10-timing minimum); RF codes come only from learning
+(no catalog); `0x0F` (PlayBlob) tries one. The X2, and the X1S from
+firmware 4, learn RF. `hub.Client.LearnRF` and `sbx learn -rf 433` do it
+as the app does; not tried yet, for want of an RF remote.
 
 The receiver's Up came out as 200 timings at 38,659 Hz: the Denon code
 `D:4 S:1 F:27` twice, which its catalog profile holds as `P:DenonK …

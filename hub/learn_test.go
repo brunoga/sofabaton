@@ -142,3 +142,36 @@ func TestLearn(t *testing.T) {
 		t.Errorf("armed %d times, left %v; want 2 or more, and left", m.LearnArms, m.LearnLeft)
 	}
 }
+
+// RF learning arms at the frequency asked, takes the code as IR learning
+// does, and leaves at the same frequency.
+func TestLearnRF(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	m := model(t)
+	m.Learned = []byte{0x01, 0x02, 0x03, 0x04}
+	c, err := hub.Open(ctx, hubsim.Pipe(hubsim.FromModel(m)), hub.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	data, err := c.LearnRF(ctx, hub.RF315, nil)
+	if err != nil || !bytes.Equal(data, m.Learned) || len(m.RFArms) != 1 || m.RFArms[0] != 1 {
+		t.Fatalf("% x, %v, armed at %v", data, err, m.RFArms)
+	}
+	if _, err := c.LearnRF(ctx, 868, nil); err == nil {
+		t.Error("868 MHz taken")
+	}
+	m.Learned = nil
+	short, cancelShort := context.WithTimeout(ctx, 200*time.Millisecond)
+	defer cancelShort()
+	if _, err := c.LearnRF(short, hub.RF433, nil); !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("no code: %v", err)
+	}
+	if _, err := c.Devices(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if !m.LearnLeft || m.RFArms[len(m.RFArms)-1] != 0 {
+		t.Errorf("left %v, armed at %v", m.LearnLeft, m.RFArms)
+	}
+}

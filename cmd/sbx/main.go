@@ -94,7 +94,8 @@ commands:
   remove-ir  delete a command of a device (-device ID, -label NAME or -id N)
   learn      learn an IR code from another remote, pointed at the hub,
              as a new command of a device (-device ID -name NAME
-             [-key KEY] [-wait 1m]); press the key once, not held
+             [-key KEY] [-wait 1m]); press the key once, not held;
+             -rf 433 or -rf 315 learns an RF code instead
   send       send a device's command now (-device ID, -command NAME or -id N)
   export     write a device's profile: commands in the remote's order,
              keys and power macros (YAML: -device ID [-o file]); or
