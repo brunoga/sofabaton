@@ -33,6 +33,7 @@ capture. When we contradict upstream, say so explicitly.
 | [protocol/firmware-update.md](protocol/firmware-update.md) | The app's hub firmware update |
 | [protocol/ir-codes.md](protocol/ir-codes.md) | IR blob formats: raw timing, Pronto, X2 `P:` descriptive |
 | [protocol/matter.md](protocol/matter.md) | The X2 as a Matter device: its setup code and switches |
+| [protocol/mqtt.md](protocol/mqtt.md) | The X2 and an MQTT broker: MQTT devices, and requests to list and run |
 | [research/README.md](research/README.md) | Research tracks R1–R5 and capture log |
 
 Library docs (package overviews, examples) live in Go doc comments; this

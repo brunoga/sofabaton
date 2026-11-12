@@ -37,6 +37,9 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 	if d.network() {
 		return createNetwork(ctx, c, d, done)
 	}
+	if d.MQTT {
+		return createMQTT(ctx, c, d, done)
+	}
 	if d.Bluetooth != nil {
 		return createBluetooth(ctx, c, d, done)
 	}

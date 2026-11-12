@@ -125,6 +125,23 @@ does, which our X2 took (2026-11-04): its commands, keys and power macros
 ran the requests. `sbx export` writes such a device's commands back as
 `http`.
 
+## MQTT devices
+
+On the X2, a device with `mqtt: true` is a device of MQTT commands (the
+app's "HA remote"): each command has only a name, and running it has the
+hub publish `{"device_id":D,"key_id":K}` to its MAC's `/up` topic on its
+broker, for an automation there to act on. The hub needs a broker first
+(`sbx mqtt -broker IP:PORT -user U -password P`); see
+[mqtt.md](protocol/mqtt.md).
+
+```yaml
+device: Home Assistant
+mqtt: true
+commands:
+  - name: Movie scene
+  - name: Lights off
+```
+
 ## Bluetooth devices
 
 A device with a `bluetooth` block is a Bluetooth device: the hub pairs

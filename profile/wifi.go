@@ -96,7 +96,7 @@ func (d *Device) addressed() (record.Class, string, bool) {
 // kinds is how many of the kinds a device can be (IR aside) it is.
 func (d *Device) kinds() int {
 	n := 0
-	for _, set := range []bool{d.Bluetooth != nil, d.Hue != nil, d.Roku != nil, d.Sonos != nil, d.network()} {
+	for _, set := range []bool{d.Bluetooth != nil, d.Hue != nil, d.Roku != nil, d.Sonos != nil, d.network(), d.MQTT} {
 		if set {
 			n++
 		}
@@ -109,7 +109,7 @@ func (d *Device) kinds() int {
 func (d *Device) validateWiFi() []error {
 	var errs []error
 	if d.kinds() > 1 {
-		errs = append(errs, errors.New("profile: a device is one of Bluetooth, Hue, Roku, Sonos or HTTP"))
+		errs = append(errs, errors.New("profile: a device is one of Bluetooth, Hue, Roku, Sonos, HTTP or MQTT"))
 	}
 	if d.Roku != nil {
 		if err := d.Roku.check(); err != nil {
@@ -129,8 +129,8 @@ func (d *Device) validateWiFi() []error {
 			errs = append(errs, fmt.Errorf("profile: %q: a Sonos's commands are sonos requests, and only its", c.Name))
 		}
 	}
-	if (d.Roku != nil || d.Sonos != nil) && len(d.Inputs) > 0 {
-		errs = append(errs, errors.New("profile: inputs: a Roku or Sonos cannot have inputs yet"))
+	if (d.Roku != nil || d.Sonos != nil || d.MQTT) && len(d.Inputs) > 0 {
+		errs = append(errs, errors.New("profile: inputs: a Roku, Sonos or MQTT device cannot have inputs yet"))
 	}
 	return errs
 }
