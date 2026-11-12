@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- A Hue bridge's profile takes power commands (`power`), run when an
+  activity with the bridge starts and ends.
 - IR learning: `hub.Client.Learn` has the hub learn a code from another
   remote, as the app does (family 0x04, then the code as a command
   write in family 0x06, a 0x68 for each attempt it could not read), and
