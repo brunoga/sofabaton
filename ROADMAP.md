@@ -51,7 +51,7 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Next
 
-1. **RF learning, tried.** `sbx learn -rf 433|315` learns RF codes as the
+1. **RF learning, to try.** `sbx learn -rf 433|315` learns RF codes as the
    app's code does it (docs/protocol/ir-codes.md), and profiles keep them
    (`rf:`); to be tried with an RF remote.
 
