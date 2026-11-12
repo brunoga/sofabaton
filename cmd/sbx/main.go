@@ -148,6 +148,10 @@ commands:
   matter     show the X2's Matter setup code, as a QR code and the code
              to type, to add the hub to a Home app (Apple's, Google's…),
              and the switches it offers its automations once added
+  mqtt       show the X2's MQTT broker, set one (-broker IP:PORT -user U
+             -password P) or unbind it (-clear): the broker its MQTT
+             devices publish to, and where it answers requests to list
+             and control its activities and devices
   pair       have the hub pair with a Bluetooth device again
              (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
@@ -217,6 +221,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return pairCmd(ctx, args, stdout, stderr)
 	case "matter":
 		return matterCmd(ctx, args, stdout, stderr)
+	case "mqtt":
+		return mqttCmd(ctx, args, stdout, stderr)
 	case "hue":
 		return hueCmd(ctx, args, stdout, stderr)
 	case "roku":

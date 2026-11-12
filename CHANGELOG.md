@@ -7,6 +7,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- MQTT (X2): `hub.Client.SetMQTT`, `MQTTConfigured` and `ClearMQTT` set the
+  hub's broker, and profiles make MQTT devices (`mqtt: true`), whose
+  commands have the hub publish which ran; `sbx mqtt`. The hub's requests
+  over MQTT, to list and run activities, devices and keys, are in
+  docs/protocol/mqtt.md.
 - Matter: `hub.Client.MatterCode` reads the X2's Matter setup code and
   `MatterDevice` the device of its switches; `sbx matter` shows the code as
   a QR code to add the hub to a Home app (docs/protocol/matter.md).

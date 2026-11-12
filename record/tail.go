@@ -281,3 +281,16 @@ func NewIPDeviceTail() DeviceTail {
 // IdleDefault is the idle behavior (family 0x41 [device, behavior]) the
 // app writes for a new device. Its meaning is not known yet.
 const IdleDefault = 0x01
+
+// NewMQTTDeviceTail is the tail the X2 app's create of a device of MQTT
+// commands writes (its "HA remote", from its code): inputs mode 1, power
+// mode 1, style 0, the emitter routing of IR devices and Bluetooth mode 0.
+func NewMQTTDeviceTail() DeviceTail {
+	return DeviceTail{
+		HasPollTime: true,
+		InputMode:   InputsDirect,
+		PowerMode:   1,
+		HasExtra:    true,
+		Extra:       [3]byte{0, 0, byte(EmitHub | EmitPort1 | EmitPort2)},
+	}
+}

@@ -58,8 +58,9 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 ## Later
 
 - What the device category changes (PLAN L5, R5).
-- RF devices (PLAN L2, R2) and MQTT devices (PLAN P9).
-- A web UI over the library (PLAN P10).
+- RF devices (PLAN L2, R2).
+- The web UI, in its own repository ([armrest-web](https://github.com/brunoga/armrest-web), PLAN P10): creating devices and activities in it.
+- Matter: what the switches' device holds once a Home app has added the hub (docs/protocol/matter.md).
 
 ## Unknown or untested
 

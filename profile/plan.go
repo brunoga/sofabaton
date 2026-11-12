@@ -310,6 +310,14 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 		claim(i, func(h *record.Command) bool { return bytes.Equal(data[h.ID], signals[i]) })
 	}
 
+	if d.MQTT {
+		// An MQTT command's data names it; a kept one keeps the hub's.
+		for i, h := range match {
+			if h != nil {
+				signals[i] = data[h.ID]
+			}
+		}
+	}
 	var adds []Change
 	used := append([]*record.Command(nil), cmds...)
 	for i, c := range d.Commands {
@@ -349,6 +357,9 @@ func Plan(d *Device, st *State, prune bool) (changes []Change, kept []*record.Co
 			nc.Type = record.ClassRoku
 		case d.Sonos != nil:
 			nc.Type = record.ClassSonos
+		case d.MQTT:
+			nc.Type = record.ClassMQTT
+			signals[i] = MQTTData(st.Device, id)
 		}
 		used = append(used, nc)
 		adds = append(adds, Change{Kind: Add, Command: nc, Name: c.Name, Data: signals[i]})

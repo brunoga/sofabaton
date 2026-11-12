@@ -66,6 +66,10 @@ type Device struct {
 	// commands (Roku, Sonos) are requests to it.
 	Roku  *Roku  `yaml:"roku,omitempty"`
 	Sonos *Sonos `yaml:"sonos,omitempty"`
+	// MQTT makes the device one of MQTT commands (the app's "HA remote",
+	// X2 only): each has only a name, and running one has the hub publish
+	// to its broker (see hub.Client.SetMQTT) which command it was.
+	MQTT bool `yaml:"mqtt,omitempty"`
 	// Commands are in the order the remote lists them on the device's
 	// page.
 	Commands []Command `yaml:"commands"`
@@ -159,6 +163,10 @@ type Command struct {
 // Signal returns the command's signal data as the hub stores it.
 func (c Command) Signal(d *Device) ([]byte, error) {
 	switch {
+	case d.MQTT && c.Data == "":
+		// The data is the device's id and the command's, known on the
+		// hub (Plan).
+		return nil, nil
 	case c.Code != nil:
 		ir := d.IR
 		if c.IR != nil {
@@ -241,6 +249,12 @@ func (d *Device) Validate() error {
 			if set {
 				n++
 			}
+		}
+		if d.MQTT {
+			if n > 0 {
+				errs = append(errs, fmt.Errorf("profile: %q: an MQTT device's commands have only names", c.Name))
+			}
+			continue
 		}
 		if n != 1 {
 			errs = append(errs, fmt.Errorf("profile: %q needs exactly one of code, descriptor, data, http, hue, roku and sonos", c.Name))
@@ -379,6 +393,8 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 		d.Roku = &Roku{Address: address(dev)}
 	case record.ClassSonos:
 		d.Sonos = &Sonos{Address: address(dev)}
+	case record.ClassMQTT:
+		d.MQTT = true
 	}
 	byID := map[byte]*record.Command{}
 	for _, c := range st.Commands {
@@ -391,6 +407,10 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			return nil, fmt.Errorf("profile: no data for command %d %q", c.ID, c.Label)
 		}
 		pc := Command{Name: c.Label}
+		if d.MQTT {
+			d.Commands = append(d.Commands, pc)
+			continue
+		}
 		hue, isHue := (*HueCommand)(nil), false
 		if r, err := record.ParseHueRequest(raw); d.Hue != nil && err == nil {
 			hue, isHue = hueCommandOf(r, d.Hue.User)

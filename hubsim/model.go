@@ -53,6 +53,8 @@ type Model struct {
 	// (family 0x72; nil, status NotFound).
 	MatterCode   []byte
 	MatterDevice *record.Entity
+	// MQTT is the broker setup the hub took (family 0x73), nil without.
+	MQTT []byte
 
 	// unpaired is the Bluetooth devices created and not paired yet,
 	// which the hub does not list.
@@ -445,6 +447,22 @@ func FromModel(m *Model) *Hub {
 		delete(m.unpaired, req.Payload[0])
 		// The device pairs at once.
 		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
+	mqttStatus := func() []wire.Frame {
+		ok := byte(0)
+		if m.MQTT != nil {
+			ok = 1
+		}
+		return []wire.Frame{{Family: wire.FamHubMQTTStatusAck, Payload: []byte{ok}}}
+	}
+	h.Handle(wire.FamHubMQTTSetup, func(req wire.Frame) []wire.Frame {
+		m.MQTT = append([]byte{}, req.Payload...)
+		return mqttStatus()
+	})
+	h.Handle(wire.FamHubMQTTStatus, func(wire.Frame) []wire.Frame { return mqttStatus() })
+	h.Handle(wire.FamHubMQTTClear, func(wire.Frame) []wire.Frame {
+		m.MQTT = nil
+		return []wire.Frame{{Family: wire.FamHubMQTTClearAck, Payload: []byte{1}}}
 	})
 	h.Handle(wire.FamReqMatterCode, func(wire.Frame) []wire.Frame {
 		return []wire.Frame{{Family: wire.FamMatterCode, Payload: m.MatterCode}}
