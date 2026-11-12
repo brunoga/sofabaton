@@ -48,6 +48,11 @@ type Model struct {
 	// Firmware is the last firmware image the hub took whole (families
 	// 0x29 and 0x2A), its size and MD5 as the start gave them.
 	Firmware []byte
+	// MatterCode is the reply to a request for the Matter setup code
+	// (family 0x81), and MatterDevice the device of the Matter switches
+	// (family 0x72; nil, status NotFound).
+	MatterCode   []byte
+	MatterDevice *record.Entity
 
 	// unpaired is the Bluetooth devices created and not paired yet,
 	// which the hub does not list.
@@ -440,6 +445,15 @@ func FromModel(m *Model) *Hub {
 		delete(m.unpaired, req.Payload[0])
 		// The device pairs at once.
 		return []wire.Frame{Status(0), {Family: wire.FamPaired, Payload: req.Payload[:1]}}
+	})
+	h.Handle(wire.FamReqMatterCode, func(wire.Frame) []wire.Frame {
+		return []wire.Frame{{Family: wire.FamMatterCode, Payload: m.MatterCode}}
+	})
+	h.Handle(wire.FamReqMatterDevice, func(wire.Frame) []wire.Frame {
+		if m.MatterDevice == nil {
+			return []wire.Frame{Status(NotFound)}
+		}
+		return entityRows(wire.FamMatterDevice, []*record.Entity{m.MatterDevice})
 	})
 	h.Handle(wire.FamLearnExit, func(wire.Frame) []wire.Frame {
 		m.LearnLeft = true

@@ -32,6 +32,7 @@ capture. When we contradict upstream, say so explicitly.
 | [profiles.md](profiles.md) | Our YAML device profiles: export, edit, apply |
 | [protocol/firmware-update.md](protocol/firmware-update.md) | The app's hub firmware update |
 | [protocol/ir-codes.md](protocol/ir-codes.md) | IR blob formats: raw timing, Pronto, X2 `P:` descriptive |
+| [protocol/matter.md](protocol/matter.md) | The X2 as a Matter device: its setup code and switches |
 | [research/README.md](research/README.md) | Research tracks R1–R5 and capture log |
 
 Library docs (package overviews, examples) live in Go doc comments; this
