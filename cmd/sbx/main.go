@@ -145,6 +145,9 @@ commands:
              asking); with -remote, the remote's, sent over this
              computer's Bluetooth (Linux) as the app does from the phone
              ([-name NAME] [-reinstall] for the version it has)
+  matter     show the X2's Matter setup code, as a QR code and the code
+             to type, to add the hub to a Home app (Apple's, Google's…),
+             and the switches it offers its automations once added
   pair       have the hub pair with a Bluetooth device again
              (-device ID); apply -create pairs a new one
   order      show or set the order of the devices (or, with
@@ -212,6 +215,8 @@ func run(ctx context.Context, stdin io.Reader, args []string, stdout, stderr io.
 		return exportIR(args, stdout, stderr)
 	case "pair":
 		return pairCmd(ctx, args, stdout, stderr)
+	case "matter":
+		return matterCmd(ctx, args, stdout, stderr)
 	case "hue":
 		return hueCmd(ctx, args, stdout, stderr)
 	case "roku":

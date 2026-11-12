@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/net v0.61.0
+	rsc.io/qr v0.2.0
 	tinygo.org/x/bluetooth v0.17.0
 )
 

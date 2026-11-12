@@ -120,6 +120,8 @@ const (
 	FamRFLearn            Family = 0x70
 	FamHubMQTTSetup       Family = 0x73
 	FamHubMQTTStatus      Family = 0x74
+	FamReqMatterDevice    Family = 0x72 // the hub's Matter switches' device
+	FamReqMatterCode      Family = 0x81 // the hub's Matter setup code
 	FamNotifyMe           Family = 0xC1 // UDP discovery probe, broadcast
 	FamCallMe             Family = 0xC3 // UDP, both directions
 )
@@ -156,6 +158,8 @@ const (
 	FamLearnFailed      Family = 0x68
 	FamActivityMapPage  Family = 0x6D
 	FamHubMQTTStatusAck Family = 0x74
+	FamMatterDevice     Family = 0x72
+	FamMatterCode       Family = 0x81
 	FamNotifyReply      Family = 0xC2 // UDP discovery reply
 	FamConnectReady     Family = 0xC4 // UDP beacon once a session is up
 )
@@ -212,6 +216,8 @@ var familyNames = map[familyKey]string{
 	{ToHub, FamRFLearn}:            "RFLearn",
 	{ToHub, FamHubMQTTSetup}:       "HubMQTTSetup",
 	{ToHub, FamHubMQTTStatus}:      "HubMQTTStatus",
+	{ToHub, FamReqMatterDevice}:    "ReqMatterDevice",
+	{ToHub, FamReqMatterCode}:      "ReqMatterCode",
 	{ToHub, FamNotifyMe}:           "NotifyMe",
 	{ToHub, FamCallMe}:             "CallMe",
 
@@ -245,6 +251,8 @@ var familyNames = map[familyKey]string{
 	{FromHub, FamLearnFailed}:      "LearnFailed",
 	{FromHub, FamActivityMapPage}:  "ActivityMapPage",
 	{FromHub, FamHubMQTTStatusAck}: "HubMQTTStatus",
+	{FromHub, FamMatterDevice}:     "MatterDevice",
+	{FromHub, FamMatterCode}:       "MatterCode",
 	{FromHub, FamNotifyReply}:      "NotifyReply",
 	{FromHub, FamConnectReady}:     "ConnectReady",
 	{FromHub, FamCallMe}:           "CallMe",

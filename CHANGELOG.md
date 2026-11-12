@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Matter: `hub.Client.MatterCode` reads the X2's Matter setup code and
+  `MatterDevice` the device of its switches; `sbx matter` shows the code as
+  a QR code to add the hub to a Home app (docs/protocol/matter.md).
 - A Hue bridge's profile takes power commands (`power`), run when an
   activity with the bridge starts and ends.
 - IR learning: `hub.Client.Learn` has the hub learn a code from another
