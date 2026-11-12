@@ -51,14 +51,13 @@ the design and the phases behind it; [docs/](docs) has the protocol.
 
 ## Next
 
-1. **RF learning.** The X2 learns 433 and 315 MHz codes; the app's
-   frames are read from its code (docs/protocol/ir-codes.md), still to
-   be tried with an RF remote.
+1. **RF learning, tried.** `sbx learn -rf 433|315` learns RF codes as the
+   app's code does it (docs/protocol/ir-codes.md), and profiles keep them
+   (`rf:`); to be tried with an RF remote.
 
 ## Later
 
 - What the device category changes (PLAN L5, R5).
-- RF devices (PLAN L2, R2).
 - The web UI, in its own repository ([armrest-web](https://github.com/brunoga/armrest-web), PLAN P10): creating devices and activities in it.
 - Matter: what the switches' device holds once a Home app has added the hub (docs/protocol/matter.md).
 

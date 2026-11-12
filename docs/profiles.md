@@ -54,6 +54,8 @@ commands:
   - {name: Other, descriptor: "P:NEC R:38400 D:4 S:251 F:114"}
   - {name: Learned, data: "00a4..."}  # the hub's bytes, for codes the
                                        # other forms cannot express
+  - {name: Fan, data: "...", rf: 433}  # an RF code (433 or 315 MHz), as
+                                       # the hub learned it
 power: {on: Power On, off: Power Off}  # the POWER_ON and POWER_OFF macros
 inputs: [HDMI 1, HDMI 2]               # the commands that select each input
                                        # ([] for a device without inputs)

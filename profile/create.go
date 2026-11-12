@@ -47,7 +47,7 @@ func Create(ctx context.Context, c *hub.Client, d *Device, done func(string)) (b
 		return createAddressed(ctx, c, d, done)
 	}
 	for _, cmd := range d.Commands {
-		if cmd.Data == "" {
+		if cmd.Data == "" || cmd.RF != 0 {
 			continue
 		}
 		if data, err := cmd.Signal(d); err != nil || !record.IsIR(data) {

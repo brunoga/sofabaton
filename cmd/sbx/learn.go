@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/profile"
 	"github.com/brunoga/sofabaton/record"
 )
@@ -24,11 +25,17 @@ func learnCmd(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 	name := fs.String("name", "", "the new command's name (required)")
 	key := fs.String("key", "", "a key of the remote to bind it to, e.g. Up")
 	wait := fs.Duration("wait", time.Minute, "how long to wait for the code")
+	rf := fs.Int("rf", 0, "learn an RF code at 433 or 315 MHz instead of IR")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if *which == "" || *name == "" {
 		return errors.New("-device and -name are required")
+	}
+	if *rf != 0 {
+		if _, err := hub.RFClass(*rf); err != nil {
+			return fmt.Errorf("-rf: %w", err)
+		}
 	}
 	c, err := h.connect(ctx, stderr)
 	if err != nil {
@@ -43,7 +50,7 @@ func learnCmd(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 		return err
 	}
 	if dev.Class.IsWiFi() {
-		return fmt.Errorf("%q is a network device: its commands are not IR", dev.Name)
+		return fmt.Errorf("%q is a network device: its commands are not IR or RF", dev.Name)
 	}
 	st, err := profile.Read(ctx, c, dev.ID)
 	if err != nil {
@@ -66,24 +73,32 @@ func learnCmd(ctx context.Context, args []string, stdout, stderr io.Writer) erro
 		p.Buttons[*key] = profile.Key{Short: *name}
 	}
 
-	fmt.Fprintf(stdout, "point the other remote at the hub and press the key once; don't hold it (waiting %v)\n", *wait)
 	lctx, cancel := context.WithTimeout(ctx, *wait)
 	defer cancel()
-	data, err := c.Learn(lctx, func() {
+	failed := func() {
 		fmt.Fprintln(stdout, "the hub could not read that: press the key once again, briefly")
-	})
+	}
+	var data []byte
+	if *rf != 0 {
+		fmt.Fprintf(stdout, "hold the other remote near the hub and press the key once (RF at %d MHz; waiting %v)\n", *rf, *wait)
+		data, err = c.LearnRF(lctx, *rf, failed)
+	} else {
+		fmt.Fprintf(stdout, "point the other remote at the hub and press the key once; don't hold it (waiting %v)\n", *wait)
+		data, err = c.Learn(lctx, failed)
+	}
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return fmt.Errorf("the hub learned no code: %w", err)
 		}
 		return err
 	}
-	if raw, err := record.ParseRawIR(data); err == nil {
+	if raw, err := record.ParseRawIR(data); err == nil && *rf == 0 {
 		fmt.Fprintf(stdout, "learned: %d timings at %d Hz\n", len(raw.Timings), raw.Carrier)
 	} else {
 		fmt.Fprintf(stdout, "learned: %d bytes\n", len(data))
 	}
 	p.Commands[len(p.Commands)-1].Data = hex.EncodeToString(data)
+	p.Commands[len(p.Commands)-1].RF = *rf
 
 	changes, _, err := profile.Plan(p, st, false)
 	if err != nil {

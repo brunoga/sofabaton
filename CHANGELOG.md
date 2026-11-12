@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- RF learning: `hub.Client.LearnRF` learns 433 and 315 MHz codes as the app
+  does, `sbx learn -rf 433` adds one to a device, and profiles keep RF
+  commands (`rf: 433` beside their `data`). Not yet tried with an RF remote.
 - MQTT (X2): `hub.Client.SetMQTT`, `MQTTConfigured` and `ClearMQTT` set the
   hub's broker, and profiles make MQTT devices (`mqtt: true`), whose
   commands have the hub publish which ran; `sbx mqtt`. The hub's requests

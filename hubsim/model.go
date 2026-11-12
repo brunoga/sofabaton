@@ -45,6 +45,9 @@ type Model struct {
 	// it was left (family 0x05).
 	LearnArms int
 	LearnLeft bool
+	// RFArms records the frequencies RF learning was armed at (family
+	// 0x70 [01, f]: 0 433 MHz, 1 315); leaving it sets LearnLeft.
+	RFArms []byte
 	// Firmware is the last firmware image the hub took whole (families
 	// 0x29 and 0x2A), its size and MD5 as the start gave them.
 	Firmware []byte
@@ -477,7 +480,7 @@ func FromModel(m *Model) *Hub {
 		m.LearnLeft = true
 		return nil
 	})
-	h.Handle(wire.FamLearnEnter, func(wire.Frame) []wire.Frame {
+	learnEnter := func() []wire.Frame {
 		m.LearnArms++
 		out := []wire.Frame{Status(0)}
 		for range m.LearnFailures {
@@ -504,6 +507,15 @@ func FromModel(m *Model) *Hub {
 			out = append(out, wire.Frame{Family: wire.FamLearnData, Payload: p})
 		}
 		return out
+	}
+	h.Handle(wire.FamLearnEnter, func(wire.Frame) []wire.Frame { return learnEnter() })
+	h.Handle(wire.FamRFLearn, func(req wire.Frame) []wire.Frame {
+		if len(req.Payload) == 2 && req.Payload[0] == 1 {
+			m.RFArms = append(m.RFArms, req.Payload[1])
+			return learnEnter()
+		}
+		m.LearnLeft = true
+		return nil
 	})
 	h.Handle(wire.FamReqRemoteList, func(wire.Frame) []wire.Frame {
 		var out []wire.Frame

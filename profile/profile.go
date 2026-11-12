@@ -36,6 +36,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/brunoga/sofabaton/hub"
 	"github.com/brunoga/sofabaton/record"
 )
 
@@ -156,8 +157,11 @@ type Command struct {
 	// Roku is a Roku's command, its ECP path (see Device.Roku).
 	Roku string `yaml:"roku,omitempty"`
 	// Sonos is a Sonos speaker's command (see Device.Sonos).
-	Sonos   *SonosCommand `yaml:"sonos,omitempty"`
-	Comment string        `yaml:"comment,omitempty"`
+	Sonos *SonosCommand `yaml:"sonos,omitempty"`
+	// RF, 433 or 315, makes the command's data an RF code at that many
+	// MHz, as the hub learned it (hub.Client.LearnRF).
+	RF      int    `yaml:"rf,omitempty"`
+	Comment string `yaml:"comment,omitempty"`
 }
 
 // Signal returns the command's signal data as the hub stores it.
@@ -248,6 +252,14 @@ func (d *Device) Validate() error {
 		for _, set := range []bool{c.Code != nil, c.Descriptor != "", c.Data != "", c.HTTP != nil, c.Hue != nil, c.Roku != "", c.Sonos != nil} {
 			if set {
 				n++
+			}
+		}
+		if c.RF != 0 {
+			if _, err := hub.RFClass(c.RF); err != nil {
+				errs = append(errs, fmt.Errorf("profile: %q: rf is 433 or 315 (MHz)", c.Name))
+			}
+			if c.Data == "" || n != 1 {
+				errs = append(errs, fmt.Errorf("profile: %q: an RF command is its data, as the hub learned it", c.Name))
 			}
 		}
 		if d.MQTT {
@@ -433,6 +445,12 @@ func FromHub(dev *record.Entity, st *State) (*Device, error) {
 			}
 		} else {
 			pc.Data = hex.EncodeToString(raw)
+			switch c.Type {
+			case record.ClassRF433:
+				pc.RF = hub.RF433
+			case record.ClassRF315:
+				pc.RF = hub.RF315
+			}
 		}
 		d.Commands = append(d.Commands, pc)
 	}
