@@ -317,8 +317,8 @@ func (d *Device) Validate() error {
 		if d.Bluetooth != nil || d.network() {
 			errs = append(errs, errors.New("profile: a Hue bridge is not a Bluetooth or HTTP device"))
 		}
-		if len(d.Inputs) > 0 {
-			errs = append(errs, errors.New("profile: inputs: a Hue bridge cannot have inputs yet"))
+		if len(d.Inputs) > 0 || d.Power != nil {
+			errs = append(errs, errors.New("profile: a Hue bridge has no inputs or power commands yet"))
 		}
 	}
 	seenInput := map[int]bool{}
