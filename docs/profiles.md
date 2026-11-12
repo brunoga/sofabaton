@@ -195,15 +195,11 @@ commands:
     hue: {path: lights/27/state, body: '{"on": false}'}
 ```
 
-A bridge can have power commands, as a Roku can: `power: {on: Save,
-off: Restore}` has an activity with the bridge run them when it starts and
-ends. Ours saves the state of some lights into a scene (`scenes/ID` with
-`{"storelightstate": true}`) and puts it back (`groups/ID/action` with
-`{"scene": "ID"}`); each activity switches them off after the bridge's
-power on. The same requests, as an HTTP device's power commands, left the
-lights off when switching between activities and put them back as they
-were at the end (our X2, 2026-11-07); as the bridge's, the hub took them
-(2026-11-12).
+A bridge has no power commands: the hub takes them but does not run them.
+With `power: {on: Save, off: Restore}` on our bridge, an activity's own step
+after the bridge's power on ran, but neither Save nor Restore did, when it
+started or ended (our X2, 2026-11-12). Power commands that act on the lights
+belong to an HTTP device sending the same requests to the bridge's API.
 
 `sbx hue` makes one from the bridge, as the app does: it finds the bridge
 (or takes `-bridge IP`), asks for its link button to get a user (or takes
